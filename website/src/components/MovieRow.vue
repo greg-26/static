@@ -12,9 +12,6 @@
       >‹</button>
 
       <div class="row-track" ref="trackEl" @scroll="onScroll">
-        <!-- Left spacer: represents the unrendered cards before the window -->
-        <div v-if="startIdx > 0" :style="{ width: leftPad + 'px', flexShrink: 0 }"></div>
-
         <template v-if="isVisible">
           <MovieCard
             v-for="movie in visibleMovies"
@@ -22,10 +19,17 @@
             :movie="movie"
             @select="$emit('selectMovie', $event)"
           />
+          <!-- Skeleton cards shown at the end while more are available -->
+          <div
+            v-if="hasMore"
+            class="load-sentinel"
+            ref="sentinelEl"
+          ></div>
         </template>
-
-        <!-- Right spacer: represents the unrendered cards after the window -->
-        <div v-if="endIdx < row.movies.length" :style="{ width: rightPad + 'px', flexShrink: 0 }"></div>
+        <!-- Skeleton placeholders before the row enters the viewport -->
+        <template v-else>
+          <div class="card-skeleton" v-for="i in 8" :key="i"></div>
+        </template>
       </div>
 
       <button
@@ -39,7 +43,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from "vue";
 import MovieCard from "./MovieCard.vue";
 
 const props = defineProps({ row: { type: Object, required: true } });
@@ -47,46 +51,34 @@ defineEmits(["selectMovie"]);
 
 const trackEl = ref(null);
 const rowEl = ref(null);
+const sentinelEl = ref(null);
 const scrollLeft = ref(0);
 const atEnd = ref(false);
 const isVisible = ref(false);
-const containerWidth = ref(800);
 
-// Card dimensions — read from CSS vars on mount, fall back to design-system defaults
-let cardStride = 172; // 160px card + 12px gap
+// Card dimensions (read from CSS vars on mount)
+let cardStride = 172; // 160px + 12px gap — matches design-system defaults
+const BATCH = 14;     // cards to render per load step
+const PRELOAD = 4;    // cards ahead of viewport edge to trigger next batch
 
-const BUFFER = 4; // extra cards to render on each side of the visible window
+const renderedCount = ref(BATCH);
+const hasMore = computed(() => renderedCount.value < props.row.movies.length);
+const visibleMovies = computed(() => props.row.movies.slice(0, renderedCount.value));
 
-const startIdx = computed(() =>
-  Math.max(0, Math.floor(scrollLeft.value / cardStride) - BUFFER)
-);
-
-const endIdx = computed(() =>
-  Math.min(
-    props.row.movies.length,
-    Math.ceil((scrollLeft.value + containerWidth.value) / cardStride) + BUFFER
-  )
-);
-
-const visibleMovies = computed(() =>
-  props.row.movies.slice(startIdx.value, endIdx.value)
-);
-
-// Width occupied by cards we're NOT rendering on the left
-const leftPad = computed(() => startIdx.value * cardStride);
-
-// Width occupied by cards we're NOT rendering on the right
-// Subtract one gap because the last card in any group has no gap after it
-const rightPad = computed(() => {
-  const trailing = props.row.movies.length - endIdx.value;
-  return trailing > 0 ? trailing * cardStride - 12 : 0;
-});
+function loadMore() {
+  if (!hasMore.value) return;
+  renderedCount.value = Math.min(props.row.movies.length, renderedCount.value + BATCH);
+}
 
 function onScroll() {
   const el = trackEl.value;
   if (!el) return;
   scrollLeft.value = el.scrollLeft;
   atEnd.value = el.scrollLeft + el.clientWidth >= el.scrollWidth - 10;
+  // Extend the rendered window when user scrolls within PRELOAD cards of the current end
+  if (hasMore.value && el.scrollLeft + el.clientWidth + PRELOAD * cardStride >= el.scrollWidth) {
+    loadMore();
+  }
 }
 
 function scroll(dir) {
@@ -95,6 +87,23 @@ function scroll(dir) {
   el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: "smooth" });
 }
 
+// Watch the sentinel element: load more when it scrolls into the row's viewport
+let sentinelObserver = null;
+
+function observeSentinel() {
+  sentinelObserver?.disconnect();
+  sentinelObserver = null;
+  if (!sentinelEl.value || !trackEl.value) return;
+  sentinelObserver = new IntersectionObserver(
+    ([entry]) => { if (entry.isIntersecting) loadMore(); },
+    { root: trackEl.value, rootMargin: `${PRELOAD * cardStride}px` }
+  );
+  sentinelObserver.observe(sentinelEl.value);
+}
+
+// Re-attach observer when sentinel mounts/unmounts with each batch
+watch(sentinelEl, () => nextTick(observeSentinel));
+
 let rowObserver = null;
 let resizeObserver = null;
 
@@ -102,19 +111,19 @@ onMounted(() => {
   // Read actual CSS variable values
   const style = getComputedStyle(document.documentElement);
   const cardW = parseInt(style.getPropertyValue("--card-w")) || 160;
-  const gap = parseInt(style.getPropertyValue("--gap")) || 12;
+  const gap   = parseInt(style.getPropertyValue("--gap"))    || 12;
   cardStride = cardW + gap;
 
-  // Track container width so the window calculation stays accurate
+  // Set initial batch size to fill the viewport
   if (trackEl.value) {
-    containerWidth.value = trackEl.value.clientWidth;
-    resizeObserver = new ResizeObserver(([entry]) => {
-      containerWidth.value = entry.contentRect.width;
-    });
+    const visible = Math.ceil(trackEl.value.clientWidth / cardStride) + PRELOAD;
+    renderedCount.value = Math.min(props.row.movies.length, Math.max(BATCH, visible));
+
+    resizeObserver = new ResizeObserver(() => onScroll());
     resizeObserver.observe(trackEl.value);
   }
 
-  // Defer rendering cards until the row scrolls into view
+  // Defer rendering until the row scrolls into view
   rowObserver = new IntersectionObserver(
     ([entry]) => {
       if (entry.isIntersecting) {
@@ -126,13 +135,12 @@ onMounted(() => {
     { rootMargin: "200px" }
   );
   if (rowEl.value) rowObserver.observe(rowEl.value);
-
-  onScroll();
 });
 
 onUnmounted(() => {
   rowObserver?.disconnect();
   resizeObserver?.disconnect();
+  sentinelObserver?.disconnect();
 });
 </script>
 
@@ -144,7 +152,6 @@ onUnmounted(() => {
 .row-header {
   display: flex;
   align-items: baseline;
-  gap: 10px;
   padding: 0 48px;
   margin-bottom: 12px;
 }
@@ -167,13 +174,36 @@ onUnmounted(() => {
   padding: 8px 48px 16px;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  scroll-snap-type: x proximity;
-  min-height: calc(var(--card-h) + 48px);
+  /* No scroll-snap: it caused snapping to the sentinel/skeleton elements */
 }
 
 .row-track::-webkit-scrollbar { display: none; }
 
-.row-track > * { scroll-snap-align: start; }
+/* Placeholder skeleton cards shown before the row enters the viewport */
+.card-skeleton {
+  width: var(--card-w);
+  height: var(--card-h);
+  flex-shrink: 0;
+  background: var(--surface2);
+  border-radius: var(--radius);
+  animation: pulse 1.8s ease-in-out infinite;
+}
+
+.card-skeleton:nth-child(2) { animation-delay: 0.1s; }
+.card-skeleton:nth-child(3) { animation-delay: 0.2s; }
+.card-skeleton:nth-child(4) { animation-delay: 0.3s; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.35; }
+  50%       { opacity: 0.6; }
+}
+
+/* Invisible sentinel div at the end of rendered cards */
+.load-sentinel {
+  width: 1px;
+  height: var(--card-h);
+  flex-shrink: 0;
+}
 
 .row-arrow {
   position: absolute;
