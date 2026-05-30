@@ -92,7 +92,8 @@ export const useMovieStore = defineStore("movies", () => {
     loading.value = true;
     error.value = null;
     try {
-      const res = await fetch("/movies.json");
+      const res = await fetch("/static/movies.json");
+      if (!res.ok) res = await fetch("/movies.json");
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       allMovies.value = data.movies || generateMockMovies();
