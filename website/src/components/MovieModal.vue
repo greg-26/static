@@ -30,58 +30,32 @@
             </div>
           </div>
 
-          <!-- Maturity section -->
-          <div class="modal-maturity" v-if="movie.mat !== undefined || matLoading || parentsGuide">
-            <p class="modal-section-label">Maturity</p>
+          <!-- Community reviews (collapsed by default per category) -->
+          <div class="modal-maturity" v-if="matLoading || parentsGuide || matError">
+            <p class="modal-section-label">Community reviews</p>
 
-            <!-- Stored severity bars (only if mat is defined) -->
-            <div class="maturity-bars" v-if="movie.mat !== undefined">
-              <div
-                v-for="cat in MATURITY_CATEGORIES"
+            <div v-if="matLoading" class="mat-loading">Loading reviews…</div>
+            <div v-else-if="matError" class="mat-loading mat-error">{{ matError }}</div>
+            <div v-else-if="parentsGuideCategories.some(c => c.items.length)" class="mat-items-list">
+              <details
+                v-for="cat in parentsGuideCategories"
                 :key="cat.key"
-                class="mat-bar-row"
+                v-show="cat.items.length"
+                class="mat-cat-block"
               >
-                <span class="mat-bar-label">{{ cat.label }}</span>
-                <div class="mat-bar-track">
-                  <div
-                    class="mat-bar-fill"
-                    :class="`sev-${getSeverity(movie.mat, cat.shift)}`"
-                    :style="{ width: `${(getSeverity(movie.mat, cat.shift) / 3) * 100}%` }"
-                  ></div>
-                </div>
-                <span
-                  v-if="getSeverity(movie.mat, cat.shift) > 0"
-                  class="mat-bar-text"
-                  :class="`sev-${getSeverity(movie.mat, cat.shift)}`"
-                >{{ SEVERITY_LABELS[getSeverity(movie.mat, cat.shift)] }}</span>
-              </div>
+                <summary class="mat-cat-title">
+                  <span v-if="cat.severity !== null" class="mat-sev-badge" :class="`sev-${cat.severity}`">
+                    {{ SEVERITY_LABELS[cat.severity] }}
+                  </span>
+                  {{ cat.label }}
+                  <span class="mat-count">{{ cat.items.length }}</span>
+                </summary>
+                <ul class="mat-items">
+                  <li v-for="(item, i) in cat.items.slice(0, 5)" :key="i">{{ item }}</li>
+                </ul>
+              </details>
             </div>
-
-            <!-- Dynamic parentsGuide community reviews -->
-            <div class="maturity-details">
-              <p class="modal-section-label mat-reviews-label">Community reviews</p>
-              <div v-if="matLoading" class="mat-loading">Loading reviews…</div>
-              <div v-else-if="matError" class="mat-loading mat-error">{{ matError }}</div>
-              <div v-else-if="parentsGuideCategories.length" class="mat-items-list">
-                <div
-                  v-for="cat in parentsGuideCategories"
-                  :key="cat.key"
-                  class="mat-cat-block"
-                  v-show="cat.items?.length"
-                >
-                  <p class="mat-cat-title" v-if="cat.items?.length">
-                    <span v-if="cat.severity !== null" class="mat-sev-badge" :class="`sev-${cat.severity}`">
-                      {{ SEVERITY_LABELS[cat.severity] }}
-                    </span>
-                    {{ cat.label }}
-                  </p>
-                  <ul v-if="cat.items?.length" class="mat-items">
-                    <li v-for="(item, i) in cat.items.slice(0, 5)" :key="i">{{ item }}</li>
-                  </ul>
-                </div>
-              </div>
-              <div v-else-if="!matLoading" class="mat-loading">No community reviews available.</div>
-            </div>
+            <div v-else class="mat-loading">No community reviews available.</div>
           </div>
 
           <div class="modal-links">
@@ -123,7 +97,6 @@ const providerNames = computed(() => {
     .map(p => p.name);
 });
 
-// API response: { parentsGuide: [{ category: "VIOLENCE", severityBreakdowns: [...], reviews: [{text}] }] }
 const API_CAT_MAP = {
   "SEXUAL_CONTENT":             "sexAndNudity",
   "VIOLENCE":                   "violenceAndGore",
@@ -132,7 +105,7 @@ const API_CAT_MAP = {
   "FRIGHTENING_INTENSE_SCENES": "frighteningScenes",
 };
 
-const SEV_WEIGHTS = { none: 1, mild: 2, moderate: 3, severe: 4 }; // 1-4 → avg → 0-3
+const SEV_WEIGHTS = { none: 1, mild: 2, moderate: 3, severe: 4 };
 
 function weightedSeverity(severityBreakdowns) {
   if (!Array.isArray(severityBreakdowns) || severityBreakdowns.length === 0) return null;
@@ -144,7 +117,7 @@ function weightedSeverity(severityBreakdowns) {
     wsum  += voteCount * w;
   }
   if (total === 0) return null;
-  return Math.round(wsum / total) - 1; // 0-3
+  return Math.round(wsum / total) - 1;
 }
 
 const parentsGuideCategories = computed(() => {
@@ -152,7 +125,6 @@ const parentsGuideCategories = computed(() => {
   const items = parentsGuide.value.parentsGuide;
   if (!Array.isArray(items)) return [];
 
-  // Index by our internal key
   const byKey = {};
   for (const entry of items) {
     const key = API_CAT_MAP[entry.category];
@@ -315,61 +287,52 @@ watch(() => props.movie?.id, (id) => {
   color: var(--teal);
 }
 
-/* ── Maturity ── */
+/* ── Community reviews ── */
 .modal-maturity { margin-bottom: 18px; }
-
-.maturity-bars { display: flex; flex-direction: column; gap: 6px; }
-
-.mat-bar-row {
-  display: grid;
-  grid-template-columns: 100px 1fr 72px;
-  align-items: center;
-  gap: 8px;
-}
-
-.mat-bar-label { font-size: 12px; color: var(--muted); }
-
-.mat-bar-track {
-  height: 5px;
-  background: var(--surface3);
-  border-radius: 99px;
-  overflow: hidden;
-}
-
-.mat-bar-fill {
-  height: 100%;
-  border-radius: 99px;
-  transition: width 0.4s ease;
-}
-
-.mat-bar-fill.sev-0, .mat-bar-text.sev-0 { background: #4ade80; color: #4ade80; }
-.mat-bar-fill.sev-1, .mat-bar-text.sev-1 { background: #facc15; color: #facc15; }
-.mat-bar-fill.sev-2, .mat-bar-text.sev-2 { background: #fb923c; color: #fb923c; }
-.mat-bar-fill.sev-3, .mat-bar-text.sev-3 { background: #f87171; color: #f87171; }
-
-.mat-bar-text { font-size: 11px; text-align: right; }
-
-.mat-reviews-label { margin-top: 14px; }
 
 .mat-loading {
   font-size: 12px;
   color: var(--muted);
   padding: 8px 0;
 }
-
 .mat-error { color: rgba(248,113,113,0.7); }
 
-.mat-items-list { display: flex; flex-direction: column; gap: 10px; }
+.mat-items-list { display: flex; flex-direction: column; gap: 4px; }
 
-.mat-cat-block {}
+.mat-cat-block {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
 
 .mat-cat-title {
-  font-size: 12px;
-  color: var(--white);
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 4px;
+  padding: 8px 10px;
+  font-size: 12px;
+  color: var(--white);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  background: var(--surface3);
+}
+.mat-cat-title::-webkit-details-marker { display: none; }
+.mat-cat-title::after {
+  content: "›";
+  margin-left: auto;
+  font-size: 16px;
+  color: var(--muted);
+  transition: transform 0.15s;
+}
+.mat-cat-block[open] .mat-cat-title::after { transform: rotate(90deg); }
+
+.mat-count {
+  font-size: 10px;
+  color: var(--muted);
+  background: var(--surface2);
+  padding: 1px 6px;
+  border-radius: 99px;
 }
 
 .mat-sev-badge {
@@ -378,8 +341,8 @@ watch(() => props.movie?.id, (id) => {
   letter-spacing: 0.06em;
   padding: 1px 6px;
   border-radius: 99px;
+  flex-shrink: 0;
 }
-
 .mat-sev-badge.sev-0 { background: rgba(74,222,128,0.2); color: #4ade80; }
 .mat-sev-badge.sev-1 { background: rgba(250,204,21,0.2); color: #facc15; }
 .mat-sev-badge.sev-2 { background: rgba(251,146,60,0.2); color: #fb923c; }
@@ -387,13 +350,15 @@ watch(() => props.movie?.id, (id) => {
 
 .mat-items {
   list-style: none;
-  padding: 0;
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
-
 .mat-items li {
   font-size: 11px;
   color: var(--muted);
-  padding: 3px 0;
+  padding: 5px 0;
   border-bottom: 1px solid var(--border);
   line-height: 1.4;
 }
@@ -426,7 +391,5 @@ watch(() => props.movie?.id, (id) => {
   }
 
   .modal-poster img { object-position: center top; }
-
-  .mat-bar-row { grid-template-columns: 80px 1fr 64px; }
 }
 </style>

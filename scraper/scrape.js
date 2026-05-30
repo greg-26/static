@@ -41,11 +41,11 @@ const MAT_RATE_WINDOW = 5_000; // ms
 const args = process.argv.slice(2);
 const enrichLimit = (() => {
   const idx = args.indexOf("--limit");
-  return idx !== -1 ? parseInt(args[idx + 1]) : 50;
+  return idx !== -1 ? parseInt(args[idx + 1]) : 500;
 })();
 const matLimit = (() => {
   const idx = args.indexOf("--mat-limit");
-  return idx !== -1 ? parseInt(args[idx + 1]) : 10;
+  return idx !== -1 ? parseInt(args[idx + 1]) : 50;
 })();
 
 // ─── Bitmask Definitions ────────────────────────────────────────────────────────

@@ -17,7 +17,7 @@
         <div class="card-year">{{ movie.y }}</div>
       </div>
 
-      <!-- Maturity severity dots (shown on hover) -->
+      <!-- Maturity severity dots -->
       <div class="card-maturity" v-if="movie.mat">
         <span
           v-for="cat in MATURITY_CATEGORIES"
@@ -137,11 +137,7 @@ const posterStyle = computed(() => ({
   left: 6px;
   display: flex;
   gap: 3px;
-  opacity: 0;
-  transition: opacity 0.2s;
 }
-
-.card:hover .card-maturity { opacity: 1; }
 
 .mat-dot {
   width: 8px;
