@@ -1,18 +1,16 @@
 <template>
   <header class="hero">
-    <!-- Poster background (loads lazily after movies are available) -->
+    <!-- Poster background (static pre-made list, no DB dependency) -->
     <div class="hero-poster-bg" aria-hidden="true">
       <div
-        v-for="(col, ci) in posterColumns"
+        v-for="(col, ci) in HERO_POSTER_COLS"
         :key="ci"
         class="poster-col"
-        :style="{ animationDelay: `${ci * -4}s`, animationDuration: `${28 + ci * 4}s` }"
       >
         <img
-          v-for="m in col"
-          :key="m.id"
-          :src="m.p"
-          :alt="m.t"
+          v-for="(url, i) in col"
+          :key="i"
+          :src="url"
           loading="lazy"
           class="poster-bg-img"
         />
@@ -54,7 +52,7 @@
         <div class="filters" v-show="!store.searchQuery">
 
           <!-- Genres -->
-          <div class="filter-group">
+          <div class="filter-group filter-group--full">
             <p class="filter-label">Genre</p>
             <div class="filter-chips">
               <button
@@ -68,7 +66,7 @@
           </div>
 
           <!-- Providers -->
-          <div class="filter-group" v-if="store.availableProviders.length">
+          <div class="filter-group filter-group--full" v-if="store.availableProviders.length">
             <p class="filter-label">Streaming on</p>
             <div class="filter-chips">
               <button
@@ -138,14 +136,14 @@ import { useMovieStore, GENRE_LABELS, PROVIDERS, SEVERITY_LABELS, MATURITY_CATEG
 
 const store = useMovieStore();
 
-// Build poster columns from movies that have a poster image
-const posterColumns = computed(() => {
-  const withPosters = store.allMovies.filter(m => m.p).slice(0, 60);
-  if (withPosters.length < 6) return [];
-  const cols = [[], [], [], [], []];
-  withPosters.forEach((m, i) => cols[i % 5].push(m));
-  return cols;
-});
+const BASE = "https://image.tmdb.org/t/p/w342/";
+const HERO_POSTER_COLS = [
+  ["ov8vrRLZGoXHpYjSY9Vpv1tHJX7","aabwWZWx6z1aYP4PX2ADvbDKktd","8FHOtUpNIk5ZPEay2N2EY5lrxkv","4GIeI5K5YdDUkR3mNQBoScpSFEf","mjkS2iAgWj3ik1DTjvI15nHZ7yl","rCzpDGLbOoPwLjy3OAm5NUPOTrC"],
+  ["yihdXomYb5kTeSivtFndMy5iDmf","3Qud19bBUrrJAzy0Ilm8gRJlJXP","oJ7g2CifqpStmoYQyaLQgEU32qO","pHpq9yNUIo6aDoCXEBzjSolywgz","3bhkrj58Vtu7enYsRolD1fZdja1","byWgphT74ClOVa8EOGzYDkl8DVL"],
+  ["aOIuZAjPaRIE6CMzbazvcHuHXDc","iLUNqgNkuWn667kXCKztSxYbT3k","9cqNxx0GxF0bflZmeSMuL5tnGzr","7WsyChQLEftFiDOVTGkv3hFpyyt","qJ2tW6WMUDux911r6m7haRef0WH","9xjZS2rlVxm8SFx8kPC3aIGCOYQ"],
+  ["ybrX94xQm8lXYpZAPRmwD9iIbWP","eTp7gSPkSF3Aw79mNx1NkBP1PZT","yQvGrMoipbRoddT0ZR8tPoR7NfX","RYMX2wcKCBAr24UyPD7xwmjaTn","tVvpFIoteRHNnoZMhdnwIVwJpCA","1g0dhYtq4irTY1GPXvft6k4YLjm"],
+  ["8912AsVuS7Sj915apArUFbv6F9L","fWVSwgjpT2D78VUh6X8UBd2rorW","cWsBscZzwu5brg9YjNkGewRUvJX","cRY25Q32kDNPFDkFkxAs6bgCq3L","ril8yx5SOmj0KjNlftsdfIp00fr","vqBmyAj0Xm9LnS1xe1MSlMAJyHq"],
+].map(col => col.map(hash => BASE + hash + ".jpg"));
 
 const hasFilters = computed(() =>
   store.searchQuery ||
@@ -184,17 +182,6 @@ const hasFilters = computed(() =>
   flex-direction: column;
   gap: 8px;
   flex: 1;
-  animation: scrollCol linear infinite;
-  will-change: transform;
-}
-
-.poster-col:nth-child(even) {
-  animation-direction: reverse;
-}
-
-@keyframes scrollCol {
-  from { transform: translateY(0); }
-  to   { transform: translateY(-50%); }
 }
 
 .poster-bg-img {
@@ -202,7 +189,7 @@ const hasFilters = computed(() =>
   aspect-ratio: 2/3;
   object-fit: cover;
   border-radius: 4px;
-  opacity: 0.35;
+  opacity: 0.45;
   display: block;
   flex-shrink: 0;
 }
@@ -212,8 +199,10 @@ const hasFilters = computed(() =>
   inset: 0;
   z-index: 1;
   background:
-    radial-gradient(ellipse 80% 60% at 50% 30%, rgba(8,8,16,0.55) 0%, transparent 100%),
-    linear-gradient(to bottom, rgba(8,8,16,0.3) 0%, rgba(8,8,16,0.85) 70%, var(--black) 100%);
+    linear-gradient(135deg, rgba(232,54,93,0.22) 0%, transparent 55%),
+    linear-gradient(225deg, rgba(45,212,191,0.14) 0%, transparent 50%),
+    radial-gradient(ellipse 90% 70% at 50% 20%, rgba(8,8,16,0.4) 0%, transparent 100%),
+    linear-gradient(to bottom, rgba(8,8,16,0.15) 0%, rgba(8,8,16,0.75) 65%, var(--black) 100%);
   pointer-events: none;
 }
 
@@ -237,9 +226,9 @@ const hasFilters = computed(() =>
   font-family: var(--font-display);
   font-size: clamp(52px, 8vw, 96px);
   letter-spacing: 0.1em;
-  color: var(--white);
   line-height: 1;
-  text-shadow: 0 2px 24px rgba(0,0,0,0.6);
+  color: #a7f3d0;
+  text-shadow: 0 2px 32px rgba(52,211,153,0.25);
 }
 
 .hero-tagline {
@@ -307,6 +296,7 @@ const hasFilters = computed(() =>
 
 .filter-group { display: flex; flex-direction: column; gap: 10px; }
 .filter-group--rating { min-width: 200px; }
+.filter-group--full { width: 100%; min-width: 0; }
 
 .filter-label {
   font-size: 11px;
@@ -317,9 +307,14 @@ const hasFilters = computed(() =>
 
 .filter-chips {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 2px;
 }
+.filter-chips::-webkit-scrollbar { display: none; }
 
 .chip {
   padding: 5px 12px;

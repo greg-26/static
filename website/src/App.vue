@@ -39,6 +39,14 @@
 
           <!-- Normal rows (hidden while searching) -->
           <template v-else>
+            <!-- User list rows -->
+            <MovieRow
+              v-for="row in listRows"
+              :key="row.id"
+              :row="row"
+              @selectMovie="selectedMovie = $event"
+            />
+            <!-- Regular store rows -->
             <MovieRow
               v-for="row in store.movieRows"
               :key="row.id"
@@ -58,21 +66,77 @@
       :movie="selectedMovie"
       @close="selectedMovie = null"
     />
+
+    <!-- Gear button -->
+    <button class="gear-btn" @click="showConfig = true" title="Settings">⚙</button>
+
+    <!-- Config modal -->
+    <ConfigModal
+      v-if="showConfig"
+      :pending-list-token="pendingListToken"
+      @close="showConfig = false"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useMovieStore } from "@/stores/movies.js";
+import { useUserStore } from "@/stores/user.js";
 import HeroSection from "@/components/HeroSection.vue";
 import MovieRow from "@/components/MovieRow.vue";
 import MovieCard from "@/components/MovieCard.vue";
 import MovieModal from "@/components/MovieModal.vue";
+import ConfigModal from "@/components/ConfigModal.vue";
 
 const store = useMovieStore();
+const userStore = useUserStore();
 const selectedMovie = ref(null);
+const showConfig = ref(false);
+const pendingListToken = ref(null);
 
-onMounted(() => store.loadMovies());
+// Map of imdb id -> movie object for list rows
+const movieById = computed(() => {
+  const map = new Map();
+  for (const m of store.allMovies) map.set(m.id, m);
+  return map;
+});
+
+// List rows derived from user lists
+const listRows = computed(() => {
+  if (!userStore.isLoggedIn) return [];
+  return userStore.lists
+    .filter(list => list.movies.length > 0)
+    .map(list => ({
+      id: "list-" + list.token,
+      label: "★ " + list.name,
+      movies: list.movies.map(id => movieById.value.get(id)).filter(Boolean),
+    }))
+    .filter(row => row.movies.length > 0);
+});
+
+onMounted(async () => {
+  await store.loadMovies();
+  await userStore.init();
+
+  // Handle ?add= URL param
+  const params = new URLSearchParams(window.location.search);
+  const addToken = params.get("add");
+  if (addToken) {
+    if (userStore.isLoggedIn) {
+      try {
+        await userStore.addListByToken(addToken);
+      } catch (e) {
+        console.warn("Could not add shared list:", e.message);
+      }
+    } else {
+      pendingListToken.value = addToken;
+      showConfig.value = true;
+    }
+    // Clean URL
+    history.replaceState(null, "", window.location.pathname);
+  }
+});
 </script>
 
 <style scoped>
@@ -248,6 +312,31 @@ onMounted(() => store.loadMovies());
   transition: color 0.15s;
 }
 .footer a:hover { color: var(--white); }
+
+/* ── Gear button ── */
+.gear-btn {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 150;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--muted);
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.gear-btn:hover {
+  color: var(--white);
+  border-color: rgba(255, 255, 255, 0.2);
+  background: var(--surface3);
+}
 
 /* ── Mobile ── */
 @media (max-width: 640px) {

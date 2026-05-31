@@ -23,24 +23,39 @@
             <span v-for="g in genreLabels" :key="g" class="genre-chip">{{ g }}</span>
           </div>
 
-          <div class="modal-providers" v-if="providerNames.length">
-            <p class="modal-section-label">Available on</p>
-            <div class="provider-list">
-              <span v-for="p in providerNames" :key="p" class="provider-chip">{{ p }}</span>
+          <!-- User actions (watched + lists) -->
+          <div v-if="userStore.isLoggedIn" class="modal-user-actions">
+            <div class="user-actions-row">
+              <button
+                class="watched-btn"
+                :class="{ 'watched-btn--active': userStore.isWatched(movie.id) }"
+                @click="userStore.toggleWatched(movie.id)"
+              >
+                {{ userStore.isWatched(movie.id) ? "✓ Watched" : "Mark watched" }}
+              </button>
+
+              <button
+                v-for="list in userStore.lists"
+                :key="list.token"
+                class="list-chip"
+                :class="{ 'list-chip--active': userStore.isInList(list.token, movie.id) }"
+                @click="userStore.toggleMovieInList(list.token, movie.id)"
+              >{{ list.name }}</button>
+
+              <span v-if="!userStore.lists.length" class="no-lists-hint">No lists yet — create one in ⚙ Settings</span>
             </div>
           </div>
 
           <!-- Community reviews (collapsed by default per category) -->
           <div class="modal-maturity" v-if="matLoading || parentsGuide || matError">
-            <p class="modal-section-label">Community reviews</p>
+            <p class="modal-section-label">Healthyness</p>
 
             <div v-if="matLoading" class="mat-loading">Loading reviews…</div>
             <div v-else-if="matError" class="mat-loading mat-error">{{ matError }}</div>
-            <div v-else-if="parentsGuideCategories.some(c => c.items.length)" class="mat-items-list">
+            <div v-else-if="parentsGuideCategories.length" class="mat-items-list">
               <details
                 v-for="cat in parentsGuideCategories"
                 :key="cat.key"
-                v-show="cat.items.length"
                 class="mat-cat-block"
               >
                 <summary class="mat-cat-title">
@@ -48,23 +63,29 @@
                     {{ SEVERITY_LABELS[cat.severity] }}
                   </span>
                   {{ cat.label }}
-                  <span class="mat-count">{{ cat.items.length }}</span>
+                  <span v-if="cat.items.length" class="mat-count">{{ cat.items.length }}</span>
                 </summary>
-                <ul class="mat-items">
+                <ul v-if="cat.items.length" class="mat-items">
                   <li v-for="(item, i) in cat.items.slice(0, 5)" :key="i">{{ item }}</li>
                 </ul>
+                <p v-else class="mat-no-reviews">No reviews for this category</p>
               </details>
             </div>
             <div v-else class="mat-loading">No community reviews available.</div>
           </div>
 
-          <div class="modal-links">
-            <a
+          <div class="modal-providers" v-if="providerNames.length">
+            <p class="modal-section-label">Available on</p>
+            <div class="provider-list">
+              <span v-for="p in providerNames" :key="p" class="provider-chip">{{ p }}</span>
+              <span
               :href="`https://www.imdb.com/title/${movie.id}/`"
               target="_blank"
               rel="noopener"
-              class="link-btn link-btn--imdb"
-            >IMDb ↗</a>
+              style="cursor: pointer;"
+              class="provider-chip"
+              >IMDb ↗</span>
+            </div>
           </div>
         </div>
       </div>
@@ -75,6 +96,9 @@
 <script setup>
 import { ref, computed, watch } from "vue";
 import { GENRES, PROVIDERS, MATURITY_CATEGORIES, SEVERITY_LABELS, getSeverity } from "@/stores/movies.js";
+import { useUserStore } from "@/stores/user.js";
+
+const userStore = useUserStore();
 
 const props = defineProps({ movie: { type: Object, default: null } });
 defineEmits(["close"]);
@@ -348,6 +372,13 @@ watch(() => props.movie?.id, (id) => {
 .mat-sev-badge.sev-2 { background: rgba(251,146,60,0.2); color: #fb923c; }
 .mat-sev-badge.sev-3 { background: rgba(248,113,113,0.2); color: #f87171; }
 
+.mat-no-reviews {
+  font-size: 11px;
+  color: var(--muted);
+  padding: 6px 10px;
+  opacity: 0.6;
+}
+
 .mat-items {
   list-style: none;
   padding: 6px 10px;
@@ -363,6 +394,60 @@ watch(() => props.movie?.id, (id) => {
   line-height: 1.4;
 }
 .mat-items li:last-child { border-bottom: none; }
+
+/* ── User actions ── */
+.modal-user-actions { margin-bottom: 18px; }
+
+.user-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.watched-btn {
+  padding: 5px 14px;
+  border-radius: 99px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--surface3);
+  color: var(--muted);
+  transition: all 0.15s;
+}
+.watched-btn:hover { border-color: rgba(255,255,255,0.2); color: var(--white); }
+.watched-btn--active {
+  background: rgba(45, 212, 191, 0.15);
+  border-color: rgba(45, 212, 191, 0.35);
+  color: var(--teal);
+}
+
+.list-chip {
+  padding: 5px 14px;
+  border-radius: 99px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--surface3);
+  color: var(--muted);
+  transition: all 0.15s;
+}
+.list-chip:hover { border-color: rgba(255,255,255,0.2); color: var(--white); }
+.list-chip--active {
+  background: rgba(45,212,191,0.15);
+  border-color: rgba(45,212,191,0.35);
+  color: var(--teal);
+}
+
+.no-lists-hint {
+  font-size: 12px;
+  color: var(--muted);
+  font-style: italic;
+}
 
 .modal-links { display: flex; gap: 10px; margin-top: 4px; }
 
