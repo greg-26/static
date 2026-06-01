@@ -27,14 +27,11 @@
               <h2>Results for "<em>{{ store.searchQuery }}</em>"</h2>
               <span>{{ store.filteredMovies.length }} titles</span>
             </div>
-            <div class="grid">
-              <MovieCard
-                v-for="movie in store.filteredMovies.slice(0, 120)"
-                :key="movie.id"
-                :movie="movie"
-                @select="selectedMovie = $event"
-              />
-            </div>
+            <MovieRow
+              :key="store.searchQuery"
+              :row="{ movies: store.filteredMovies, label: ''}"
+              @selectMovie="selectedMovie = $event"
+            />
           </div>
 
           <!-- Normal rows (hidden while searching) -->

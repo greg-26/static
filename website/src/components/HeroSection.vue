@@ -27,7 +27,7 @@
 
       <!-- Filters (hidden when searching) -->
       <transition name="slide-filters">
-        <div class="filters" v-show="!store.searchQuery">
+        <div class="filters" v-show="true || !store.searchQuery">
 
           <!-- Per-category maturity filter (top) -->
           <div class="filter-group">
@@ -91,7 +91,7 @@
             <path d="M13.5 13.5L17 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
           <input
-            v-model="store.searchQuery"
+            v-model="localSearch"
             type="search"
             placeholder="Search by title…"
             class="search-input"
@@ -130,10 +130,20 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 import { useMovieStore, GENRE_LABELS, PROVIDERS, SEVERITY_LABELS, MATURITY_CATEGORIES } from "@/stores/movies.js";
 
 const store = useMovieStore();
+
+// Local value for instant input feel; debounce the store update by 150ms
+const localSearch = ref(store.searchQuery);
+let debounceTimer = null;
+watch(localSearch, val => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => { store.searchQuery = val; }, 150);
+});
+// Keep in sync if store is cleared externally (e.g. Clear filters)
+watch(() => store.searchQuery, val => { if (val !== localSearch.value) localSearch.value = val; });
 
 const BASE = "https://image.tmdb.org/t/p/w342/";
 const HERO_POSTER_COLS = [
@@ -163,6 +173,7 @@ const hasFilters = computed(() =>
   margin-bottom: 48px;
   display: flex;
   align-items: flex-start;
+  contain: layout paint;
 }
 
 /* ── Poster background ── */
@@ -174,6 +185,8 @@ const hasFilters = computed(() =>
   padding: 0 4px;
   overflow: hidden;
   z-index: 0;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .poster-col {
@@ -247,7 +260,7 @@ const hasFilters = computed(() =>
 
 .hero-search {
   position: relative;
-  max-width: 780px;
+  max-width: 560px;
   display: flex;
   align-items: center;
 }
@@ -265,8 +278,8 @@ const hasFilters = computed(() =>
   width: 100%;
   min-width: 480px;
   max-width: 100%;
-  padding: 10px 12px 10px 36px;
-  background: rgba(15,15,26,0.85);
+  padding: 14px 16px 14px 48px;
+  background: rgba(18,18,28,0.96);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   color: var(--white);
@@ -274,7 +287,6 @@ const hasFilters = computed(() =>
   font-size: 16px;
   outline: none;
   transition: border-color 0.15s, background 0.15s;
-  backdrop-filter: blur(8px);
 }
 
 .search-input::placeholder { color: var(--muted); }
@@ -323,16 +335,15 @@ const hasFilters = computed(() =>
 
 .chip {
   padding: 5px 12px;
-  background: rgba(22,22,31,0.85);
+  background: rgba(30,30,42,0.92);
   border: 1px solid rgba(255,255,255,0.15);
   border-radius: 99px;
   color: rgba(255,255,255,0.6);
   font-family: var(--font-body);
   font-size: 12px;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
   white-space: nowrap;
-  backdrop-filter: blur(4px);
 }
 
 .chip:hover {

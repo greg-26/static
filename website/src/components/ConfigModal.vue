@@ -70,16 +70,16 @@
                 <button class="btn btn--ghost" :disabled="userStore.saving || editName === userStore.userData?.name" @click="handleSetName">
                   Save
                 </button>
+                <button class="btn btn--ghost btn--sm" @click="copyToken">
+                {{ tokenCopied ? "✓ Copied" : "Copy access token" }}
+              </button>
               </div>
             </div>
 
-            <div class="token-row">
+            <!--<div class="token-row">
               <span class="token-label">Your token</span>
               <code class="token-value">{{ userStore.userToken?.slice(0, 16) }}…</code>
-              <button class="btn btn--ghost btn--sm" @click="copyToken">
-                {{ tokenCopied ? "✓ Copied" : "Copy" }}
-              </button>
-            </div>
+            </div>-->
 
             <button class="btn btn--danger btn--sm" @click="handleLogout">Log out</button>
           </div>
@@ -111,7 +111,7 @@
               </div>
             </div>
 
-            <!-- Add list by token -->
+            <!-- Add list by token - ->
             <div class="add-list-section">
               <p class="add-list-label">Add a shared list</p>
               <div class="inline-form">
@@ -127,7 +127,7 @@
                 </button>
               </div>
               <p v-if="addListError" class="form-error">{{ addListError }}</p>
-            </div>
+            </div>-->
 
             <!-- New list -->
             <div class="new-list-section">
