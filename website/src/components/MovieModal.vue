@@ -2,7 +2,11 @@
   <Teleport to="body">
     <div class="modal-backdrop" @click.self="$emit('close')" v-if="movie">
       <div class="modal">
-        <button class="modal-close" @click="$emit('close')">✕</button>
+        <button class="modal-close" @click="$emit('close')" aria-label="Go back">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+        </button>
 
         <div class="modal-poster">
           <img v-if="movie.p" :src="movie.p.replace('w342', 'w500')" :alt="movie.t" />
@@ -193,53 +197,66 @@ watch(() => props.movie?.id, (id) => {
 </script>
 
 <style scoped>
+
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.75);
+  background: var(--background, #0b0b0e); /* Changed background color to match full app background */
   z-index: 100;
+  width: 100vw;
+  height: 100vh;
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* Changed from center to allow scrolling from top */
   justify-content: center;
-  padding: 20px;
+  padding: 0; /* Removed padding for flush fullscreen edge */
   backdrop-filter: blur(6px);
   animation: fadeIn 0.15s ease;
   overflow-y: auto;
 }
 
+
 @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
 
 .modal {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  max-width: 620px;
+  background: var(--background, #0b0b0e); /* Swapped from var(--surface2) to match background */
+  border: none; /* Removed border since it fills screen */
+  border-radius: 0; /* Removed rounded corners */
+  max-width: 900px; /* Increased from 620px to look proper on wide desktop screens */
   width: 100%;
+  min-height: 100vh; /* Force to take up entire viewport height */
   display: flex;
   gap: 24px;
-  padding: 24px;
+  padding: 80px 24px 24px 24px; /* Added extra top padding (80px) to clear the fixed button */
   position: relative;
-  animation: slideUp 0.2s ease;
-  max-height: 90vh;
-  overflow-y: auto;
+  overflow-y: visible; /* Let backdrop handle scrolling container */
 }
-
-@keyframes slideUp { from { transform: translateY(16px); opacity: 0 } to { transform: none; opacity: 1 } }
 
 .modal-close {
-  position: absolute;
-  top: 12px; right: 12px;
+  position: fixed;
+  top: 24px;
+  left: 24px;
   background: transparent;
   border: none;
-  color: var(--muted);
-  font-size: 18px;
+  padding: 0;
+  color: #ffffff; /* Sets the SVG stroke color via currentColor */
+  width: 24px; /* Explicit width for the icon hit area */
+  height: 24px; /* Explicit height for the icon hit area */
   cursor: pointer;
-  line-height: 1;
-  padding: 4px 8px;
-  transition: color 0.15s;
-  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s, opacity 0.15s;
+  z-index: 110;
 }
-.modal-close:hover { color: var(--white); }
+/* Ensure the child SVG inherits the sizing dimensions smoothly */
+.modal-close svg {
+  width: 100%;
+  height: 100%;
+}
+.modal-close:hover {
+  opacity: 0.8;
+  transform: translateX(-3px); /* Subtle back nudge on hover */
+}
 
 .modal-poster {
   flex-shrink: 0;
@@ -472,7 +489,7 @@ watch(() => props.movie?.id, (id) => {
 @media (max-width: 560px) {
   .modal {
     flex-direction: column;
-    padding: 16px;
+    padding: 16px 16px 16px 16px;
     gap: 16px;
   }
 
@@ -482,5 +499,13 @@ watch(() => props.movie?.id, (id) => {
   }
 
   .modal-poster img { object-position: center top; }
+  
+  /* Adjusted plain SVG scale and position for mobile layout */
+  .modal-close {
+    top: 16px;
+    left: 16px;
+    width: 26px;
+    height: 26px;
+  }
 }
 </style>

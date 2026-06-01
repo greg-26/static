@@ -35,19 +35,19 @@ const IMDB_BASICS_URL = "https://datasets.imdbws.com/title.basics.tsv.gz";
 const IMDB_RATINGS_URL = "https://datasets.imdbws.com/title.ratings.tsv.gz";
 const TOP_N = 50_000;
 const TMDB_RATE_LIMIT = 40; // requests per window
-const TMDB_RATE_WINDOW = 10_000; // ms
-const MAT_RATE_LIMIT = 5; // imdbapi.dev rate limit per window
+const TMDB_RATE_WINDOW = 2_000; // ms
+const MAT_RATE_LIMIT = 8; // imdbapi.dev rate limit per window
 const MAT_RATE_WINDOW = 5_000; // ms
 
 // CLI args
 const args = process.argv.slice(2);
 const enrichLimit = (() => {
   const idx = args.indexOf("--limit");
-  return idx !== -1 ? parseInt(args[idx + 1]) : 500;
+  return idx !== -1 ? parseInt(args[idx + 1]) : 1000;
 })();
 const matLimit = (() => {
   const idx = args.indexOf("--mat-limit");
-  return idx !== -1 ? parseInt(args[idx + 1]) : 250;
+  return idx !== -1 ? parseInt(args[idx + 1]) : 50;
 })();
 const recrawlDays = (() => {
   const idx = args.indexOf("--recrawl-days");
