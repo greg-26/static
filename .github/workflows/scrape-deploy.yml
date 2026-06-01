@@ -29,7 +29,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
 
       # ── Cache IMDb TSV datasets (re-download at most once per week) ────────────
       - name: Get week stamp
@@ -44,16 +44,6 @@ jobs:
             scraper/title.ratings.tsv
           key: imdb-tsv-${{ steps.week.outputs.week }}
           restore-keys: imdb-tsv-
-
-      # ── Persist incremental scraper cache across runs ──────────────────────────
-      - name: Restore scraper cache
-        uses: actions/cache@v4
-        with:
-          path: scraper/cache.json
-          # New unique key each run so we always save the updated cache;
-          # restore-keys picks up the most recent previous save.
-          key: scraper-cache-${{ github.run_id }}
-          restore-keys: scraper-cache-
 
       # ── Run scraper ────────────────────────────────────────────────────────────
       - name: Scrape
