@@ -4,7 +4,8 @@
  * ---------------
  * 1. Downloads IMDb title.basics + title.ratings datasets
  * 2. Filters top 50k movies+tvSeasons by vote count + rating
- * 3. Enriches with TMDB data (poster URL, providers, popularity)
+ * 3. Enriches with TMDB data (poster URL, providers, popularity, TMDB id,
+ *    English + Spanish synopsis, Spanish title)
  *    - Runs incrementally: skips recently-enriched movies
  *    - Re-enriches stale entries (older than --recrawl-days, default 30d), oldest-first
  *    - Respects TMDB rate limits (40 req/10s)
@@ -15,7 +16,6 @@
  *   TMDB_API_KEY=your_key node scrape.js
  *   TMDB_API_KEY=your_key node scrape.js --limit 100          # enrich only 100 new/stale movies
  *   TMDB_API_KEY=your_key node scrape.js --mat-limit 100      # enrich 100 maturity entries
- *   node scrape.js --recompute-mat                           # recompute all matMasks from cached raw data (no network)
  *   TMDB_API_KEY=your_key node scrape.js --recrawl-days 14    # re-enrich entries older than 14 days (default: 30)
  */
 
@@ -26,7 +26,7 @@ import http from "http";
 import zlib from "zlib";
 import readline from "readline";
 import { pipeline } from "stream/promises";
-import { API_CAT_TO_SHIFT, computeSeverity, parseMaturityResponse, weightedSeverityLegacy } from "./../website/src/maturity.js";
+import { API_CAT_TO_SHIFT, computeSeverity, parseMaturityResponse } from "./../website/src/maturity.js";
 
 // ─── Config ────────────────────────────────────────────────────────────────────
 const TMDB_KEY = process.env.TMDB_API_KEY;
@@ -49,16 +49,13 @@ const enrichLimit = (() => {
 })();
 const matLimit = (() => {
   const idx = args.indexOf("--mat-limit");
-  return idx !== -1 ? parseInt(args[idx + 1]) : 50;
+  return idx !== -1 ? parseInt(args[idx + 1]) : 200;
 })();
 const recrawlDays = (() => {
   const idx = args.indexOf("--recrawl-days");
-  return idx !== -1 ? parseInt(args[idx + 1]) : 30;
+  return idx !== -1 ? parseInt(args[idx + 1]) : 7;
 })();
 const RECRAWL_MS = recrawlDays * 24 * 60 * 60 * 1000;
-// --recompute-mat: re-run parseMaturityResponse on every cached rawParentsGuide
-// without hitting the network. Useful after tuning the severity algorithm.
-const recomputeMat = args.includes("--recompute-mat");
 
 // ─── Bitmask Definitions ────────────────────────────────────────────────────────
 export const GENRES = {
@@ -342,6 +339,11 @@ async function enrichWithTmdb(movies, cache) {
           let popularity = 0;
           let providerMask = 0;
 
+          let tmdbId = null;
+          let overviewEn = null;
+          let overviewEs = null;
+          let titleEs = null;
+
           if (movie.isSeason) {
             // TV Season: use tv_season_results
             const tvSeason = findData.tv_season_results?.[0];
@@ -349,6 +351,8 @@ async function enrichWithTmdb(movies, cache) {
               poster = tvSeason.poster_path
                 ? `https://image.tmdb.org/t/p/w342${tvSeason.poster_path}`
                 : null;
+              tmdbId = tvSeason.id ?? null;
+              overviewEn = tvSeason.overview || null;
               const showId = tvSeason.show_id;
               // Get popularity from the parent show
               try {
@@ -368,6 +372,14 @@ async function enrichWithTmdb(movies, cache) {
                   }
                 }
               } catch (_) {}
+              // Fetch Spanish translation for overview + title
+              try {
+                const transUrl = `https://api.themoviedb.org/3/tv/season/${tvSeason.id}/translations?api_key=${TMDB_KEY}`;
+                const transData = await tmdbLimiter.run(() => fetchJson(transUrl));
+                const esEntry = transData.translations?.find((t) => t.iso_3166_1 === "ES" && t.iso_639_1 === "es");
+                overviewEs = esEntry?.data?.overview || null;
+                titleEs = esEntry?.data?.name || null;
+              } catch (_) {}
             }
           } else {
             // Movie: use movie_results
@@ -377,7 +389,8 @@ async function enrichWithTmdb(movies, cache) {
                 ? `https://image.tmdb.org/t/p/w342${tmdbMovie.poster_path}`
                 : null;
               popularity = Math.round((tmdbMovie.popularity ?? 0) * 10) / 10;
-              const tmdbId = tmdbMovie.id;
+              tmdbId = tmdbMovie.id ?? null;
+              overviewEn = tmdbMovie.overview || null;
               try {
                 const provUrl = `https://api.themoviedb.org/3/movie/${tmdbId}/watch/providers?api_key=${TMDB_KEY}`;
                 const provData = await tmdbLimiter.run(() => fetchJson(provUrl));
@@ -389,13 +402,21 @@ async function enrichWithTmdb(movies, cache) {
                   }
                 }
               } catch (_) {}
+              // Fetch Spanish translation for overview + title
+              try {
+                const transUrl = `https://api.themoviedb.org/3/movie/${tmdbId}/translations?api_key=${TMDB_KEY}`;
+                const transData = await tmdbLimiter.run(() => fetchJson(transUrl));
+                const esEntry = transData.translations?.find((t) => t.iso_3166_1 === "ES" && t.iso_639_1 === "es");
+                overviewEs = esEntry?.data?.overview || null;
+                titleEs = esEntry?.data?.title || null;
+              } catch (_) {}
             }
           }
 
-          cache[movie.id] = { enriched: true, tmdbEnrichedAt: new Date().toISOString(), poster, popularity, providerMask };
+          cache[movie.id] = { enriched: true, tmdbEnrichedAt: new Date().toISOString(), tmdbId, poster, popularity, providerMask, overviewEn, overviewEs, titleEs };
         } catch (e) {
           log(`  ✗ TMDB ${movie.id}: ${e.message}`);
-          cache[movie.id] = { enriched: true, tmdbEnrichedAt: new Date().toISOString(), poster: null, popularity: 0, providerMask: 0 };
+          cache[movie.id] = { enriched: true, tmdbEnrichedAt: new Date().toISOString(), tmdbId: null, poster: null, popularity: 0, providerMask: 0, overviewEn: null, overviewEs: null, titleEs: null };
         }
       })
     );
@@ -491,8 +512,17 @@ function buildOutput(movies, cache) {
       prov: c.providerMask ?? 0,
     };
     if (m.isSeason) entry.s = 1;
-    // mat is only written when scraper successfully computed a mask (including 0 = all-None)
-    if (c.maturityDone && c.matMask !== undefined) entry.mat = c.matMask;
+
+    // Always recompute matMask from raw data when available; fall back to cached mask.
+    let matMask;
+    if (c.rawParentsGuide) {
+      const recomputed = parseMaturityResponse({ parentsGuide: c.rawParentsGuide }, m.year ?? null, m.genres ?? 0);
+      matMask = recomputed ?? c.matMask;
+    } else {
+      matMask = c.matMask;
+    }
+    if (c.maturityDone && matMask !== undefined) entry.mat = matMask;
+
     return entry;
   });
 
@@ -518,36 +548,6 @@ function saveCache(cache) {
   fs.writeFileSync(CACHE_FILE, JSON.stringify(cache));
 }
 
-// ─── Step 4b: Recompute maturity masks from cached raw data (no network) ───────
-/**
- * Re-runs parseMaturityResponse on every cache entry that has rawParentsGuide,
- * updating matMask in-place. Does not touch entries without raw data.
- * Pass the movies array so year + genreMask are available for each title.
- *
- * Usage: node scrape.js --recompute-mat
- */
-function recomputeMaturityFromCache(movies, cache) {
-  // Build a quick lookup: imdbId → { year, genres }
-  const meta = new Map(movies.map((m) => [m.id, { year: m.year ?? null, genres: m.genres ?? 0 }]));
-
-  let updated = 0, skipped = 0;
-  for (const [id, entry] of Object.entries(cache)) {
-    if (!entry.rawParentsGuide) { skipped++; continue; }
-    const { year, genres } = meta.get(id) ?? { year: null, genres: 0 };
-    const matMask = parseMaturityResponse({ parentsGuide: entry.rawParentsGuide }, year, genres);
-    if (matMask != null) {
-      cache[id] = { ...entry, matMask };
-    } else {
-      // Raw data present but unscoreable: clear stale mask if any
-      const { matMask: _dropped, ...rest } = entry;
-      cache[id] = rest;
-    }
-    updated++;
-  }
-  log(`  Recomputed matMask for ${updated} entries (${skipped} skipped — no raw data).`);
-  saveCache(cache);
-}
-
 // ─── Main ──────────────────────────────────────────────────────────────────────
 async function main() {
   fs.mkdirSync(OUT_DIR, { recursive: true });
@@ -557,13 +557,7 @@ async function main() {
   const cache = loadCache();
 
   await enrichWithTmdb(movies, cache);
-
-  if (recomputeMat) {
-    log("--recompute-mat: recomputing maturity masks from cached raw data...");
-    recomputeMaturityFromCache(movies, cache);
-  } else {
-    await enrichWithMaturity(movies, cache);
-  }
+  await enrichWithMaturity(movies, cache);
 
   log("Building output JSON...");
   const output = buildOutput(movies, cache);
@@ -574,8 +568,9 @@ async function main() {
 
   const enriched = movies.filter((m) => cache[m.id]?.enriched).length;
   const withPoster = movies.filter((m) => cache[m.id]?.poster).length;
-  const withMat = movies.filter((m) => cache[m.id]?.maturityDone).length;
-  log(`  TMDB enriched: ${enriched}/${movies.length} | With poster: ${withPoster} | With maturity: ${withMat}`);
+  const withMat = movies.filter((m) => cache[m.id]?.matMask).length;
+  const withGuide = movies.filter((m) => cache[m.id]?.rawParentsGuide).length;
+  log(`  TMDB enriched: ${enriched}/${movies.length} | With poster: ${withPoster} | With maturity: ${withMat} | With guide: ${withGuide}`);
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });

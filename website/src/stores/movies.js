@@ -46,15 +46,6 @@ export function getSeverity(mat, shift) {
   return (mat >>> shift) & 3;
 }
 
-export function getMaxSeverity(mat) {
-  if (!mat) return 0;
-  let max = 0;
-  for (const { shift } of MATURITY_CATEGORIES) {
-    max = Math.max(max, getSeverity(mat, shift));
-  }
-  return max;
-}
-
 // ── Spain streaming providers ─────────────────────────────────────────────────
 export const PROVIDERS = [
   { bit: 1 << 0,  id: 8,   name: "Netflix" },

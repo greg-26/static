@@ -50,7 +50,7 @@ export const UPPER_BIAS_K = 0.6;
  * Low-vote movies regress toward PRIOR_MEAN rather than being pinned by a
  * handful of troll votes. Tune upward for more regression on noisy titles.
  */
-export const PRIOR_VOTES = 10;
+export const PRIOR_VOTES = 0;
 
 /**
  * Prior belief about the baseline severity for an unknown title (0–3 scale).
@@ -85,7 +85,7 @@ export const CATEGORY_CAUTION = {
 
 /**
  * Expected "genre default" severity per category on the 0–3 scale.
- * Applied at 0.5× weight to anchor cross-genre comparisons without
+ * Applied at 0.25× weight to anchor cross-genre comparisons without
  * overwhelming actual vote data.
  * Positive offset = this genre typically scores higher on that category.
  *
@@ -169,7 +169,7 @@ export function computeSeverity(severityBreakdowns, category, year, genreMask) {
     score += (YEAR_DRIFT_BY_CAT[category] ?? 0) * (year - 2000);
   }
 
-  // 6. Genre-baseline correction (dampened 0.5×)
+  // 6. Genre-baseline correction (dampened 0.25×)
   // Average the applicable genre offsets for multi-genre titles.
   let totalGenreOffset = 0;
   let genreOffsetCount = 0;
@@ -180,7 +180,7 @@ export function computeSeverity(severityBreakdowns, category, year, genreMask) {
     }
   }
   if (genreOffsetCount > 0) {
-    score += (totalGenreOffset / genreOffsetCount) * 0.5;
+    score += (totalGenreOffset / genreOffsetCount) * 0.25;
   }
 
   // 7. Category-caution nudge
@@ -217,24 +217,4 @@ export function parseMaturityResponse(data, year = null, genreMask = 0) {
     }
   }
   return anyFound ? mat : null;
-}
-
-/**
- * Original simple weighted-average severity (kept for regression testing).
- * @deprecated Use computeSeverity() instead.
- * @param {Array} severityBreakdowns
- * @returns {number|null}
- */
-export function weightedSeverityLegacy(severityBreakdowns) {
-  const SEV_WEIGHT = { none: 1, mild: 2, moderate: 3, severe: 4 };
-  if (!Array.isArray(severityBreakdowns) || severityBreakdowns.length === 0) return null;
-  let total = 0, wsum = 0;
-  for (const { severityLevel, voteCount } of severityBreakdowns) {
-    const w = SEV_WEIGHT[severityLevel];
-    if (w == null) continue;
-    total += (voteCount || 0);
-    wsum  += (voteCount || 0) * w;
-  }
-  if (total === 0) return null;
-  return Math.round(0.2 + wsum / total) - 1;
 }
