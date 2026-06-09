@@ -135,7 +135,6 @@ def extract_imdb_features(raw_guide):
         v_mild     = breakdowns.get("mild", 0)
         feats[f"imdb_{cat_l}_severe_acceleration"] = (v_severe / (v_moderate + 1))
         feats[f"imdb_{cat_l}_moderate_acceleration"] = (v_moderate / (v_mild + 1))
-        
         feats[f"imdb_{cat_l}_sample_gravity"] = mu * math.log1p(total)
 
     # Cross-Category Contrasts
@@ -214,14 +213,6 @@ def build_records(cache, movies_meta=None, min_guide_votes=0):
 
         row.update(extract_imdb_features(raw_guide))
         row["has_imdb_guide"] = int(bool(raw_guide))
-
-        mat = c.get("matMask")
-        try: 
-            if mat is not None: mat = int(mat)
-        except: mat = None
-        for name, shift in [("nudity",0),("violence",2),("profanity",4),("substances",6),("frightening",8)]:
-            row[f"matmask_{name}"] = ((mat >> shift) & 0b11) if mat is not None else None
-        row["has_matmask"] = int(mat is not None)
 
         records.append(row)
 
@@ -798,7 +789,7 @@ def write_predictor(meta_list, model_dir):
     valid = [m for m in meta_list if m]
 
     # Locate the canonical predict.py next to train.py
-    src_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "predict.py")
+    src_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "predict_template.py")
     if not os.path.exists(src_path):
         print(f"  ⚠  write_predictor: cannot find {src_path} — skipping predict.py generation.")
         return
@@ -825,7 +816,7 @@ def write_predictor(meta_list, model_dir):
         patched.append(line)
 
     os.makedirs(model_dir, exist_ok=True)
-    out_path = os.path.join(model_dir, "predict.py")
+    out_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "predict.py")
     with open(out_path, "w") as f:
         f.writelines(patched)
     print(f"\n  ✓  predict.py written → {out_path}")

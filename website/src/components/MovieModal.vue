@@ -87,14 +87,14 @@
                   target="_blank" rel="noopener"
                   class="mat-ext-link"
                   title="IMDb Parents Guide"
-                >IMDb guide ↗</a>
+                >IMDb guide</a>
                 <a
                   v-if="movie.csm"
                   :href="'https://www.commonsensemedia.org'+movie.csm"
                   target="_blank" rel="noopener"
                   class="mat-ext-link mat-ext-link--csm"
                   title="Common Sense Media review"
-                >CSM ↗</a>
+                >CSM</a>
               </div>
             </div>
 
@@ -115,8 +115,9 @@
                 </div>
                 <span class="mat-score-label" :class="scoreCssClass(getScore(movie.mat, cat.shift))">
                   {{ SEVERITY_LABELS[Math.round(getScore(movie.mat, cat.shift))] }}
+                  - {{ getScore(movie.mat, cat.shift).toFixed(0) }}/5
                 </span>
-                <span class="mat-score-val">{{ getScore(movie.mat, cat.shift).toFixed(0) }}</span>
+                
               </div>
             </div>
 
@@ -144,7 +145,7 @@
           <div class="modal-providers" v-if="providerNames.length">
             <p class="modal-section-label">Available on</p>
             <div class="provider-list">
-              <span v-for="p in providerNames" :key="p" class="provider-chip">{{ p }}</span>
+              <a v-for="p in providerNames" target="_blank" rel="noopener" :key="p" :href="extraDetails?.tmdbUrl+'/watch'" class="provider-chip">{{ p }}</a>
             </div>
           </div>
         </div>
@@ -419,6 +420,7 @@ watch(() => props.movie, (movie) => {
   border: 1px solid rgba(45,212,191,0.25);
   border-radius: 6px;
   font-size: 12px;
+  text-decoration: none;
   color: var(--teal);
 }
 
@@ -498,7 +500,7 @@ watch(() => props.movie, (movie) => {
   font-size: 10px;
   color: white;
   text-shadow: 1px black;
-  min-width: 70px;
+  min-width: 75px;
   text-align: center;
   flex-shrink: 0;
 }
