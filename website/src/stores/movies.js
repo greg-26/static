@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { ref, computed, shallowRef } from "vue";
 import Fuse from "fuse.js";
+import { MATURITY_CATEGORIES, getScore } from "@/maturity.js";
 
 // ── Genres: exact IMDb strings as keys, bitmask values ───────────────────────
 export const GENRES = {
@@ -30,21 +31,6 @@ export const GENRES = {
 
 export const GENRE_LABELS = Object.keys(GENRES);
 
-// ── Maturity categories (5 IMDb parentsGuide sections, 2 bits each) ──────────
-// Severity: 0=None, 1=Mild, 2=Moderate, 3=Severe
-export const MATURITY_CATEGORIES = [
-  { key: "sexAndNudity",           label: "Nudity",        icon: "👁", shift: 0 },
-  { key: "violenceAndGore",        label: "Violence",      icon: "⚔", shift: 2 },
-  { key: "profanity",              label: "Language",      icon: "💬", shift: 4 },
-  { key: "alcoholDrugsAndSmoking", label: "Substances",    icon: "🍷", shift: 6 },
-  { key: "frighteningScenes",      label: "Frightening",   icon: "😨", shift: 8 },
-];
-
-export const SEVERITY_LABELS = ["None", "Mild", "Moderate", "Severe"];
-
-export function getSeverity(mat, shift) {
-  return (mat >>> shift) & 3;
-}
 
 // ── Spain streaming providers ─────────────────────────────────────────────────
 export const PROVIDERS = [
@@ -73,12 +59,15 @@ export const useMovieStore = defineStore("movies", () => {
   const selectedGenres = ref(new Set());
   const selectedProviders = ref(0);       // bitmask of selected providers
   const minRating = ref(0);
-  // Per-category max severity: index matches MATURITY_CATEGORIES order, -1 = no filter
-  const maxMaturityCat = ref([-1, -1, -1, -1, -1]);
+  // Per-category max score: index matches MATURITY_CATEGORIES order (sex, violence, language, drugs)
+  // -1 = no filter active; 0–5 = max allowed rounded score
+  const maxMaturityCat = ref([-1, -1, -1, -1]);
 
+  // Sex & Nudity is shift 0; scale 0–5 → invert so lower score = higher sort weight
   const maturityScore = (a) => {
-    let s = [ 2, 1.5, 0.5, 0.1][getSeverity(a.mat ?? 3, 0)] || 0.5
-    return s
+    if (a.mat === undefined) return 0.5;
+    const sexScore = getScore(a.mat, 3);           // 0.0–5.0
+    return Math.max(0.05, 1 - sexScore / 4);       // 1.0 (clean) → 0.0 (very explicit)
   };
 
   let fuse = null;
@@ -125,10 +114,9 @@ export const useMovieStore = defineStore("movies", () => {
     if (query.length < 2) {
       // hide movies without a poster
       pool = pool.filter(({ item }) => item.p);
-      // Filter out movies with severe sex/nudity (sexAndNudity shift = 0)
-      pool = pool.filter(({ item }) => getSeverity(item.mat ?? 0, 0) < 3);
-    }   
-    
+      // Hide movies with very explicit sex/nudity (score >= 4.5, i.e. nibble 9–10)
+      pool = pool.filter(({ item }) => item.mat === undefined || getScore(item.mat, 0) < 4.5);
+    }
 
     if (selectedGenres.value.size > 0) {
       let mask = 0;
@@ -148,12 +136,11 @@ export const useMovieStore = defineStore("movies", () => {
     const catThresholds = maxMaturityCat.value;
     if (catThresholds.some(t => t >= 0)) {
       pool = pool.filter(({ item }) => {
-        // Exclude movies with no maturity data when any filter is active
         if (item.mat === undefined) return false;
         for (let i = 0; i < MATURITY_CATEGORIES.length; i++) {
           const threshold = catThresholds[i];
           if (threshold < 0) continue;
-          if (getSeverity(item.mat, MATURITY_CATEGORIES[i].shift) > threshold) return false;
+          if (Math.round(getScore(item.mat, MATURITY_CATEGORIES[i].shift)) > threshold) return false;
         }
         return true;
       });
@@ -225,7 +212,8 @@ export const useMovieStore = defineStore("movies", () => {
 
   function setMaxMaturityCat(catIndex, level) {
     const arr = [...maxMaturityCat.value];
-    arr[catIndex] = arr[catIndex] === level ? -1 : level; // toggle off if same
+    // Toggle off if tapping the already-active level; otherwise set, clamped to 0–5
+    arr[catIndex] = arr[catIndex] === level ? -1 : Math.min(5, Math.max(0, level));
     maxMaturityCat.value = arr;
   }
 
@@ -234,7 +222,7 @@ export const useMovieStore = defineStore("movies", () => {
     selectedGenres.value = new Set();
     selectedProviders.value = 0;
     minRating.value = 0;
-    maxMaturityCat.value = [-1, -1, -1, -1, -1];
+    maxMaturityCat.value = [-1, -1, -1, -1];
   }
 
   const availableProviders = computed(() => {
@@ -278,10 +266,12 @@ function generateMockMovies() {
     const titleBase = MOCK_TITLES[i % MOCK_TITLES.length];
     const prov = mockProvBits[i % mockProvBits.length] |
       (i % 3 === 0 ? mockProvBits[(i + 3) % mockProvBits.length] : 0);
-    // Mock maturity: random severity for each category
+    // Mock maturity: 4 categories × 4-bit nibble (value 0–10, i.e. CSM score × 2)
     let mat = 0;
-    for (let c = 0; c < 5; c++) {
-      mat |= (Math.floor(Math.random() * 4) & 3) << (c * 2);
+    for (let c = 0; c < 4; c++) {
+      // Weight toward lower scores (most movies aren't extreme)
+      const nibble = Math.floor(Math.random() * Math.random() * 11) & 0xf;
+      mat |= nibble << (c * 4);
     }
     movies.push({
       id: `tt${String(i).padStart(7, "0")}`,

@@ -24,8 +24,8 @@
           v-for="cat in MATURITY_CATEGORIES"
           :key="cat.key"
           class="mat-dot"
-          :class="`sev-${getSeverity(movie.mat, cat.shift)}`"
-          :title="`${cat.label}: ${SEVERITY_LABELS[getSeverity(movie.mat, cat.shift)]}`"
+          :class="scoreCssClass(getScore(movie.mat, cat.shift))"
+          :title="`${cat.label}: ${SEVERITY_LABELS[Math.round(getScore(movie.mat, cat.shift))]}`"
         ></span>
       </div>
     </div>
@@ -38,7 +38,8 @@
 
 <script setup>
 import { ref, computed } from "vue";
-import { GENRES, MATURITY_CATEGORIES, SEVERITY_LABELS, getSeverity } from "@/stores/movies.js";
+import { GENRES } from "@/stores/movies.js";
+import { MATURITY_CATEGORIES, SEVERITY_LABELS, getScore, scoreCssClass } from "@/maturity.js";
 
 const props = defineProps({ movie: { type: Object, required: true } });
 defineEmits(["select"]);
@@ -53,9 +54,9 @@ const genreLabels = computed(() => {
   return labels.slice(0, 2).join(" · ") || "–";
 });
 
-// sexAndNudity is shift 0 in the bitmask
+// Sex & Nudity is shift 0; blur if score >= 4 (Strong or Severe)
 const nudityBlurred = computed(() =>
-  props.movie.mat !== undefined && getSeverity(props.movie.mat, 0) === 3
+  props.movie.mat !== undefined && getScore(props.movie.mat, 0) >= 5
 );
 
 const posterStyle = computed(() => ({
@@ -152,17 +153,19 @@ const posterStyle = computed(() => ({
 }
 
 .mat-dot {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   display: block;
   flex-shrink: 0;
 }
 
 .mat-dot.sev-0 { background: #4ade80; }
-.mat-dot.sev-1 { background: #facc15; }
-.mat-dot.sev-2 { background: #fb923c; }
-.mat-dot.sev-3 { background: #f87171; }
+.mat-dot.sev-1 { background: #a3e635; }
+.mat-dot.sev-2 { background: #facc15; }
+.mat-dot.sev-3 { background: #fb923c; }
+.mat-dot.sev-4 { background: #f87171; }
+.mat-dot.sev-5 { background: #dc2626; }
 
 /* ── Info ── */
 .card-info {

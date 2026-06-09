@@ -10,13 +10,16 @@
  *    - Re-enriches stale entries (older than --recrawl-days, default 30d), oldest-first
  *    - Respects TMDB rate limits (40 req/10s)
  * 4. Enriches with IMDb parentsGuide maturity data
- * 5. Outputs: public/movies.json (bitmask-encoded, minified)
+ * 5. Enriches with Common Sense Media (recommendedAge, CSM rating, parentsNeedToKnow,
+ *    content grid scores). Loops a–z × all pages; matches by title + year.
+ * 6. Outputs: public/movies.json (bitmask-encoded, minified)
  *
  * Usage:
  *   TMDB_API_KEY=your_key node scrape.js
  *   TMDB_API_KEY=your_key node scrape.js --limit 100          # enrich only 100 new/stale movies
  *   TMDB_API_KEY=your_key node scrape.js --mat-limit 100      # enrich 100 maturity entries
- *   TMDB_API_KEY=your_key node scrape.js --recrawl-days 14    # re-enrich entries older than 14 days (default: 30)
+ *   TMDB_API_KEY=your_key node scrape.js --csm-limit 500      # crawl only 500 CSM items
+ *   TMDB_API_KEY=your_key node scrape.js --recrawl-days 14    # re-enrich entries older than 14 days (default: 7)
  */
 
 import fs from "fs";
@@ -26,13 +29,14 @@ import http from "http";
 import zlib from "zlib";
 import readline from "readline";
 import { pipeline } from "stream/promises";
-import { API_CAT_TO_SHIFT, computeSeverity, parseMaturityResponse } from "./../website/src/maturity.js";
+import { MATURITY_CATEGORIES as MAT_CATS } from "./../website/src/maturity.js";
 
 // ─── Config ────────────────────────────────────────────────────────────────────
 const TMDB_KEY = process.env.TMDB_API_KEY;
 const OUT_DIR = path.resolve("../website/public");
 const CACHE_FILE = path.resolve("./cache.json");
 const OUTPUT_FILE = path.join(OUT_DIR, "movies.json");
+const EXTRA_FILE = path.join(OUT_DIR, "extra.json");
 const IMDB_BASICS_URL = "https://datasets.imdbws.com/title.basics.tsv.gz";
 const IMDB_RATINGS_URL = "https://datasets.imdbws.com/title.ratings.tsv.gz";
 const TOP_N = 50_000;
@@ -40,6 +44,9 @@ const TMDB_RATE_LIMIT = 40; // requests per window
 const TMDB_RATE_WINDOW = 2_000; // ms
 const MAT_RATE_LIMIT = 8; // imdbapi.dev rate limit per window
 const MAT_RATE_WINDOW = 5_000; // ms
+const CSM_RATE_LIMIT = 4; // be polite to commonsensemedia.org
+const CSM_RATE_WINDOW = 2_000; // ms
+
 
 // CLI args
 const args = process.argv.slice(2);
@@ -56,6 +63,10 @@ const recrawlDays = (() => {
   return idx !== -1 ? parseInt(args[idx + 1]) : 7;
 })();
 const RECRAWL_MS = recrawlDays * 24 * 60 * 60 * 1000;
+const csmLimit = (() => {
+  const idx = args.indexOf("--csm-limit");
+  return idx !== -1 ? parseInt(args[idx + 1]) : 0; // default: crawl nothing
+})();
 
 // ─── Bitmask Definitions ────────────────────────────────────────────────────────
 export const GENRES = {
@@ -87,13 +98,6 @@ const GENRE_MAP = GENRES;
 
 // Maturity: 5 IMDb parentsGuide categories, 2 bits each (0=None,1=Mild,2=Moderate,3=Severe)
 // Stored as a 10-bit number: bits 0-1=Nudity, 2-3=Violence, 4-5=Profanity, 6-7=Substances, 8-9=Frightening
-export const MATURITY_CATEGORIES = [
-  { key: "sexAndNudity",           label: "Sex & Nudity",             shift: 0 },
-  { key: "violenceAndGore",        label: "Violence & Gore",          shift: 2 },
-  { key: "profanity",              label: "Profanity",                shift: 4 },
-  { key: "alcoholDrugsAndSmoking", label: "Alcohol, Drugs & Smoking", shift: 6 },
-  { key: "frighteningScenes",      label: "Frightening Scenes",       shift: 8 },
-];
 
 // ─── Spain streaming providers bitmask ─────────────────────────────────────────
 export const PROVIDERS = {
@@ -144,10 +148,11 @@ function fetchGzip(url, destPath) {
   });
 }
 
-async function fetchJson(url) {
+async function fetchJson(url, headers = {}) {
   return new Promise((resolve, reject) => {
     const lib = url.startsWith("https") ? https : http;
-    lib.get(url, { headers: { "User-Agent": "MovieDBScraper/1.0", "Accept": "application/json" } }, (res) => {
+    const defaultHeaders = { "User-Agent": "MovieDBScraper/1.0", "Accept": "application/json" };
+    lib.get(url, { headers: { ...defaultHeaders, ...headers } }, (res) => {
       let data = "";
       res.on("data", (chunk) => (data += chunk));
       res.on("end", () => {
@@ -157,6 +162,21 @@ async function fetchJson(url) {
     }).on("error", reject);
   });
 }
+
+const CSM_HEADERS = {
+  "cache-control": "no-cache",
+  "content-type": "application/json",
+  "j-authorization": "Bearer 48307589",
+  "pragma": "no-cache",
+  "priority": "u=1, i",
+  "sec-ch-ua": '"Chromium";v="147", "Not.A/Brand";v="8"',
+  "sec-ch-ua-mobile": "?0",
+  "sec-ch-ua-platform": '"Linux"',
+  "sec-fetch-dest": "empty",
+  "sec-fetch-mode": "cors",
+  "sec-fetch-site": "same-origin",
+  "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+};
 
 class RateLimiter {
   constructor(limit, window) {
@@ -202,6 +222,7 @@ class RateLimiter {
 
 const tmdbLimiter = new RateLimiter(TMDB_RATE_LIMIT, TMDB_RATE_WINDOW);
 const matLimiter = new RateLimiter(MAT_RATE_LIMIT, MAT_RATE_WINDOW);
+const csmLimiter = new RateLimiter(CSM_RATE_LIMIT, CSM_RATE_WINDOW);
 
 async function tmdbFetch(url) {
   return tmdbLimiter.run(() => fetchJson(url));
@@ -250,17 +271,17 @@ async function buildTopN() {
   log("Parsing IMDb ratings...");
   const ratings = new Map();
   await parseTsv("./title.ratings.tsv", (row) => {
-    if (parseFloat(row.numVotes) >= 1000 && parseFloat(row.averageRating) >= 5 ) {
-      ratings.set(row.tconst, {
-        rating: parseFloat(row.averageRating),
-        votes: parseInt(row.numVotes),
-      });
-    }
+    // No filter here — keep all ratings so we can later force-add CSM matches
+    ratings.set(row.tconst, {
+      rating: parseFloat(row.averageRating),
+      votes: parseInt(row.numVotes),
+    });
   });
-  log(`Loaded ${ratings.size} titles with ≥1000 votes & averageRating ≥ 5.`);
+  log(`Loaded ${ratings.size} total rated titles.`);
 
   log("Parsing IMDb basics...");
   const titles = [];
+  const allTitlesMap = new Map(); // imdbId → movie object, unfiltered
   await parseTsv("./title.basics.tsv", (row) => {
     // Include movies and TV seasons only
     if (row.titleType !== "movie" && row.titleType !== "tvSeason") return;
@@ -277,7 +298,7 @@ async function buildTopN() {
     }
 
     const r = ratings.get(row.tconst);
-    titles.push({
+    const entry = {
       id: row.tconst,
       title: row.primaryTitle,
       year: row.startYear === "\\N" ? null : parseInt(row.startYear),
@@ -285,14 +306,17 @@ async function buildTopN() {
       votes: r.votes,
       genres: genreMask,
       isSeason: row.titleType === "tvSeason",
-    });
+    };
+    allTitlesMap.set(row.tconst, entry);
+    // Apply quality filter for the main ranked list
+    if (r.votes >= 1000 && r.rating >= 5) titles.push(entry);
   });
 
-  log(`Found ${titles.length} titles (movies + TV seasons). Sorting by votes × rating...`);
+  log(`Found ${titles.length} titles passing quality filter (movies + TV seasons). Sorting by votes × rating...`);
   titles.sort((a, b) => b.votes * b.rating - a.votes * a.rating);
   const top = titles.slice(0, TOP_N);
   log(`Top ${top.length} titles selected.`);
-  return top;
+  return { movies: top, allTitlesMap };
 }
 
 // ─── Step 3: TMDB enrichment ───────────────────────────────────────────────────
@@ -413,10 +437,33 @@ async function enrichWithTmdb(movies, cache) {
             }
           }
 
-          cache[movie.id] = { enriched: true, tmdbEnrichedAt: new Date().toISOString(), tmdbId, poster, popularity, providerMask, overviewEn, overviewEs, titleEs };
+          // ── MPA rating (US release certification) ──────────────────────
+          let mpaCertification = null;
+          if (tmdbId && !movie.isSeason) {
+            try {
+              const relUrl = `https://api.themoviedb.org/3/movie/${tmdbId}/release_dates?api_key=${TMDB_KEY}`;
+              const relData = await tmdbLimiter.run(() => fetchJson(relUrl));
+              const usRelease = relData.results?.find((r) => r.iso_3166_1 === "US");
+              if (usRelease) {
+                // Sort a copy so we don't mutate the original; pick the first
+                // non-empty certification, preferring theatrical (type 3) releases.
+                const sorted = [...(usRelease.release_dates ?? [])]
+                  .sort((a, b) => {
+                    if (a.type === 3 && b.type !== 3) return -1;
+                    if (b.type === 3 && a.type !== 3) return  1;
+                    return 0;
+                  });
+                const cert = sorted.find((d) => d.certification?.trim())?.certification?.trim() ?? null;
+                // Filter out placeholder-only values that TMDB sometimes returns
+                mpaCertification = (cert && cert !== "NR" && cert !== "Not Rated") ? cert : null;
+              }
+            } catch (_) {}
+          }
+
+          cache[movie.id] = { enriched: true, tmdbEnrichedAt: new Date().toISOString(), tmdbId, poster, popularity, providerMask, overviewEn, overviewEs, titleEs, mpaCertification };
         } catch (e) {
           log(`  ✗ TMDB ${movie.id}: ${e.message}`);
-          cache[movie.id] = { enriched: true, tmdbEnrichedAt: new Date().toISOString(), tmdbId: null, poster: null, popularity: 0, providerMask: 0, overviewEn: null, overviewEs: null, titleEs: null };
+          cache[movie.id] = { enriched: true, tmdbEnrichedAt: new Date().toISOString(), tmdbId: null, poster: null, popularity: 0, providerMask: 0, overviewEn: null, overviewEs: null, titleEs: null, mpaCertification: null };
         }
       })
     );
@@ -470,18 +517,12 @@ async function enrichWithMaturity(movies, cache) {
         try {
           const url = `https://api.imdbapi.dev/titles/${movie.id}/parentsGuide`;
           const data = await matLimiter.run(() => fetchJson(url));
-          const matMask = parseMaturityResponse(data, movie.year ?? null, movie.genres ?? 0);
-          // Always store the raw parentsGuide array so re-processing is possible without re-fetching
+          // Store raw guide array; matMask is computed at output time via computeMatMask()
           const rawParentsGuide = data?.parentsGuide ?? null;
-          // matMask is null if we couldn't parse any data, or a number (0-1023) if parsed
-          if (matMask != null) {
-            cache[movie.id] = { ...cache[movie.id], maturityDone: true, maturityEnrichedAt: new Date().toISOString(), matMask, rawParentsGuide };
-          } else {
-            cache[movie.id] = { ...cache[movie.id], maturityDone: true, maturityEnrichedAt: new Date().toISOString(), rawParentsGuide };
-          }
+          cache[movie.id] = { ...cache[movie.id], maturityDone: true, maturityEnrichedAt: new Date().toISOString(), rawParentsGuide };
         } catch (e) {
           log(`  ✗ Mat ${movie.id}: ${e.message}`);
-          cache[movie.id] = { ...cache[movie.id], maturityDone: true, maturityEnrichedAt: new Date().toISOString() }; // mark done, no matMask, no rawParentsGuide
+          cache[movie.id] = { ...cache[movie.id], maturityDone: true, maturityEnrichedAt: new Date().toISOString() };
         }
       })
     );
@@ -497,49 +538,327 @@ async function enrichWithMaturity(movies, cache) {
   log("Maturity enrichment complete.");
 }
 
-// ─── Step 5: Merge and output ──────────────────────────────────────────────────
-function buildOutput(movies, cache) {
-  const output = movies.map((m) => {
+// ─── Step 5: Common Sense Media enrichment ─────────────────────────────────────
+// Strategy: loop a–z (plus "0" for digit-starting titles), paginate each letter
+// until the API returns an empty items array. Match each CSM item to an IMDB
+// entry by normalising both titles and comparing release years (±1 tolerance).
+// Matched data is stored under cache[imdbId].csm = { … }.
+//
+// CLI: node scrape.js --csm-limit 500   (default: all pages for all letters)
+//      node scrape.js --csm-only        (skip TMDB/maturity, only run CSM step)
+
+/** Normalise a title for fuzzy matching */
+function normaliseTitle(t) {
+  return (t || "")
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")  // strip accents
+    .replace(/&/g, "and")                               // & → and
+    .replace(/^(the|a|an)\s+/, "")                      // strip leading articles
+    .replace(/[^a-z0-9\s]/g, "")                        // strip punctuation
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** Strip a trailing season/series qualifier from an IMDB tvSeason title.
+ *  e.g. "Breaking Bad: Season 2" → "Breaking Bad"
+ *       "The Crown - Series 3"   → "The Crown"
+ *       "Stranger Things"        → "Stranger Things" (unchanged)
+ */
+function stripSeasonSuffix(t) {
+  return t.replace(/[\s:,\-–]+(?:season|series|part|chapter|vol\.?|volume)\s+\d+\s*$/i, "").trim();
+}
+
+/**
+ * Build a lookup map from the movies list:
+ *   normalisedTitle -> [ { id, year, isSeason } ]
+ * TV seasons are indexed under both their full IMDB title and the show name
+ * with the season suffix stripped, so CSM's plain show titles can match.
+ */
+function buildTitleIndex(movies) {
+  const idx = new Map();
+  const add = (key, entry) => {
+    if (!key) return;
+    if (!idx.has(key)) idx.set(key, []);
+    // Avoid duplicate entries for the same id
+    if (!idx.get(key).find(e => e.id === entry.id)) idx.get(key).push(entry);
+  };
+
+  for (const m of movies.values()) {
+    const entry = { id: m.id, year: m.year, isSeason: m.isSeason };
+    const normFull = normaliseTitle(m.title);
+    add(normFull, entry);
+
+    // For TV seasons, also index under the stripped show name
+    if (m.isSeason) {
+      const stripped = normaliseTitle(stripSeasonSuffix(m.title));
+      if (stripped !== normFull) add(stripped, entry);
+    }
+  }
+  return idx;
+}
+
+/** Extract a release year from a CSM item's product.summary array */
+function csmYear(item) {
+  const summaries = item.product?.summary ?? [];
+  for (const s of summaries) {
+    if (s.label === "Release Year" && s.values?.[0]?.value) {
+      return parseInt(s.values[0].value);
+    }
+  }
+  return null;
+}
+
+/** Match a CSM item to an IMDB id. Returns the IMDB id string or null. */
+function matchCsmToImdb(item, titleIndex, missLog) {
+  const normCsm = normaliseTitle(item.title);
+  const candidates = titleIndex.get(normCsm);
+  if (!candidates?.length) {
+    missLog?.push(item.title);
+    return null;
+  }
+
+  const year = csmYear(item);
+  const isTV = item.product?.type === "csm_tv_show" || item.product?.label === "TV";
+
+  // Prefer candidates matching the content type (movie vs season)
+  const typed = isTV
+    ? candidates.filter(c => c.isSeason)
+    : candidates.filter(c => !c.isSeason);
+  const pool = typed.length > 0 ? typed : candidates; // fall back to all if no type match
+
+  if (year == null) return pool[0].id;
+
+  const exact = pool.find((c) => c.year === year);
+  if (exact) return exact.id;
+  const close = pool.find((c) => c.year != null && Math.abs(c.year - year) <= 1);
+  return close?.id ?? pool[0].id;
+}
+
+/** Convert a CSM content_grid array to a plain object { violence, sex, language, drugs }.
+ *  Returns null if all values are 0 (server default for missing data). */
+function parseCsmContentGrid(grid) {
+  const out = {};
+  for (const cell of (grid ?? [])) {
+    out[cell.type] = parseInt(cell.rating) || 0;
+  }
+  if (Object.keys(out).length === 0) return null;
+  const allZero = Object.values(out).every((v) => v === 0);
+  return allZero ? null : out;
+}
+
+
+// ─── Step 5b: Force-add CSM-matched movies missing from top-N ─────────────────
+/**
+ * After CSM crawl, the cache may contain entries matched to IMDb IDs that were
+ * excluded from the top-N list (< 1000 votes or rating < 5). This function:
+ *   1. Finds all such IMDb IDs in the cache that have CSM data
+ *   2. Looks them up in allTitlesMap (the full unfiltered IMDb basics)
+ *   3. Returns a deduplicated list to be appended to the working movie set
+ *
+ * These movies are then enriched with TMDB + maturity data in main().
+ */
+async function backfillCsmMovies(movies, cache, allTitlesMap) {
+  const existingIds = new Set(movies.map((m) => m.id));
+  const toAdd = [];
+
+  for (const [imdbId, entry] of Object.entries(cache)) {
+    if (!entry?.csm) continue;
+    if (existingIds.has(imdbId)) continue;
+
+    const title = allTitlesMap.get(imdbId);
+    if (title) {
+      toAdd.push(title);
+      existingIds.add(imdbId);
+    } else {
+      log(`  CSM backfill: ${imdbId} not found in IMDb basics, skipping.`);
+    }
+  }
+
+  log(`CSM backfill: ${toAdd.length} movies force-added (had CSM data but were outside top-N filter).`);
+  return toAdd;
+}
+async function enrichWithCsm(movies, cache, allTitlesMap) {
+  const titleIndex = buildTitleIndex(allTitlesMap);
+
+  // A single space query returns all CSM results; page 1 starts at /page/1/%20,
+  //const CSM_BASE_URL = "https://www.commonsensemedia.org/ajax/search/category/movie+tv/sort/score-desc";
+
+  const csmUrl = (page) => `https://www.commonsensemedia.org/ajax/reviews/category/movie/rating/3+4+5/status/dvd/sort/date-desc/page/${page+1}/row/list`
+
+  const alreadyHasCsm = new Set(
+    movies.map((m) => m.id).filter((id) => cache[id]?.csm)
+  );
+  log(`CSM: ${alreadyHasCsm.size}/${movies.length} movies already have CSM data.`);
+
+  let pagesScraped = 0;
+  let itemsProcessed = 0;
+  let matched = 0;
+  let matchedPriority = 0;
+  let newEntries = 0;
+  let consecutiveErrors = 0;
+  const missLog = [];
+  const limitReached = () => csmLimit !== -1 && itemsProcessed >= csmLimit;
+
+  log(`Starting CSM enrichment (limit: ${csmLimit === -1 ? "all" : csmLimit} items)...`);
+
+  let page = 1;
+  while (true) {
+    if (limitReached()) break;
+
+    const url = csmUrl(page);
+    let data = null;
+    try {
+      data = await csmLimiter.run(() => fetchJson(url, CSM_HEADERS));
+      consecutiveErrors = 0;
+    } catch (e) {
+      consecutiveErrors++;
+      log(`  ✗ CSM fetch error (page=${page}): ${e.message}`);
+      if (consecutiveErrors >= 2) {
+        log("  CSM: 2 consecutive errors, stopping.");
+        break;
+      }
+      page++;
+      continue;
+    }
+
+    const items = Array.isArray(data?.items) ? data.items : [];
+    log(`  CSM page=${page}: ${items.length} items`);
+
+    if (items.length === 0) break; // exhausted all pages
+
+    for (const item of items) {
+      if (limitReached()) break;
+      itemsProcessed++;
+
+      if (item.type !== "csm_review") continue;
+
+      const imdbId = matchCsmToImdb(item, titleIndex, missLog);
+      matched += imdbId ? 1 : 0;
+      if (imdbId && alreadyHasCsm.has(imdbId)) matchedPriority++;
+
+      if (imdbId) {
+        const isNew = !cache[imdbId]?.csm;
+        if (isNew) newEntries++;
+
+        cache[imdbId] = {
+          ...cache[imdbId],
+          csm: {
+            csmEnrichedAt: new Date().toISOString(),
+            csmId: item.id,
+            csmUrl: item.url,
+            recommendedAge: item.recommendedAge != null ? parseInt(item.recommendedAge) : null,
+            csmRating: item.rating != null ? parseInt(item.rating) : null,
+            oneLiner: item.oneLiner ?? null,
+            parentsNeedToKnow: item.parentsNeedToKnow ?? null,
+            contentGrid: parseCsmContentGrid(item.content_grid) || cache[imdbId]?.csm?.contentGrid,
+          },
+        };
+      }
+    }
+
+    pagesScraped++;
+    if (pagesScraped % 10 === 0) {
+      log(`  CSM progress: ${pagesScraped} pages | ${itemsProcessed} items | ${matched} matched (${matchedPriority} refreshed) | ${newEntries} new`);
+      saveCache(cache);
+    }
+
+    page++;
+  }
+
+  saveCache(cache);
+  log(`CSM enrichment complete. Pages: ${pagesScraped} | Items: ${itemsProcessed} | Matched: ${matched} (${matchedPriority} refreshed) | New: ${newEntries}`);
+  if (missLog.length > 0) {
+    log(`CSM unmatched (${missLog.length} total, first 50):\n  ${missLog.slice(0, 50).join("\n  ")}`);
+  }
+}
+
+/** Counts how many bits are set to 1 in a bitmask */
+function countProviders(mask) {
+  if (!mask) return 0;
+  // Convert to binary string and count the "1"s
+  return mask.toString(2).split('1').length - 1;
+}
+
+// ─── Step 6: Merge and output ──────────────────────────────────────────────────
+async function buildOutput(movies, cache, modelDir) {
+  const extraLookup = {};
+  const output = [];
+  const total = movies.length;
+  let matComputed = 0, matSkipped = 0, matErrors = 0;
+  const LOG_EVERY = 500;
+
+  log(`Building output for ${total} movies...`);
+
+  for (let idx = 0; idx < movies.length; idx++) {
+    const m = movies[idx];
     const c = cache[m.id] || {};
+    const availability = 1+countProviders(c.providerMask)/2
     const entry = {
       id: m.id,
       t: m.title,
       y: m.year,
       r: m.rating,
       g: m.genres,
-      pop: c.popularity ?? 0,
-      p: c.poster ?? null,
+      pop: c.popularity * availability ?? 0,
+      p: c.poster ?? undefined,
       prov: c.providerMask ?? 0,
+      mpa: c.mpaCertification ?? undefined,
+      csm: c.csm?.csmUrl ?? undefined,
+      mat: c.mat,
     };
     if (m.isSeason) entry.s = 1;
 
-    // Always recompute matMask from raw data when available; fall back to cached mask.
-    let matMask;
-    if (c.rawParentsGuide) {
-      const recomputed = parseMaturityResponse({ parentsGuide: c.rawParentsGuide }, m.year ?? null, m.genres ?? 0);
-      matMask = recomputed ?? c.matMask;
-    } else {
-      matMask = c.matMask;
-    }
-    if (c.maturityDone && matMask !== undefined) entry.mat = matMask;
+    output.push(entry);
 
-    return entry;
-  });
 
+    // ─── 2. Heavy Metadata Map Entry (extra.json) ────────────────────────
+    // Use the IMDb ID as a direct lookup key
+    extraLookup[m.id] = {
+      synopsisEn: c.overviewEn ?? undefined,
+      tmdbUrl: c.tmdbId 
+      ? `https://www.themoviedb.org/${m.isSeason ? 'tv' : 'movie'}/${c.tmdbId}`
+      : undefined
+    };
+  }
+
+  log(`buildOutput complete: ${output.length} entries`);
+
+  
+  fs.writeFileSync(EXTRA_FILE, JSON.stringify(extraLookup));
+  const size = (fs.statSync(EXTRA_FILE).size / 1024).toFixed(1);
+  log(`✓ Written ${EXTRA_FILE} (${size} KB, ${extraLookup.length} titles)`);
+
+  
   return {
     movies: output,
     genres: Object.fromEntries(Object.entries(GENRES).map(([k, v]) => [k, v])),
     providers: PROVIDERS,
     providerNames: PROVIDER_NAMES,
-    maturityCategories: MATURITY_CATEGORIES,
+    maturityCategories: MAT_CATS,
   };
 }
 
 // ─── Cache helpers ─────────────────────────────────────────────────────────────
 function loadCache() {
   if (fs.existsSync(CACHE_FILE)) {
-    try { return JSON.parse(fs.readFileSync(CACHE_FILE, "utf8")); }
-    catch (_) {}
+    try {
+      const cache = JSON.parse(fs.readFileSync(CACHE_FILE, "utf8"));
+      // Strip contentGrids where all values are 0 (server defaults for missing data)
+      let stripped = 0;
+      for (const entry of Object.values(cache)) {
+        if (entry?.csm?.contentGrid) {
+          const grid = entry.csm.contentGrid;
+          const allZero = typeof grid === "object" && !Array.isArray(grid) &&
+            Object.values(grid).every((v) => v === 0);
+          if (allZero) {
+            delete entry.csm.contentGrid;
+            stripped++;
+          }
+        }
+      }
+      if (stripped > 0) log(`Stripped ${stripped} all-zero contentGrid entries from cache.`);
+      return cache;
+    } catch (_) {}
   }
   return {};
 }
@@ -552,25 +871,43 @@ function saveCache(cache) {
 async function main() {
   fs.mkdirSync(OUT_DIR, { recursive: true });
 
+  const modelDir = (() => {
+    const idx = args.indexOf("--model-dir");
+    return idx !== -1 ? path.resolve(args[idx + 1]) : path.resolve("./models");
+  })();
+
   await ensureImdbFiles();
-  const movies = await buildTopN();
+  const { movies, allTitlesMap } = await buildTopN();
   const cache = loadCache();
 
   await enrichWithTmdb(movies, cache);
   await enrichWithMaturity(movies, cache);
+  await enrichWithCsm(movies, cache, allTitlesMap);
+
+  // Force-add CSM-matched movies that were filtered out of the top-N
+  const csmMovies = await backfillCsmMovies(movies, cache, allTitlesMap);
+  // Enrich the newly added movies with TMDB + maturity data too
+  if (csmMovies.length > 0) {
+    log(`Force-added ${csmMovies.length} CSM-matched movies outside top-N. Running TMDB + maturity enrichment...`);
+    await enrichWithTmdb(csmMovies, cache);
+    await enrichWithMaturity(csmMovies, cache);
+  }
+  const allMovies = [...movies, ...csmMovies];
 
   log("Building output JSON...");
-  const output = buildOutput(movies, cache);
+  const output = await buildOutput(allMovies, cache, modelDir);
 
   fs.writeFileSync(OUTPUT_FILE, JSON.stringify(output));
   const size = (fs.statSync(OUTPUT_FILE).size / 1024).toFixed(1);
   log(`✓ Written ${OUTPUT_FILE} (${size} KB, ${output.movies.length} titles)`);
 
-  const enriched = movies.filter((m) => cache[m.id]?.enriched).length;
-  const withPoster = movies.filter((m) => cache[m.id]?.poster).length;
-  const withMat = movies.filter((m) => cache[m.id]?.matMask).length;
-  const withGuide = movies.filter((m) => cache[m.id]?.rawParentsGuide).length;
-  log(`  TMDB enriched: ${enriched}/${movies.length} | With poster: ${withPoster} | With maturity: ${withMat} | With guide: ${withGuide}`);
+  const enriched   = allMovies.filter((m) => cache[m.id]?.enriched).length;
+  const withPoster  = allMovies.filter((m) => cache[m.id]?.poster).length;
+  const withGuide   = allMovies.filter((m) => cache[m.id]?.rawParentsGuide).length;
+  const withMat     = output.movies.filter((m) => m.mat !== undefined).length;
+  const withCsm     = allMovies.filter((m) => cache[m.id]?.csm).length;
+  const forcedIn    = csmMovies.length;
+  log(`  TMDB enriched: ${enriched}/${allMovies.length} | With poster: ${withPoster} | With mat: ${withMat} | With guide: ${withGuide} | With CSM: ${withCsm} | CSM force-added: ${forcedIn}`);
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });

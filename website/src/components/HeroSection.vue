@@ -131,7 +131,8 @@
 
 <script setup>
 import { computed, ref, watch } from "vue";
-import { useMovieStore, GENRE_LABELS, PROVIDERS, SEVERITY_LABELS, MATURITY_CATEGORIES } from "@/stores/movies.js";
+import { useMovieStore, GENRE_LABELS, PROVIDERS } from "@/stores/movies.js";
+import { MATURITY_CATEGORIES, SEVERITY_LABELS } from "@/maturity.js";
 
 const store = useMovieStore();
 
@@ -374,9 +375,11 @@ const hasFilters = computed(() =>
 
 /* Maturity severity chips */
 .chip--sev-0 { --sev-color: #4ade80; }
-.chip--sev-1 { --sev-color: #facc15; }
-.chip--sev-2 { --sev-color: #fb923c; }
-.chip--sev-3 { --sev-color: #f87171; }
+.chip--sev-1 { --sev-color: #a3e635; }
+.chip--sev-2 { --sev-color: #facc15; }
+.chip--sev-3 { --sev-color: #fb923c; }
+.chip--sev-4 { --sev-color: #f87171; }
+.chip--sev-5 { --sev-color: #dc2626; }
 
 .chip--maturity:hover { border-color: var(--sev-color); color: var(--sev-color); }
 .chip--maturity.active {
@@ -385,9 +388,11 @@ const hasFilters = computed(() =>
   color: var(--sev-color);
 }
 .chip--sev-0.active { background: rgba(74,222,128,0.15); }
-.chip--sev-1.active { background: rgba(250,204,21,0.15); }
-.chip--sev-2.active { background: rgba(251,146,60,0.15); }
-.chip--sev-3.active { background: rgba(248,113,113,0.15); }
+.chip--sev-1.active { background: rgba(163,230,53,0.15); }
+.chip--sev-2.active { background: rgba(250,204,21,0.15); }
+.chip--sev-3.active { background: rgba(251,146,60,0.15); }
+.chip--sev-4.active { background: rgba(248,113,113,0.15); }
+.chip--sev-5.active { background: rgba(220,38,38,0.15); }
 
 .chip--sm { padding: 3px 8px; font-size: 11px; }
 
