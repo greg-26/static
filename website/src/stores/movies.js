@@ -65,9 +65,9 @@ export const useMovieStore = defineStore("movies", () => {
 
   // Sex & Nudity is shift 0; scale 0–5 → invert so lower score = higher sort weight
   const maturityScore = (a) => {
-    if (a.mat === undefined) return 0.5;
-    const sexScore = getScore(a.mat, 3);           // 0.0–5.0
-    return Math.max(0.05, 1 - sexScore / 4);       // 1.0 (clean) → 0.0 (very explicit)
+    if (a.mat === undefined) return 0.1;
+    const sexScore = getScore(a.mat, 0);
+    return Math.max(0.1, 1 - sexScore / 8);       // 1.0 (clean) → 0.0 (very explicit)
   };
 
   let fuse = null;
@@ -87,10 +87,10 @@ export const useMovieStore = defineStore("movies", () => {
     } finally {
       loading.value = false;
       fuse = new Fuse(allMovies.value, {
-        keys: ["t"],
+        keys: ["t","ts"],
         threshold: 0.38,
         includeScore: true,
-        minMatchCharLength: 2,
+        minMatchCharLength: 3,
         ignoreLocation: true,
       });
     }
@@ -166,11 +166,11 @@ export const useMovieStore = defineStore("movies", () => {
     if (pool.length === 0) return [];
 
     const rows = [];
-    const byPopRating = (a, b) => (b.pop || 0) * b.r * maturityScore(b) - (a.pop || 0) * a.r * maturityScore(a);
+    const byPopRating = (a, b) => (b.pop > 10) * b.r * maturityScore(b) - (a.pop > 10) * a.r * maturityScore(a);
 
     const ROW_MAX = 200;
 
-    const topRated = [...pool].sort((a, b) => b.r * maturityScore(b) - a.r * maturityScore(a)).slice(0, ROW_MAX);
+    const topRated = [...pool].sort((a, b) => b.r * maturityScore(b) * (b.pop > 10) - a.r * maturityScore(a) * (a.pop > 10)).slice(0, ROW_MAX);
     if (topRated.length >= 4)
       rows.push({ id: "top-rated", label: "Top Rated", movies: topRated });
 

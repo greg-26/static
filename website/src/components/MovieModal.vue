@@ -29,6 +29,7 @@
             >
               <img src="https://upload.wikimedia.org/wikipedia/commons/6/69/IMDB_Logo_2016.svg" alt="IMDb" class="imdb-logo" />
             </a>
+
             <a
               v-if="extraDetails?.tmdbUrl"
               :href="extraDetails.tmdbUrl"
@@ -38,6 +39,16 @@
               title="View on TMDB"
             >
               <img src="https://upload.wikimedia.org/wikipedia/commons/8/89/Tmdb.new.logo.svg" alt="TMDB" class="imdb-logo" />
+            </a>
+
+            <a v-if="movie.ts || movie.t"
+              :href="`https://www.filmaffinity.com/es/search.php?stype=title&stext=${encodeURIComponent(movie.ts || movie.t)}`"
+              target="_blank"
+              rel="noopener"
+              class="ext-site-link"
+              title="Ver en FilmAffinity"
+            >
+              <img src="https://upload.wikimedia.org/wikipedia/commons/5/59/FilmAffinity_logo.svg" alt="FilmAffinity" class="imdb-logo" />
             </a>
             <span v-if="movie.s" class="modal-badge">TV Season</span>
           </div>
@@ -89,10 +100,17 @@
                   title="IMDb Parents Guide"
                 >IMDb guide</a>
                 <a
-                  v-if="extraDetails.csm"
+                  v-if="extraDetails?.csm"
                   :href="'https://www.commonsensemedia.org'+extraDetails.csm"
                   target="_blank" rel="noopener"
                   class="mat-ext-link mat-ext-link--csm"
+                  title="Common Sense Media review"
+                >CSM</a>
+                <a
+                  v-else
+                  :href="'https://www.commonsensemedia.org/search/'+movie.t"
+                  target="_blank" rel="noopener"
+                  class="mat-ext-link mat-ext-link--csm genre-chip--alt"
                   title="Common Sense Media review"
                 >CSM</a>
               </div>
@@ -113,7 +131,7 @@
                     :style="{ width: `${getScore(movie.mat, cat.shift) / 5 * 95+5}%` }"
                   ></div>
                 </div>
-                <span class="mat-score-label" :class="scoreCssClass(Math.round(getScore(movie.mat, cat.shift)))">
+                <span class="mat-score-label" >
                   {{ SEVERITY_LABELS[Math.round(getScore(movie.mat, cat.shift))] }}
                   - {{ formatScore(getScore(movie.mat, cat.shift)) }}/5
                 </span>
@@ -121,16 +139,16 @@
               </div>
             </div>
 
-            <div class="modal-genres">
-              <span v-for="g in extraDetails.tags?.SEXUAL_CONTENT" :key="g" class="genre-chip">{{ g.replaceAll('_', ' ') }}</span>    
-              <span v-for="g in extraDetails.tags?.VIOLENCE" :key="g" class="genre-chip">{{ g.replaceAll('_', ' ') }}</span> 
-              <span v-for="g in extraDetails.tags?.PROFANITY" :key="g" class="genre-chip">{{ g.replaceAll('_', ' ') }}</span> 
-              <span v-for="g in extraDetails.tags?.ALCOHOL_DRUGS" :key="g" class="genre-chip">{{ g.replaceAll('_', ' ') }}</span> 
+            <div class="modal-genres" v-if="extraDetails?.tags">
+              <span v-for="g in extraDetails.tags.SEXUAL_CONTENT" :key="g" class="genre-chip">{{ g.replaceAll('_', ' ') }}</span>    
+              <span v-for="g in extraDetails.tags.VIOLENCE" :key="g" class="genre-chip genre-chip--alt">{{ g.replaceAll('_', ' ') }}</span> 
+              <span v-for="g in extraDetails.tags.PROFANITY" :key="g" class="genre-chip">{{ g.replaceAll('_', ' ') }}</span> 
+              <span v-for="g in extraDetails.tags.ALCOHOL_DRUGS" :key="g" class="genre-chip genre-chip--alt">{{ g.replaceAll('_', ' ') }}</span> 
             
           </div>
 
             <!-- Community review excerpts from IMDb (collapsed per category) -->
-            <div v-if="matReviewsLoading" class="mat-loading">Loading community reviews…</div>
+            <div v-if="matReviewsLoading" class="mat-loading"><!--Loading community reviews…--></div>
             <div v-else-if="matReviewsError" class="mat-loading mat-error">{{ matReviewsError }}</div>
             <div v-else-if="matReviewCategories.length" class="mat-items-list">
               <details
@@ -196,7 +214,6 @@ async function loadExtraJsonData() {
 // Automatically resolve details matching the current active movie ID
 const extraDetails = computed(() => {
   if (!props.movie?.id || !extraLoaded.value) return null;
-console.log(extraTable.value)
   return extraTable.value[props.movie.id] || null;
 });
 
@@ -284,7 +301,7 @@ watch(() => props.movie, (movie) => {
   if (movie) {
     //loadSynopsis(movie);
     loadExtraJsonData()
-    loadReviews(movie.id);
+    //loadReviews(movie.id);
   } else {
     //synopsis.value = null;
     matReviews.value = null;
@@ -408,6 +425,11 @@ watch(() => props.movie, (movie) => {
   border-radius: 99px;
   font-size: 12px;
   color: var(--white);
+}
+
+.genre-chip--alt {
+  background: var(--surface);
+  border-color: transparent;/**/
 }
 
 /* ── Synopsis ── */

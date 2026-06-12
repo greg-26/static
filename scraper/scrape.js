@@ -373,16 +373,17 @@ async function enrichWithTmdb(movies, cache) {
           let originCountries = null;
 
           if (movie.isSeason) {
-            // TV Season: use tv_season_results
-            const tvSeason = findData.tv_season_results?.[0];
-            if (tvSeason) {
-              poster = tvSeason.poster_path
-                ? `https://image.tmdb.org/t/p/w342${tvSeason.poster_path}`
+            // TV Series: use tv_results
+            const tvSeries = findData.tv_results?.[0];
+            if (tvSeries) {
+              const showId = tvSeries.id;
+              poster = tvSeries.poster_path
+                ? `https://image.tmdb.org/t/p/w342${tvSeries.poster_path}`
                 : null;
-              tmdbId = tvSeason.id ?? null;
-              overviewEn = tvSeason.overview || null;
-              const showId = tvSeason.show_id;
-              // Get popularity + origin countries from the parent show (single request)
+              tmdbId = tvSeries.id ?? null;
+              overviewEn = tvSeries.overview || null;
+
+              // Get popularity + origin countries from the series itself
               let showData = null;
               try {
                 const showUrl = `https://api.themoviedb.org/3/tv/${showId}?api_key=${TMDB_KEY}`;
@@ -390,7 +391,8 @@ async function enrichWithTmdb(movies, cache) {
                 popularity = Math.round((showData.popularity ?? 0) * 10) / 10;
               } catch (_) {}
               originCountries = showData?.origin_country ?? null;
-              // Get watch providers for the TV show
+
+              // Watch providers
               try {
                 const provUrl = `https://api.themoviedb.org/3/tv/${showId}/watch/providers?api_key=${TMDB_KEY}`;
                 const provData = await tmdbLimiter.run(() => fetchJson(provUrl));
@@ -402,11 +404,14 @@ async function enrichWithTmdb(movies, cache) {
                   }
                 }
               } catch (_) {}
-              // Fetch Spanish translation for overview + title
+
+              // Spanish translation for overview + title
               try {
-                const transUrl = `https://api.themoviedb.org/3/tv/${showId}/season/${tvSeason.season_number}/translations?api_key=${TMDB_KEY}`;
+                const transUrl = `https://api.themoviedb.org/3/tv/${showId}/translations?api_key=${TMDB_KEY}`;
                 const transData = await tmdbLimiter.run(() => fetchJson(transUrl));
-                const esEntry = transData.translations?.find((t) => t.iso_3166_1 === "ES" && t.iso_639_1 === "es");
+                const esEntry = transData.translations?.find(
+                  (t) => t.iso_3166_1 === "ES" && t.iso_639_1 === "es"
+                );
                 overviewEs = esEntry?.data?.overview || null;
                 titleEs = esEntry?.data?.name || null;
               } catch (_) {}
@@ -470,10 +475,9 @@ async function enrichWithTmdb(movies, cache) {
               }
             } catch (_) {}
           } else if (tmdbId && movie.isSeason) {
-            // For TV seasons, fetch content ratings from the parent show
+            // For TV series, fetch content ratings directly from the show
             try {
-              const tvSeason = findData.tv_season_results?.[0];
-              const showId = tvSeason?.show_id;
+              const showId = findData.tv_results?.[0]?.id;
               if (showId) {
                 const ratingsUrl = `https://api.themoviedb.org/3/tv/${showId}/content_ratings?api_key=${TMDB_KEY}`;
                 const ratingsData = await tmdbLimiter.run(() => fetchJson(ratingsUrl));
@@ -484,10 +488,10 @@ async function enrichWithTmdb(movies, cache) {
             } catch (_) {}
           }
 
-          cache[movie.id] = { enriched: true, tmdbEnrichedAt: new Date().toISOString(), tmdbId, poster, popularity, providerMask, overviewEn, overviewEs, titleEs, mpaCertification, originCountries };
+          cache[movie.id] = { ...cache[movie.id], enriched: true, tmdbEnrichedAt: new Date().toISOString(), tmdbId, poster, popularity, providerMask, overviewEn, overviewEs, titleEs, mpaCertification, originCountries };
         } catch (e) {
           log(`  ✗ TMDB ${movie.id}: ${e.message}`);
-          cache[movie.id] = { enriched: true, tmdbEnrichedAt: new Date().toISOString(), tmdbId: null, poster: null, popularity: 0, providerMask: 0, overviewEn: null, overviewEs: null, titleEs: null, mpaCertification: null, originCountries: null };
+          cache[movie.id] = { ...cache[movie.id], enriched: true, tmdbEnrichedAt: new Date().toISOString(), tmdbId: null, poster: null, popularity: 0, providerMask: 0, overviewEn: null, overviewEs: null, titleEs: null, mpaCertification: null, originCountries: null };
         }
       })
     );
@@ -813,7 +817,7 @@ function isExcludedOrigin(c) {
 }
 
 // ─── Step 6: Merge and output ──────────────────────────────────────────────────
-async function buildOutput(movies, cache, modelDir) {
+async function buildOutput(movies, cache) {
   const extraLookup = {};
   const output = [];
   const total = movies.length;
@@ -913,11 +917,6 @@ function saveCache(cache) {
 async function main() {
   fs.mkdirSync(OUT_DIR, { recursive: true });
 
-  const modelDir = (() => {
-    const idx = args.indexOf("--model-dir");
-    return idx !== -1 ? path.resolve(args[idx + 1]) : path.resolve("./models");
-  })();
-
   await ensureImdbFiles();
   const { movies, allTitlesMap } = await buildTopN();
   const cache = loadCache();
@@ -937,7 +936,7 @@ async function main() {
   const allMovies = [...movies, ...csmMovies];
 
   log("Building output JSON...");
-  const output = await buildOutput(allMovies, cache, modelDir);
+  const output = await buildOutput(allMovies, cache);
 
   fs.writeFileSync(OUTPUT_FILE, JSON.stringify(output));
   const size = (fs.statSync(OUTPUT_FILE).size / 1024).toFixed(1);
