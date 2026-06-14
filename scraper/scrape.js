@@ -31,13 +31,13 @@ import http from "http";
 import zlib from "zlib";
 import readline from "readline";
 import { pipeline } from "stream/promises";
-import { MATURITY_CATEGORIES as MAT_CATS } from "./../website/src/maturity.js";
+import { MATURITY_CATEGORIES as MAT_CATS, computeMatMask } from "./../website/src/maturity.js";
 import { extractMovieTags } from "./tags.js";
 
 // ─── Config ────────────────────────────────────────────────────────────────────
 const TMDB_KEY = process.env.TMDB_API_KEY;
 const OUT_DIR = path.resolve("../website/public");
-const CACHE_FILE = path.resolve("./cache.json");
+const CACHE_FILE = path.resolve("./cache.json.gz");
 const OUTPUT_FILE = path.join(OUT_DIR, "movies.json");
 const EXTRA_FILE = path.join(OUT_DIR, "extra.json");
 const IMDB_BASICS_URL = "https://datasets.imdbws.com/title.basics.tsv.gz";
@@ -547,7 +547,7 @@ async function enrichWithMaturity(movies, cache) {
           const data = await matLimiter.run(() => fetchJson(url));
           // Store raw guide array; matMask is computed at output time via computeMatMask()
           const rawParentsGuide = data?.parentsGuide ?? null;
-          cache[movie.id] = { ...cache[movie.id], maturityDone: true, maturityEnrichedAt: new Date().toISOString(), rawParentsGuide };
+          cache[movie.id] = { ...cache[movie.id], maturityDone: true, maturityEnrichedAt: new Date().toISOString(), rawParentsGuide, preds: null };
         } catch (e) {
           log(`  ✗ Mat ${movie.id}: ${e.message}`);
           cache[movie.id] = { ...cache[movie.id], maturityDone: true, maturityEnrichedAt: new Date().toISOString() };
@@ -816,6 +816,11 @@ function isExcludedOrigin(c) {
   return c.originCountries.some((cc) => EXCLUDED_COUNTRIES.has(cc));
 }
 
+const EXCLUDED_TITLE_WORDS = new Set(['sex', 'sexual', 'porn', 'pornhub', 'nude']);
+function hasBannedWord(title) {
+  return title.toLowerCase().split(/\W+/).some(w => EXCLUDED_TITLE_WORDS.has(w));
+}
+
 // ─── Step 6: Merge and output ──────────────────────────────────────────────────
 async function buildOutput(movies, cache) {
   const extraLookup = {};
@@ -831,8 +836,8 @@ async function buildOutput(movies, cache) {
     const m = movies[idx];
     const c = cache[m.id] || {};
 
-    // Skip titles from excluded countries (India, China)
-    if (isExcludedOrigin(c)) {
+    // Skip titles from excluded countries (India, China) or banned words
+    if (isExcludedOrigin(c) || hasBannedWord(m.title)) {
       excludedCount++;
       continue;
     }
@@ -847,7 +852,7 @@ async function buildOutput(movies, cache) {
       p: c.poster ?? undefined,
       prov: c.providerMask ?? 0,
       mpa: c.mpaCertification ?? undefined,
-      mat: c.mat,
+      mat: computeMatMask(c),
       ts: c.titleEs ?? undefined,
     };
     if (m.isSeason) entry.s = 1;
@@ -867,7 +872,7 @@ async function buildOutput(movies, cache) {
     };
   }
 
-  log(`buildOutput complete: ${output.length} entries (${excludedCount} excluded by origin country).`);
+  log(`buildOutput complete: ${output.length} entries (${excludedCount} excluded by origin country/banned words).`);
 
   
   fs.writeFileSync(EXTRA_FILE, JSON.stringify(extraLookup));
@@ -884,11 +889,30 @@ async function buildOutput(movies, cache) {
   };
 }
 
+
+
 // ─── Cache helpers ─────────────────────────────────────────────────────────────
+
+export function readGzipJson(filePath) {
+  const compressed = fs.readFileSync(filePath);
+  const json = zlib.gunzipSync(compressed).toString('utf8');
+  return JSON.parse(json);
+}
+
+export function writeGzipJson(filePath, data) {
+  const json = JSON.stringify(data);
+  const compressed = zlib.gzipSync(json);
+  // Write to a temp file alongside the target, then rename (atomic on same fs)
+  const tmp = filePath + '.tmp';
+  fs.writeFileSync(tmp, compressed);
+  fs.renameSync(tmp, filePath);
+}
+
+
 function loadCache() {
   if (fs.existsSync(CACHE_FILE)) {
     try {
-      const cache = JSON.parse(fs.readFileSync(CACHE_FILE, "utf8"));
+      const cache = readGzipJson(CACHE_FILE)
       // Strip contentGrids where all values are 0 (server defaults for missing data)
       let stripped = 0;
       for (const entry of Object.values(cache)) {
@@ -910,7 +934,7 @@ function loadCache() {
 }
 
 function saveCache(cache) {
-  fs.writeFileSync(CACHE_FILE, JSON.stringify(cache));
+  writeGzipJson(CACHE_FILE, cache);
 }
 
 // ─── Main ──────────────────────────────────────────────────────────────────────

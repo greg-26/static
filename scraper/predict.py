@@ -17,124 +17,95 @@ GENRE_BITS     = {"Action": 0, "Adventure": 1, "Animation": 2, "Biography": 3, "
 MPA_ORDINAL    = {"G": 0, "PG": 1, "PG-13": 2, "R": 3, "NC-17": 4, "TV-Y": 0, "TV-Y7": 0, "TV-G": 0, "TV-PG": 1, "TV-14": 2, "TV-MA": 3}
 
 
-def encode_nibble(value):
-	"""Port of encodeNibble from maturity.js"""
-	if not isinstance(value, (int, float)):
-		v = 0
-	else:
-		v = value
-	# Clamp between 0 and 5, multiply by 3 for 0.33 precision, round, clamp 0 to 15
-	clamped_v = max(0, min(5, v))
-	rounded = round(clamped_v * 3)
-	return min(15, max(0, rounded))
-
-def pack_mat_mask(sex, violence, language, drugs):
-	"""Port of packMatMask from maturity.js"""
-	return (
-		(encode_nibble(sex)      << 0)  |
-		(encode_nibble(violence) << 4)  |
-		(encode_nibble(language) << 8)  |
-		(encode_nibble(drugs)    << 12)
-	)
-
-
 def update_movies_json(movies_json_path, cache_data, meta_data={}):
-	# 1. Load movies database
-	with open(movies_json_path, 'r', encoding='utf-8') as f:
-		data = json.load(f)
-		
-	# 2. Iterate through and update each movie entry matching its ID
-	processed_count = 0
-	total_movies = len(data.get("movies", []))
+    # 1. Load movies database
+    with open(movies_json_path, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+        
+    # 2. Iterate through and update each movie entry matching its ID
+    processed_count = 0
+    total_movies = len(data.get("movies", []))
 
-	print(f"Starting long-running predictions for {total_movies} movies...")
+    print(f"Starting long-running predictions for {total_movies} movies...")
 
-	for movie in data.get("movies", []):
-		imdb_id = movie.get("id")  # e.g., "tt0111161"
-		
-		# Check if cache entry exists for this movie to run prediction
-		if imdb_id in cache_data:
-			#if 'mat' in cache_data[imdb_id]:
-			#	continue
-			try:
-				# Generate predictions using your fixed predict_movie function
-				preds = predict_movie(imdb_id, cache_data[imdb_id], meta_data[imdb_id])
-				
-				# Compute the 16-bit packed integer mask
-				mask = pack_mat_mask(
-					sex=preds.get("csm_sex", 0),
-					violence=preds.get("csm_violence", 0),
-					language=preds.get("csm_language", 0),
-					drugs=preds.get("csm_drugs", 0)
-				)
-				
-				# Append/Update the mask attribute in the JSON object
-				movie["mat"] = mask
-				cache_data[imdb_id]['mat'] = mask                
-				processed_count += 1
-				
-			except Exception as e:
-				print(f"Skipping {imdb_id} due to prediction error: {e}")
-		
-		# Periodic save every 250 iterations
-		if processed_count > 0 and processed_count % 250 == 0:
-			print(f"--> Saving progress checkpoint at {processed_count} movies...")
-			with open(movies_json_path, 'w', encoding='utf-8') as f:
-				json.dump(data, f, separators=(',', ':'), ensure_ascii=False)
-			with open(args.cache, 'w', encoding='utf-8') as f:
-				json.dump(cache_data, f, separators=(',', ':'), ensure_ascii=False)
-			if processed_count > 50000:
-				return
-				
-	# Final write to catch any remaining changes
-	print(f"\nFinished processing all movies! Finalizing file save...")
-	with open(movies_json_path, 'w', encoding='utf-8') as f:
-		json.dump(data, f, separators=(',', ':'), ensure_ascii=False)
-	with open(args.cache, 'w', encoding='utf-8') as f:
-		json.dump(cache_data, f, separators=(',', ':'), ensure_ascii=False)
-	print(f"Done. Successfully processed and stored masks for {processed_count} entries.")
+    for movie in data.get("movies", []):
+        imdb_id = movie.get("id")  # e.g., "tt0111161"
+        
+        # Check if cache entry exists for this movie to run prediction
+        if imdb_id in cache_data:
+            oldpreds = cache_data[imdb_id].get('preds')
+            if oldpreds and 'csm_sex' in oldpreds:
+                continue
+            try:
+                # Generate predictions using your fixed predict_movie function
+                preds = predict_movie(imdb_id, cache_data[imdb_id], meta_data[imdb_id])
+                
+                cache_data[imdb_id]['preds'] = preds
+                #print(f"Predicing {preds}")
+                processed_count += 1
+                
+            except Exception as e:
+                print(f"Skipping {imdb_id} due to prediction error: {e}")
+        
+        # Periodic save every 500 items
+        if processed_count > 0 and processed_count % 500 == 0:
+            print(f"--> Saving progress checkpoint at {processed_count} movies...")
+            with open(movies_json_path, 'w', encoding='utf-8') as f:
+                json.dump(data, f, separators=(',', ':'), ensure_ascii=False)
+            with open(args.cache, 'w', encoding='utf-8') as f:
+                json.dump(cache_data, f, separators=(',', ':'), ensure_ascii=False)
+            if processed_count > 500000:
+                return
+                
+    # Final write to catch any remaining changes
+    print(f"\nFinished processing all movies! Finalizing file save...")
+    with open(movies_json_path, 'w', encoding='utf-8') as f:
+        json.dump(data, f, separators=(',', ':'), ensure_ascii=False)
+    with open(args.cache, 'w', encoding='utf-8') as f:
+        json.dump(cache_data, f, separators=(',', ':'), ensure_ascii=False)
+    print(f"Done. Successfully processed and stored masks for {processed_count} entries.")
 
 
 def build_row(imdb_id, c, meta=None):
-	meta = meta or {}
-	row = {}
-	row["year"]       = meta.get("year")       or c.get("year")
-	row["rating"]     = meta.get("rating")     or c.get("imdbRating")
-	row["votes"]      = meta.get("votes")      or c.get("votes")
-	row["is_season"]  = int(bool(meta.get("isSeason", False)))
-	row["popularity"] = c.get("popularity") or 0
-	genres = meta.get("genres") or c.get("genres") or 0
-	
-	try: genres = int(genres)
-	except: genres = 0
-	for n, b in GENRE_BITS.items():
-		row[f"genre_{n.lower().replace('-','_')}"] = int(bool(genres & (1 << b)))
-		
-	raw_year = row["year"]
-	year_val = raw_year if pd.notna(raw_year) else 2000
+    meta = meta or {}
+    row = {}
+    row["year"]       = meta.get("year")       or c.get("year")
+    row["rating"]     = meta.get("rating")     or c.get("imdbRating")
+    row["votes"]      = meta.get("votes")      or c.get("votes")
+    row["is_season"]  = int(bool(meta.get("isSeason", False)))
+    row["popularity"] = c.get("popularity") or 0
+    genres = meta.get("genres") or c.get("genres") or 0
+    
+    try: genres = int(genres)
+    except: genres = 0
+    for n, b in GENRE_BITS.items():
+        row[f"genre_{n.lower().replace('-','_')}"] = int(bool(genres & (1 << b)))
+        
+    raw_year = row["year"]
+    year_val = raw_year if pd.notna(raw_year) else 2000
 
-	year = np.clip(year_val - 2000, 0, 30)  # score drift over the years
-	
-	mpa = c.get("mpaCertification")
-	row["mpa_ordinal"] = MPA_ORDINAL.get(mpa) if mpa else None
-	for label in ["G", "PG", "PG-13", "R", "NC-17"]:
-		row[f"mpa_{label.replace('-','_')}"] = int(mpa == label) if mpa else 0
-	row["has_mpa"] = int(mpa is not None)
-	row.update(train.extract_imdb_features(c.get("rawParentsGuide")))
-	row["has_imdb_guide"] = int(bool(c.get("rawParentsGuide")))
-	
-	
-	
-	for feat in FEATURES.get(TARGETS[0], []):
-		if feat.startswith("tfidf_") and feat not in row:
-			row[feat] = 0.0
-	return row
+    year = np.clip(year_val - 2000, 0, 30)  # score drift over the years
+    
+    mpa = c.get("mpaCertification")
+    row["mpa_ordinal"] = MPA_ORDINAL.get(mpa) if mpa else None
+    for label in ["G", "PG", "PG-13", "R", "NC-17"]:
+        row[f"mpa_{label.replace('-','_')}"] = int(mpa == label) if mpa else 0
+    row["has_mpa"] = int(mpa is not None)
+    row.update(train.extract_imdb_features(c.get("rawParentsGuide")))
+    row["has_imdb_guide"] = int(bool(c.get("rawParentsGuide")))
+    
+    
+    
+    for feat in FEATURES.get(TARGETS[0], []):
+        if feat.startswith("tfidf_") and feat not in row:
+            row[feat] = 0.0
+    return row
 
 _models = {}
 def _model(t):
-	if t not in _models:
-		_models[t] = lgb.Booster(model_file=os.path.join(MODEL_DIR, f"model_{t}.lgb"))
-	return _models[t]
+    if t not in _models:
+        _models[t] = lgb.Booster(model_file=os.path.join(MODEL_DIR, f"model_{t}.lgb"))
+    return _models[t]
 
 def _load_pred_modes():
     """Read pred_mode per target from meta.json written by train.py."""
@@ -167,38 +138,21 @@ def predict_movie(imdb_id, cache_entry, meta=None):
         probs = _model(t).predict(X)[0]  # e.g. [0.05, 0.10, 0.52, 0.25, 0.06, 0.02]
 
         mode = _PRED_MODES.get(t, "argmax")
-        if mode == "ev":
-            # Expected value: weighted average of class indices, rounded to nearest int
-            n_classes = len(probs)
-            ev = float(np.dot(np.arange(n_classes), probs))
-            out[t] = int(round(ev))
-        else:
-            # argmax: most probable class, with ±0.33 uncertainty flag
-            # when top-2 probs are close (margin < threshold)
-            best = int(np.argmax(probs))
-            second = int(np.argsort(probs)[::-1][1])
-            margin = probs[best] - probs[second]
 
-            if margin < 0.10:       # very uncertain: no reliable prediction
-                out[t] = None
-            elif margin < 0.25:     # mildly uncertain: nudge toward runner-up
-                direction = np.sign(second - best)
-                out[t] = round(best + direction * 0.33, 2)
-            else:
-                out[t] = best
+        out[t] = {"mode": mode, "probs": [round(float(p), 4) for p in probs]}
 
     return out
 
 if __name__ == "__main__":
-	ap = argparse.ArgumentParser()
-	ap.add_argument("--cache",        required=True)
-	ap.add_argument("--out",          default="./predictions.json")
-	ap.add_argument("--extra",        default="../website/public/extra.json")
-	ap.add_argument("--only-missing", action="store_true")
-	args = ap.parse_args()
-	with open(args.cache) as f: cache = json.load(f)
-	with open(args.extra) as f: meta_data = json.load(f)
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--cache",        required=True)
+    ap.add_argument("--out",          default="./predictions.json")
+    ap.add_argument("--extra",        default="../website/public/extra.json")
+    ap.add_argument("--only-missing", action="store_true")
+    args = ap.parse_args()
+    with open(args.cache) as f: cache = json.load(f)
+    with open(args.extra) as f: meta_data = json.load(f)
 
-	movies_json_path = "../website/public/movies.json"
-	update_movies_json(movies_json_path, cache, meta_data)
-	print(f"Done predictions.")
+    movies_json_path = "../website/public/movies.json"
+    update_movies_json(movies_json_path, cache, meta_data)
+    print(f"Done predictions.")

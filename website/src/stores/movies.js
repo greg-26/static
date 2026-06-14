@@ -67,7 +67,7 @@ export const useMovieStore = defineStore("movies", () => {
   const maturityScore = (a) => {
     if (a.mat === undefined) return 0.1;
     const sexScore = getScore(a.mat, 0);
-    return Math.max(0.1, 1 - sexScore / 8);       // 1.0 (clean) → 0.0 (very explicit)
+    return Math.max(0.0, 1 - (sexScore / 4 ) ** 2 );       // 1.0 (clean) → 0.0 (very explicit)
   };
 
   let fuse = null;
@@ -140,7 +140,7 @@ export const useMovieStore = defineStore("movies", () => {
         for (let i = 0; i < MATURITY_CATEGORIES.length; i++) {
           const threshold = catThresholds[i];
           if (threshold < 0) continue;
-          if (Math.round(getScore(item.mat, MATURITY_CATEGORIES[i].shift)) > threshold) return false;
+          if (Math.round(getScore(item.mat, MATURITY_CATEGORIES[i].shift) || 6) >= threshold) return false;
         }
         return true;
       });
@@ -168,7 +168,7 @@ export const useMovieStore = defineStore("movies", () => {
     const rows = [];
     const byPopRating = (a, b) => (b.pop > 10) * b.r * maturityScore(b) - (a.pop > 10) * a.r * maturityScore(a);
 
-    const ROW_MAX = 200;
+    const ROW_MAX = 500;
 
     const topRated = [...pool].sort((a, b) => b.r * maturityScore(b) * (b.pop > 10) - a.r * maturityScore(a) * (a.pop > 10)).slice(0, ROW_MAX);
     if (topRated.length >= 4)

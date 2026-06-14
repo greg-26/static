@@ -1,7 +1,24 @@
 import fs from 'fs';
+import zlib from 'zlib';
+import path from 'path';
 
-//const data = JSON.parse(fs.readFileSync('../website/public/movies.json', 'utf8'));
-const data = JSON.parse(fs.readFileSync('./cache.json', 'utf8'));
+export function readGzipJson(filePath) {
+  const compressed = fs.readFileSync(filePath);
+  const json = zlib.gunzipSync(compressed).toString('utf8');
+  return JSON.parse(json);
+}
+
+export function writeGzipJson(filePath, data) {
+  const json = JSON.stringify(data);
+  const compressed = zlib.gzipSync(json);
+  // Write to a temp file alongside the target, then rename (atomic on same fs)
+  const tmp = filePath + '.tmp';
+  fs.writeFileSync(tmp, compressed);
+  fs.renameSync(tmp, filePath);
+}
+
+const data = JSON.parse(fs.readFileSync('../website/public/movies.json', 'utf8'));
+//const data = readGzipJson('./cache.json.gz');
 
 const stats = new Map();
 

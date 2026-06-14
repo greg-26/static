@@ -160,6 +160,7 @@ const posterStyle = computed(() => ({
   flex-shrink: 0;
 }
 
+.mat-dot.sev-nan { background: grey; }
 .mat-dot.sev-0 { background: #4ade80; }
 .mat-dot.sev-1 { background: #a3e635; }
 .mat-dot.sev-2 { background: #facc15; }

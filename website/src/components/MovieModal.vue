@@ -108,7 +108,7 @@
                 >CSM</a>
                 <a
                   v-else
-                  :href="'https://www.commonsensemedia.org/search/'+movie.t"
+                  :href="'https://www.commonsensemedia.org/search/category/movie/sort/score-desc/'+movie.t"
                   target="_blank" rel="noopener"
                   class="mat-ext-link mat-ext-link--csm genre-chip--alt"
                   title="Common Sense Media review"
@@ -124,16 +124,18 @@
                 class="mat-score-row"
               >
                 <span class="mat-score-name">{{ cat.label }}</span>
+               
                 <div class="mat-score-bar-wrap">
                   <div
                     class="mat-score-bar"
                     :class="scoreCssClass(Math.round(getScore(movie.mat, cat.shift)))"
                     :style="{ width: `${getScore(movie.mat, cat.shift) / 5 * 95+5}%` }"
                   ></div>
+
                 </div>
+                 <span style="font-size: 12px; color: var(--muted); min-width: 10px; flex-shrink: 0;">{{ formatScore(getScore(movie.mat, cat.shift)) }}</span>
                 <span class="mat-score-label" >
                   {{ SEVERITY_LABELS[Math.round(getScore(movie.mat, cat.shift))] }}
-                  - {{ formatScore(getScore(movie.mat, cat.shift)) }}/5
                 </span>
                 
               </div>
@@ -260,7 +262,7 @@ function formatScore(raw) {
   const base = Math.floor(raw);
   const frac = raw - base;
   if (frac < 0.2) return `${base}`;
-  if (frac > 0.8) return `${base + 1}-`;
+  if (frac > 0.6) return `${base + 1}-`;
   return `${base}+`;
 }
 
@@ -528,6 +530,7 @@ watch(() => props.movie, (movie) => {
 }
 
 /* Score bar & label colours keyed to 0–5 integer */
+.sev-nan { background: grey; }
 .sev-0 { background: #4ade80; color: #4ade80; }
 .sev-1 { background: #a3e635; color: #a3e635; }
 .sev-2 { background: #facc15; color: #facc15; }
