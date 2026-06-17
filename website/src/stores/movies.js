@@ -114,8 +114,8 @@ export const useMovieStore = defineStore("movies", () => {
     if (query.length < 2) {
       // hide movies without a poster
       pool = pool.filter(({ item }) => item.p);
-      // Hide movies with very explicit sex/nudity (score >= 4.5, i.e. nibble 9–10)
-      pool = pool.filter(({ item }) => item.mat === undefined || getScore(item.mat, 0) < 4.5);
+      // Hide movies with very explicit sex/nudity (score >= 4.5)
+      pool = pool.filter(({ item }) => (getScore(item.mat, 0) || 0) < 4.5);
     }
 
     if (selectedGenres.value.size > 0) {

@@ -133,10 +133,10 @@
                   ></div>
 
                 </div>
-                 <span style="font-size: 12px; color: var(--muted); min-width: 10px; flex-shrink: 0;">{{ formatScore(getScore(movie.mat, cat.shift)) }}</span>
-                <span class="mat-score-label" >
+                 <span style="font-size: 12px; color: var(--muted); min-width: 20px; flex-shrink: 0;">{{ formatScore(getScore(movie.mat, cat.shift)) }}</span>
+                <!--<span class="mat-score-label">
                   {{ SEVERITY_LABELS[Math.round(getScore(movie.mat, cat.shift))] }}
-                </span>
+                </span>-->
                 
               </div>
             </div>

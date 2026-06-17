@@ -65,7 +65,7 @@ function packMatMask(sex, violence, language, drugs) {
 }
 
 export function computeMatMask(cache) {
-  const numVotes = cache?.rawParentsGuide?.[0]?.severityBreakdowns?.reduce((s, b) => s + b.voteCount, 0)
+  const numVotes = cache?.rawParentsGuide?.[0]?.severityBreakdowns?.reduce((s, b) => s + (b.voteCount || 0) , 0)
   if (!numVotes || numVotes < 5){
     if(resolveProbs(cache?.preds?.csm_sex)) console.log('Variance is ok, but not enought votes ', numVotes, ' -> Should probably discard ', cache?.preds)
     //return packMatMask()

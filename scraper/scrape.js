@@ -310,7 +310,7 @@ async function buildTopN() {
       genres: genreMask,
       isSeason: row.titleType === "tvSeries",
     };
-    allTitlesMap.set(row.tconst, entry);
+    //allTitlesMap.set(row.tconst, entry);
     // Apply quality filter for the main ranked list
     if (r.votes >= 750 && r.rating >= 5) titles.push(entry);
   });
@@ -319,6 +319,7 @@ async function buildTopN() {
   titles.sort((a, b) => b.votes * b.rating - a.votes * a.rating);
   const top = titles.slice(0, TOP_N);
   log(`Top ${top.length} titles selected.`);
+  if (global.gc) global.gc();
   return { movies: top, allTitlesMap };
 }
 
@@ -491,7 +492,8 @@ async function enrichWithTmdb(movies, cache) {
           cache[movie.id] = { ...cache[movie.id], enriched: true, tmdbEnrichedAt: new Date().toISOString(), tmdbId, poster, popularity, providerMask, overviewEn, overviewEs, titleEs, mpaCertification, originCountries };
         } catch (e) {
           log(`  ✗ TMDB ${movie.id}: ${e.message}`);
-          cache[movie.id] = { ...cache[movie.id], enriched: true, tmdbEnrichedAt: new Date().toISOString(), tmdbId: null, poster: null, popularity: 0, providerMask: 0, overviewEn: null, overviewEs: null, titleEs: null, mpaCertification: null, originCountries: null };
+          cache[movie.id].enriched = true
+          cache[movie.id].tmdbEnrichedAt = new Date().toISOString()
         }
       })
     );
@@ -545,7 +547,6 @@ async function enrichWithMaturity(movies, cache) {
         try {
           const url = `https://api.imdbapi.dev/titles/${movie.id}/parentsGuide`;
           const data = await matLimiter.run(() => fetchJson(url));
-          // Store raw guide array; matMask is computed at output time via computeMatMask()
           const rawParentsGuide = data?.parentsGuide ?? null;
           cache[movie.id] = { ...cache[movie.id], maturityDone: true, maturityEnrichedAt: new Date().toISOString(), rawParentsGuide, preds: null };
         } catch (e) {
@@ -966,13 +967,13 @@ async function main() {
   const size = (fs.statSync(OUTPUT_FILE).size / 1024).toFixed(1);
   log(`✓ Written ${OUTPUT_FILE} (${size} KB, ${output.movies.length} titles)`);
 
-  const enriched   = allMovies.filter((m) => cache[m.id]?.enriched).length;
+  const enriched    = allMovies.filter((m) => cache[m.id]?.enriched).length;
   const withPoster  = allMovies.filter((m) => cache[m.id]?.poster).length;
   const withGuide   = allMovies.filter((m) => cache[m.id]?.rawParentsGuide).length;
-  const withMat     = output.movies.filter((m) => m.mat !== undefined).length;
+  const withPreds   = allMovies.filter((m) => cache[m.id]?.preds).length;
   const withCsm     = allMovies.filter((m) => cache[m.id]?.csm).length;
   const forcedIn    = csmMovies.length;
-  log(`  TMDB enriched: ${enriched}/${allMovies.length} | With poster: ${withPoster} | With mat: ${withMat} | With guide: ${withGuide} | With CSM: ${withCsm} | CSM force-added: ${forcedIn}`);
+  log(`  TMDB enriched: ${enriched}/${allMovies.length} | With poster: ${withPoster} | With preds: ${withPreds} | With guide: ${withGuide} | With CSM: ${withCsm} | CSM force-added: ${forcedIn}`);
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });

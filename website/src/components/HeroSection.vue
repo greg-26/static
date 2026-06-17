@@ -104,12 +104,12 @@
           </transition>
         </div>
 
-        <div class="filter-group filter-group--rating">
+        <div class="filter-group filter-group--rating" style="width: 100%">
           <p class="filter-label">Min IMDb rating</p>
           <div class="rating-slider-wrap">
             <input
               type="range"
-              min="0" max="10" step="0.5"
+              min="5" max="10" step="0.5"
               v-model.number="store.minRating"
               class="rating-slider"
             />
