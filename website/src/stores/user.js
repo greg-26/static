@@ -50,7 +50,7 @@ export const useUserStore = defineStore("user", () => {
 
   async function createUser(name) {
     const token = generateToken();
-    const data = { name, listTokens: [], watched: [] };
+    const data = { name, listTokens: [], watched: [], customProviders: [] };
     await kvWrite(token, data);
     userToken.value = token;
     userData.value = data;
@@ -120,6 +120,23 @@ export const useUserStore = defineStore("user", () => {
     await _saveUser();
   }
 
+  async function addCustomProvider(urlTemplate) {
+    if (!userData.value) return;
+    const existing = userData.value.customProviders ?? [];
+    if (existing.includes(urlTemplate)) return;
+    userData.value = { ...userData.value, customProviders: [...existing, urlTemplate] };
+    await _saveUser();
+  }
+
+  async function removeCustomProvider(urlTemplate) {
+    if (!userData.value) return;
+    userData.value = {
+      ...userData.value,
+      customProviders: (userData.value.customProviders ?? []).filter(u => u !== urlTemplate),
+    };
+    await _saveUser();
+  }
+
   function getShareUrl(listToken) {
     return `${window.location.origin}${window.location.pathname}?add=${listToken}`;
   }
@@ -132,9 +149,10 @@ export const useUserStore = defineStore("user", () => {
   }
 
   return {
-    userToken, userData, lists, loading, saving, isLoggedIn,
+    userToken, userData, lists, loading, saving, isLoggedIn, watchedSet,
     isWatched, isInList, init, createUser, importUser, setName,
     createList, addListByToken, removeList, toggleMovieInList, toggleWatched,
+    addCustomProvider, removeCustomProvider,
     getShareUrl, logout,
   };
 });

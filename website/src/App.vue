@@ -45,9 +45,16 @@
             />
             <!-- Regular store rows -->
             <MovieRow
-              v-for="row in store.movieRows"
+              v-for="row in filteredMovieRows"
               :key="row.id"
               :row="row"
+              @selectMovie="selectedMovie = $event"
+            />
+            <!-- Watched row (always last) -->
+            <MovieRow
+              v-if="watchedRow"
+              :key="watchedRow.id"
+              :row="watchedRow"
               @selectMovie="selectedMovie = $event"
             />
           </template>
@@ -110,6 +117,27 @@ const listRows = computed(() => {
       movies: list.movies.map(id => movieById.value.get(id)).filter(Boolean),
     }))
     .filter(row => row.movies.length > 0);
+});
+
+// Store rows with watched movies filtered out (only when logged in)
+const filteredMovieRows = computed(() => {
+  const watched = userStore.watchedSet;
+  if (!userStore.isLoggedIn || watched.size === 0) return store.movieRows;
+  return store.movieRows.map(row => ({
+    ...row,
+    movies: row.movies.filter(m => !watched.has(m.id)),
+  })).filter(row => row.movies.length >= 4);
+});
+
+// Watched row — shown last when the user has watched at least one movie
+const watchedRow = computed(() => {
+  if (!userStore.isLoggedIn || userStore.watchedSet.size === 0) return null;
+  const movies = [...userStore.watchedSet]
+    .map(id => movieById.value.get(id))
+    .filter(Boolean)
+    .reverse(); // most recently marked first
+  if (movies.length === 0) return null;
+  return { id: "watched", label: "Watch again", movies };
 });
 
 onMounted(async () => {

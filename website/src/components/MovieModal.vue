@@ -170,10 +170,51 @@
             </div>
           </div>
 
-          <div class="modal-providers" v-if="providerNames.length">
+          <div class="modal-providers" v-if="providerNames.length || userStore.isLoggedIn">
             <p class="modal-section-label">Available on</p>
             <div class="provider-list">
               <a v-for="p in providerNames" target="_blank" rel="noopener" :key="p" :href="extraDetails?.tmdbUrl+'/watch'" class="provider-chip">{{ p }}</a>
+
+              <!-- Custom provider chips -->
+              <a
+                v-for="cp in resolvedCustomProviders"
+                :key="cp.urlTemplate"
+                :href="cp.url"
+                target="_blank"
+                rel="noopener"
+                class="provider-chip provider-chip--custom"
+                :title="cp.urlTemplate"
+              >
+                {{ cp.domain }}
+                <button
+                  class="provider-chip-remove"
+                  @click.prevent.stop="userStore.removeCustomProvider(cp.urlTemplate)"
+                  title="Remove provider"
+                >×</button>
+              </a>
+
+              <!-- Add custom provider button -->
+              <div v-if="userStore.isLoggedIn" class="custom-provider-add">
+                <button
+                  v-if="!showProviderForm"
+                  class="provider-chip provider-chip--add"
+                  @click="showProviderForm = true"
+                  title="Add custom search provider"
+                >+ Add</button>
+
+                <div v-else class="provider-form">
+                  <input
+                    ref="providerInputRef"
+                    v-model="providerInput"
+                    class="provider-input"
+                    placeholder="e.g. netflix.com/search?q={title}&y={year}"
+                    @keydown.enter="commitProvider"
+                    @keydown.escape="showProviderForm = false; providerInput = ''"
+                  />
+                  <button class="provider-form-btn provider-form-btn--ok" @click="commitProvider" title="Add">✓</button>
+                  <button class="provider-form-btn provider-form-btn--cancel" @click="showProviderForm = false; providerInput = ''" title="Cancel">×</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -183,7 +224,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, nextTick } from "vue";
 import { GENRES, PROVIDERS } from "@/stores/movies.js";
 import { MATURITY_CATEGORIES, SEVERITY_LABELS, getScore, scoreCssClass } from "@/maturity.js";
 import { useUserStore } from "@/stores/user.js";
@@ -297,6 +338,55 @@ const providerNames = computed(() => {
     .filter(p => props.movie.prov & p.bit)
     .map(p => p.name);
 });
+
+// ─── Custom providers ─────────────────────────────────────────────────────────
+const showProviderForm = ref(false);
+const providerInput    = ref("");
+const providerInputRef = ref(null);
+
+watch(showProviderForm, async (val) => {
+  if (val) {
+    await nextTick();
+    providerInputRef.value?.focus();
+  }
+});
+
+function extractDomain(urlTemplate) {
+  try {
+    // Temporarily replace template params so URL parsing works
+    const clean = urlTemplate.replace(/\{[^}]+\}/g, "X").trim();
+    const prefixed = /^https?:\/\//i.test(clean) ? clean : `https://${clean}`;
+    return new URL(prefixed).hostname.replace(/^www\./, "");
+  } catch {
+    return urlTemplate.split("/")[0].replace(/^www\./, "");
+  }
+}
+
+function fillProviderUrl(urlTemplate, movie) {
+  if (!movie) return "#";
+  const prefixed = /^https?:\/\//i.test(urlTemplate) ? urlTemplate : `https://${urlTemplate}`;
+  return prefixed
+    .replace(/\{title\}/gi, encodeURIComponent(movie.t || movie.ts || ""))
+    .replace(/\{year\}/gi,  encodeURIComponent(movie.y || ""))
+    .replace(/\{imdb\}/gi,  encodeURIComponent(movie.id || ""));
+}
+
+const resolvedCustomProviders = computed(() => {
+  const templates = userStore.userData?.customProviders ?? [];
+  return templates.map(urlTemplate => ({
+    urlTemplate,
+    domain: extractDomain(urlTemplate),
+    url: fillProviderUrl(urlTemplate, props.movie),
+  }));
+});
+
+function commitProvider() {
+  const raw = providerInput.value.trim();
+  if (!raw) return;
+  userStore.addCustomProvider(raw);
+  providerInput.value = "";
+  showProviderForm.value = false;
+}
 
 // ─── Watch for movie changes ──────────────────────────────────────────────────
 watch(() => props.movie, (movie) => {
@@ -464,6 +554,74 @@ watch(() => props.movie, (movie) => {
   text-decoration: none;
   color: var(--teal);
 }
+
+/* ── Custom providers ── */
+.provider-chip--custom {
+  position: relative;
+  padding-right: 22px;
+}
+.provider-chip-remove {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+  border-radius: 99px;
+  transition: color 0.12s;
+}
+.provider-chip-remove:hover { color: #f87171; }
+
+.provider-chip--add {
+  background: transparent;
+  border-style: dashed;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: color 0.15s, border-color 0.15s;
+}
+.provider-chip--add:hover { color: var(--teal); border-color: rgba(45,212,191,0.4); }
+
+.custom-provider-add { display: flex; align-items: center; }
+
+.provider-form {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.provider-input {
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--white);
+  font-family: var(--font-body);
+  font-size: 12px;
+  padding: 4px 8px;
+  width: 220px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.provider-input:focus { border-color: rgba(45,212,191,0.5); }
+.provider-input::placeholder { color: var(--muted); opacity: 0.6; }
+
+.provider-form-btn {
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 4px 7px;
+  transition: color 0.12s, border-color 0.12s;
+}
+.provider-form-btn--ok:hover   { color: var(--teal);  border-color: rgba(45,212,191,0.4); }
+.provider-form-btn--cancel:hover { color: #f87171; border-color: rgba(248,113,113,0.35); }
 
 /* ── Healthiness section ── */
 .modal-maturity { margin-bottom: 18px; }
