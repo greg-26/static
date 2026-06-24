@@ -104,7 +104,7 @@ export const useUserStore = defineStore("user", () => {
       const merged = remote ? _mergeUserOntoRemote(remote) : { ...userData.value };
       await kvWrite(userToken.value, merged);
       userData.value = merged;
-      baseData.value = structuredClone(merged);
+      baseData.value = JSON.parse(JSON.stringify(merged)); // merged can't be cloned with structuredClone
     } finally {
       saving.value = false;
     }

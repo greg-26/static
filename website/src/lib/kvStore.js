@@ -24,7 +24,6 @@ export async function kvWrite(token, data) {
     headers: { "x-write-token": token, "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
-  console.log(res)
   if (!res.ok) throw new Error(`kvWrite ${res.status}`);
 }
 

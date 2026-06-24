@@ -141,15 +141,8 @@ const watchedRow = computed(() => {
 });
 
 // ── URL routing ──────────────────────────────────────────────────────────────
-function slugify(title) {
-  return (title || "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
-function movieToPath(movie) {
-  return `/${movie.id}-${slugify(movie.t)}`;
+function movieToUrl(movie) {
+  return `?movie=${movie.id}`;
 }
 
 function openMovieById(imdbId) {
@@ -161,20 +154,16 @@ function openMovieById(imdbId) {
 // Push URL when modal opens/closes
 watch(selectedMovie, (movie) => {
   if (movie) {
-    history.pushState({ imdbId: movie.id }, "", movieToPath(movie));
+    history.pushState({ imdbId: movie.id }, "", movieToUrl(movie));
   } else {
-    history.pushState(null, "", window.location.pathname.replace(/\/tt\d+[^/]*/i, "") || "/");
+    history.pushState(null, "", window.location.pathname);
   }
 });
 
-// Handle browser back/forward
-function onPopState(e) {
-  const match = window.location.pathname.match(/^\/(tt\d+)/i);
-  if (match) {
-    openMovieById(match[1]);
-  } else {
-    selectedMovie.value = null;
-  }
+function onPopState() {
+  const id = new URLSearchParams(window.location.search).get("movie");
+  if (id) openMovieById(id);
+  else selectedMovie.value = null;
 }
 
 // ── Filter persistence ────────────────────────────────────────────────────────
@@ -213,25 +202,25 @@ onMounted(async () => {
   // Handle ?add= URL param
   const params = new URLSearchParams(window.location.search);
   const addToken = params.get("add");
+  const movieId  = params.get("movie");
+
   if (addToken) {
     if (userStore.isLoggedIn) {
-      try {
-        await userStore.addListByToken(addToken);
-      } catch (e) {
-        console.warn("Could not add shared list:", e.message);
-      }
+      try { await userStore.addListByToken(addToken); }
+      catch (e) { console.warn("Could not add shared list:", e.message); }
     } else {
       pendingListToken.value = addToken;
       showConfig.value = true;
     }
-    history.replaceState(null, "", window.location.pathname);
+    // Remove ?add= but preserve ?movie= if present
+    const clean = new URLSearchParams();
+    if (movieId) clean.set("movie", movieId);
+    const qs = clean.toString();
+    history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname);
   }
 
-  // Handle direct /tt1234567-title URL
-  const pathMatch = window.location.pathname.match(/^\/(tt\d+)/i);
-  if (pathMatch) {
-    openMovieById(pathMatch[1]);
-  }
+  // Handle direct ?movie=tt1234567 URL
+  if (movieId) openMovieById(movieId);
 });
 </script>
 
