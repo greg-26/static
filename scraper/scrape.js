@@ -59,11 +59,11 @@ const enrichLimit = (() => {
 })();
 const matLimit = (() => {
   const idx = args.indexOf("--mat-limit");
-  return idx !== -1 ? parseInt(args[idx + 1]) : 200;
+  return idx !== -1 ? parseInt(args[idx + 1]) : 1000;
 })();
 const recrawlDays = (() => {
   const idx = args.indexOf("--recrawl-days");
-  return idx !== -1 ? parseInt(args[idx + 1]) : 7;
+  return idx !== -1 ? parseInt(args[idx + 1]) : 28;
 })();
 const RECRAWL_MS = recrawlDays * 24 * 60 * 60 * 1000;
 const csmLimit = (() => {
