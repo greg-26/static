@@ -226,6 +226,7 @@ export const useMovieStore = defineStore("movies", () => {
   }
 
   const availableProviders = computed(() => {
+    if (!allMovies?.value.length) return PROVIDERS
     return PROVIDERS.filter(p =>
       allMovies.value.some(m => m.prov & p.bit)
     );

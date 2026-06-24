@@ -2,7 +2,8 @@
   <Teleport to="body">
     <div class="modal-backdrop" @click.self="$emit('close')" v-if="movie">
       <div class="modal">
-        <button class="modal-close" @click="$emit('close')" aria-label="Go back">
+        <!-- Desktop: button sits to the left of the poster, outside it -->
+        <button class="modal-close modal-close--desktop" @click="$emit('close')" aria-label="Go back">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
@@ -13,6 +14,12 @@
           <div v-else class="modal-poster-placeholder" :style="{ background: movie._mockColor || '#16161f' }">
             <span>{{ movie.t }}</span>
           </div>
+          <!-- Mobile: button overlaps the poster -->
+          <button class="modal-close modal-close--mobile" @click="$emit('close')" aria-label="Go back">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </button>
         </div>
 
         <div class="modal-body">
@@ -59,8 +66,11 @@
           </div>
 
           <!-- Synopsis -->
-          <div class="modal-synopsis" v-if="synopsis">
-            <p class="synopsis-text">{{ synopsis }}</p>
+          <div class="modal-synopsis" v-if="synopsis || genreLabels.length">
+            <p class="synopsis-text">
+              <span v-if="synopsis">{{ synopsis }}</span>
+              <span v-if="genreLabels.length" class="synopsis-genres">{{ genreLabels.map(g => '#' + g.toLowerCase().replace(/\s+/g, '')).join(' ') }}</span>
+            </p>
           </div>
 
           <!-- User actions (watched + lists) -->
@@ -351,12 +361,32 @@ watch(showProviderForm, async (val) => {
   }
 });
 
+// Known brand overrides: hostname fragment → display name
+const DOMAIN_BRANDS = {
+  netflix: "Netflix", disney: "Disney+", hbo: "HBO", max: "Max",
+  prime: "Prime Video", amazon: "Prime Video", apple: "Apple TV+",
+  hulu: "Hulu", paramount: "Paramount+", peacock: "Peacock",
+  mubi: "MUBI", criterion: "Criterion", vudu: "Vudu",
+  googleplay: "Google Play", youtube: "YouTube", rakuten: "Rakuten",
+  skyshowtime: "SkyShowtime", filmin: "Filmin", movistar: "Movistar+",
+  atresplayer: "Atresplayer", mitele: "Mitele", rtve: "RTVE Play",
+};
+
 function extractDomain(urlTemplate) {
   try {
-    // Temporarily replace template params so URL parsing works
     const clean = urlTemplate.replace(/\{[^}]+\}/g, "X").trim();
     const prefixed = /^https?:\/\//i.test(clean) ? clean : `https://${clean}`;
-    return new URL(prefixed).hostname.replace(/^www\./, "");
+    const hostname = new URL(prefixed).hostname.toLowerCase();
+    // Strip TLD(s) and split by dots
+    const parts = hostname.replace(/\.(com|net|org|io|tv|es|co|uk|de|fr|it|jp|au|ca|mx|br|ar|nl|be|pl|se|no|dk|fi|pt|ru|cn|in|app|me|co\.uk|com\.mx|com\.br|com\.ar)$/, "").split(".");
+    // Check each part against brand map (longest first)
+    for (const part of [...parts].reverse()) {
+      const key = part.replace(/[^a-z]/g, "");
+      if (DOMAIN_BRANDS[key]) return DOMAIN_BRANDS[key];
+    }
+    // Fallback: last meaningful part, capitalized
+    const name = parts[parts.length - 1] || parts[0];
+    return name.charAt(0).toUpperCase() + name.slice(1);
   } catch {
     return urlTemplate.split("/")[0].replace(/^www\./, "");
   }
@@ -366,7 +396,7 @@ function fillProviderUrl(urlTemplate, movie) {
   if (!movie) return "#";
   const prefixed = /^https?:\/\//i.test(urlTemplate) ? urlTemplate : `https://${urlTemplate}`;
   return prefixed
-    .replace(/\{title\}/gi, encodeURIComponent(movie.t || movie.ts || ""))
+    .replace(/\{title\}/gi, encodeURIComponent((movie.t || movie.ts || "").replace(/[^a-zA-Z0-9.]/g, " ").trim()))
     .replace(/\{year\}/gi,  encodeURIComponent(movie.y || ""))
     .replace(/\{imdb\}/gi,  encodeURIComponent(movie.id || ""));
 }
@@ -431,30 +461,51 @@ watch(() => props.movie, (movie) => {
   min-height: 100vh;
   display: flex;
   gap: 24px;
-  padding: 80px 24px 24px 24px;
+  padding: 32px 24px 56px 24px;
   position: relative;
   overflow-y: visible;
 }
 
 .modal-close {
-  position: sticky;
-  top: 24px;
-  left: 24px;
   background: transparent;
   border: none;
   padding: 0;
   color: #ffffff;
-  width: 24px;
-  height: 24px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.15s, opacity 0.15s;
-  z-index: 110;
+  transition: transform 0.15s, opacity 0.15s, background 0.15s;
 }
-.modal-close svg { width: 100%; height: 100%; }
-.modal-close:hover { opacity: 0.8; transform: translateX(-3px); }
+.modal-close svg { width: 20px; height: 20px; }
+
+/* Desktop: sits to the left of the poster, bare arrow */
+.modal-close--desktop {
+  position: sticky;
+  top: 24px;
+  align-self: flex-start;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+.modal-close--desktop:hover { opacity: 0.7; transform: translateX(-3px); }
+
+/* Mobile: hidden by default, shown in media query */
+.modal-close--mobile {
+  display: none;
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  z-index: 2;
+}
+.modal-close--mobile svg { width: 14px; height: 14px; }
+.modal-close--mobile:hover { background: rgba(0,0,0,0.8); }
 
 .modal-poster {
   flex-shrink: 0;
@@ -462,6 +513,8 @@ watch(() => props.movie, (movie) => {
   height: 210px;
   border-radius: var(--radius);
   overflow: hidden;
+  position: relative;
+  align-self: flex-start;
 }
 .modal-poster img { width: 100%; height: 100%; object-fit: cover; }
 .modal-poster-placeholder {
@@ -510,6 +563,8 @@ watch(() => props.movie, (movie) => {
   display: flex; flex-wrap: wrap; gap: 6px;
   margin-bottom: 18px;
 }
+/* The top genre block (above synopsis) is now hidden — genres shown inline as hashtags */
+.modal-body > .modal-genres { display: none; }
 .genre-chip {
   padding: 3px 10px;
   background: var(--surface3);
@@ -532,6 +587,14 @@ watch(() => props.movie, (movie) => {
   color: rgba(255,255,255,0.78);
   line-height: 1.6;
   margin: 0;
+}
+.synopsis-genres {
+  display: inline;
+  margin-left: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  opacity: 0.6;
+  letter-spacing: 0.01em;
 }
 
 .modal-section-label {
@@ -840,11 +903,12 @@ watch(() => props.movie, (movie) => {
 @media (max-width: 560px) {
   .modal {
     flex-direction: column;
-    padding: 16px 16px 16px 16px;
+    padding: 16px 16px 40px 16px;
     gap: 16px;
   }
   .modal-poster { width: 100%; height: 200px; }
   .modal-poster img { object-position: center top; }
-  .modal-close { top: 16px; left: 16px; width: 26px; height: 26px; }
+  .modal-close--desktop { display: none; }
+  .modal-close--mobile  { display: flex; }
 }
 </style>

@@ -84,7 +84,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useMovieStore } from "@/stores/movies.js";
 import { useUserStore } from "@/stores/user.js";
 import HeroSection from "@/components/HeroSection.vue";
@@ -140,7 +140,73 @@ const watchedRow = computed(() => {
   return { id: "watched", label: "Watch again", movies };
 });
 
+// ── URL routing ──────────────────────────────────────────────────────────────
+function slugify(title) {
+  return (title || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function movieToPath(movie) {
+  return `/${movie.id}-${slugify(movie.t)}`;
+}
+
+function openMovieById(imdbId) {
+  if (!imdbId) return;
+  const movie = movieById.value.get(imdbId);
+  if (movie) selectedMovie.value = movie;
+}
+
+// Push URL when modal opens/closes
+watch(selectedMovie, (movie) => {
+  if (movie) {
+    history.pushState({ imdbId: movie.id }, "", movieToPath(movie));
+  } else {
+    history.pushState(null, "", window.location.pathname.replace(/\/tt\d+[^/]*/i, "") || "/");
+  }
+});
+
+// Handle browser back/forward
+function onPopState(e) {
+  const match = window.location.pathname.match(/^\/(tt\d+)/i);
+  if (match) {
+    openMovieById(match[1]);
+  } else {
+    selectedMovie.value = null;
+  }
+}
+
+// ── Filter persistence ────────────────────────────────────────────────────────
+// Sync maturity + provider filters from user data after login
+watch(() => userStore.isLoggedIn, (loggedIn) => {
+  if (!loggedIn) return;
+  const prefs = userStore.userData?.filterPrefs;
+  if (!prefs) return;
+  if (Array.isArray(prefs.maxMaturityCat)) {
+    prefs.maxMaturityCat.forEach((v, i) => store.setMaxMaturityCat(i, v));
+  }
+  if (prefs.selectedProviders !== undefined) {
+    store.selectedProviders = prefs.selectedProviders;
+  }
+}, { immediate: true });
+
+// Debounced save of filter prefs to user data
+let filterSaveTimer = null;
+watch([() => [...store.maxMaturityCat], () => store.selectedProviders], () => {
+  if (!userStore.isLoggedIn) return;
+  clearTimeout(filterSaveTimer);
+  filterSaveTimer = setTimeout(() => {
+    userStore.saveFilterPrefs({
+      maxMaturityCat: [...store.maxMaturityCat],
+      selectedProviders: store.selectedProviders,
+    });
+  }, 800);
+}, { deep: true });
+
 onMounted(async () => {
+  window.addEventListener("popstate", onPopState);
+
   await store.loadMovies();
   await userStore.init();
 
@@ -158,8 +224,13 @@ onMounted(async () => {
       pendingListToken.value = addToken;
       showConfig.value = true;
     }
-    // Clean URL
     history.replaceState(null, "", window.location.pathname);
+  }
+
+  // Handle direct /tt1234567-title URL
+  const pathMatch = window.location.pathname.match(/^\/(tt\d+)/i);
+  if (pathMatch) {
+    openMovieById(pathMatch[1]);
   }
 });
 </script>
