@@ -70,7 +70,7 @@ export const useMovieStore = defineStore("movies", () => {
   };
   const pop         = (a) => a.pop || 1;
   const rating      = (a) => a.r || 6;
-  const popularPop  = (a) => a.pop > 5 ? a.pop : 0.001;
+  const popularPop  = (a) => a.pop > 6 ? 1 : 0.0001;
 
   const makeSorter = (getPop, getRating) =>
     (a, b) => getPop(b) * getRating(b) * maturityScore(b)
