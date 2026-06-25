@@ -2,7 +2,7 @@ node_modules/
 dist/
 website/public/movies.json
 website/public/extra.json
-scraper/models/
+#scraper/models/
 *.tsv
 .env
 .env.*

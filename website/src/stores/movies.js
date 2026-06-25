@@ -66,7 +66,7 @@ export const useMovieStore = defineStore("movies", () => {
   // Sex & Nudity is shift 0; scale 0–5 → invert so lower score = higher sort weight
   const maturityScore = (a) => {
     if (a.mat === undefined) return 0.00001;
-    const sexScore = getScore(a.mat, 0);
+    const sexScore = getScore(a.mat, 0) || 0.00001;
     return Math.max(0.00001, 1 - (sexScore / 3.5 ) ** 2 );       // 1.0 (clean) → 0.0 (very explicit)
   };
 
@@ -149,11 +149,11 @@ export const useMovieStore = defineStore("movies", () => {
     if (query.length >= 2) {
       pool.sort((a, b) => {
         if (a.score !== b.score) return a.score - b.score;
-        return (b.item.pop || 0) * b.item.r - (a.item.pop || 0) * a.item.r;
+        return (b.item.pop || 0.001) * b.item.r - (a.item.pop || 0.001) * a.item.r;
       });
     } else {
       pool.sort((a, b) =>
-        (b.item.pop || 0.001) * b.item.r * maturityScore(b.item) - (a.item.pop || 0.001) * a.item.r * maturityScore(a.item)
+        (b.item.pop || 0.001) * (b.item.r || 6 ) * maturityScore(b.item) - (a.item.pop || 0.001) * a.item.r * maturityScore(a.item)
       );
     }
 
@@ -166,11 +166,11 @@ export const useMovieStore = defineStore("movies", () => {
     if (pool.length === 0) return [];
 
     const rows = [];
-    const byPopRating = (a, b) => (b.pop || 0.001) * (b.r || 5) * maturityScore(b) - (a.pop || 0.001) *  (a.r || 5) * maturityScore(a);
+    const byPopRating = (a, b) => (b.pop || 0.001) * (b.r || 6) * maturityScore(b) - (a.pop || 0.001) *  (a.r || 6) * maturityScore(a);
 
     const ROW_MAX = 500;
 
-    const topRated = [...pool].sort((a, b) => b.r * maturityScore(b) - a.r * maturityScore(a) ).slice(0, ROW_MAX);
+    const topRated = [...pool].sort((a, b) => (b.r || 6) * maturityScore(b) - (a.r || 6) * maturityScore(a) ).slice(0, ROW_MAX);
     if (topRated.length >= 4)
       rows.push({ id: "top-rated", label: "Top Rated", movies: topRated });
 

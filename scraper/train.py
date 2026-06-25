@@ -12,7 +12,7 @@ Features used:
 Targets (CSM content grid):  sex, violence, language, drugs
 
 Usage:
-  pip install lightgbm scikit-learn numpy pandas torch pytorch-tabnet
+  pip install lightgbm scikit-learn numpy pandas
   python train.py --cache ./cache.json
   python train.py --cache ./cache.json --targets sex violence
   python train.py --cache ./cache.json --movies ./movies_meta.json
@@ -361,19 +361,7 @@ def tune_params(X_train, y_train, n_classes, base_params, n_iter=25, cv=3, rando
 
 
 
-# ── Neural model helpers ───────────────────────────────────────────────────────
-
-def _get_class_weights_tensor(y_train, n_classes, device):
-    """Inverse-frequency class weights as a torch tensor."""
-    import torch
-    counts = np.bincount(y_train, minlength=n_classes).astype(float)
-    counts = np.where(counts == 0, 1, counts)
-    weights = 1.0 / counts
-    weights = weights / weights.sum() * n_classes   # normalise so mean weight ≈ 1
-    return torch.tensor(weights, dtype=torch.float32, device=device)
-
-
-class _OrdinalMLP(object):
+class _OrdinalMLP(object):  # kept as stub so old model files can still be referenced
     """
     Two-hidden-layer MLP with an ordinal (CORAL-style) output head.
 
@@ -392,172 +380,11 @@ class _OrdinalMLP(object):
         soft pred = expected value E[Y]
     """
 
-    def __init__(self, n_features, n_classes, device="cpu",
-                 hidden=(512, 256), dropout=(0.3, 0.2),
-                 lr=1e-3, weight_decay=1e-4,
-                 epochs=120, batch_size=256, patience=15):
-        import torch
-        import torch.nn as nn
-
-        self.n_classes = n_classes
-        self.device    = device
-        self.epochs    = epochs
-        self.batch_size = batch_size
-        self.patience  = patience
-        self.classes_  = np.arange(n_classes)
-
-        self.net = nn.Sequential(
-            nn.BatchNorm1d(n_features),
-            nn.Linear(n_features, hidden[0]),
-            nn.GELU(),
-            nn.Dropout(dropout[0]),
-            nn.Linear(hidden[0], hidden[1]),
-            nn.GELU(),
-            nn.Dropout(dropout[1]),
-            nn.Linear(hidden[1], n_classes - 1),   # ordinal thresholds
-        ).to(device)
-
-        self.opt = torch.optim.AdamW(
-            self.net.parameters(), lr=lr, weight_decay=weight_decay)
-        self.sched = torch.optim.lr_scheduler.CosineAnnealingLR(
-            self.opt, T_max=epochs, eta_min=lr * 0.05)
-
-    def _to_ordinal_labels(self, y_np):
-        """Convert class labels to (n, n_classes-1) binary threshold matrix."""
-        import torch
-        K = self.n_classes - 1
-        labels = np.stack([( y_np > k ).astype(np.float32) for k in range(K)], axis=1)
-        return torch.tensor(labels, dtype=torch.float32, device=self.device)
-
-    def fit(self, X_train_np, y_train_np, X_val_np, y_val_np, class_weights=None):
-        import torch
-        import torch.nn.functional as F
-
-        X_tr = torch.tensor(X_train_np, dtype=torch.float32, device=self.device)
-        X_vl = torch.tensor(X_val_np,   dtype=torch.float32, device=self.device)
-        Y_tr = self._to_ordinal_labels(y_train_np)
-
-        best_val_mae, best_state, wait = np.inf, None, 0
-
-        for epoch in range(self.epochs):
-            self.net.train()
-            perm = torch.randperm(len(X_tr), device=self.device)
-            for i in range(0, len(X_tr), self.batch_size):
-                idx  = perm[i:i + self.batch_size]
-                logits = self.net(X_tr[idx])
-                # pos_weight shape must match logits: (n_classes-1,)
-                # threshold k fires when y > k, so the "positive" class is k+1
-                if class_weights is not None:
-                    pw = class_weights[1:self.n_classes]   # shape (n_classes-1,)
-                else:
-                    pw = None
-                loss   = F.binary_cross_entropy_with_logits(
-                    logits, Y_tr[idx],
-                    pos_weight=pw,
-                )
-                self.opt.zero_grad()
-                loss.backward()
-                torch.nn.utils.clip_grad_norm_(self.net.parameters(), 1.0)
-                self.opt.step()
-            self.sched.step()
-
-            # Early stopping on val MAE
-            val_int, val_soft = self._predict_arrays(X_vl)
-            val_mae = float(np.abs(val_int - y_val_np).mean())
-            if val_mae < best_val_mae - 1e-4:
-                best_val_mae, wait = val_mae, 0
-                best_state = {k: v.cpu().clone() for k, v in self.net.state_dict().items()}
-            else:
-                wait += 1
-                if wait >= self.patience:
-                    break
-
-        if best_state is not None:
-            self.net.load_state_dict({k: v.to(self.device) for k, v in best_state.items()})
-
-    def _predict_arrays(self, X_tensor):
-        """Returns (preds_int, preds_soft) from a torch tensor."""
-        import torch
-        self.net.eval()
-        with torch.no_grad():
-            logits = self.net(X_tensor)
-            cum_probs = torch.sigmoid(logits).cpu().numpy()   # P(Y > k)
-        # Convert cumulative probabilities to class probabilities.
-        # cum_probs[:,k] = P(Y > k), so boundaries are 1 on the left and 0 on
-        # the right: [1, P(Y>0), P(Y>1), ..., P(Y>K-2), 0]
-        K  = self.n_classes
-        cp = np.hstack([np.ones((len(cum_probs), 1)),
-                        cum_probs,
-                        np.zeros((len(cum_probs), 1))])
-        class_probs = -np.diff(cp, axis=1)                    # P(Y = k)
-        class_probs = np.clip(class_probs, 0, None)
-        class_probs /= class_probs.sum(axis=1, keepdims=True) + 1e-9
-        preds_soft = (class_probs * self.classes_).sum(axis=1)
-        preds_int  = np.clip(np.round(preds_soft), 0, K - 1).astype(int)
-        return preds_int, preds_soft
-
-    def predict(self, X_np):
-        import torch
-        X_t = torch.tensor(X_np, dtype=torch.float32, device=self.device)
-        return self._predict_arrays(X_t)
-
-    # sklearn-compatible stubs so booster_.save_model won't be called on us
-    @property
-    def feature_importances_(self):
-        """L1 norm of first-layer weights as a proxy for feature importance."""
-        import torch
-        w = list(self.net.parameters())[1]   # weight of first Linear (after BN)
-        return w.abs().sum(dim=0).detach().cpu().numpy()
+    pass  # removed
 
 
-def _run_tabnet(X_train_np, y_train_np, X_test_np, y_test,
-                n_classes, max_val, class_weights_np):
-    """
-    Train a TabNet classifier and return eval metrics.
-    TabNet uses sequential attention to select features at each decision step,
-    which provides built-in interpretability and often beats MLPs on tabular data.
-    Falls back gracefully if pytorch-tabnet is not installed.
-    """
-    try:
-        from pytorch_tabnet.tab_model import TabNetClassifier
-    except ImportError:
-        print("    TabNet — skipped (pip install pytorch-tabnet)")
-        return None
 
-    import torch
-    weights_dict = {i: class_weights_np[i] for i in range(n_classes)}
-
-    clf_tn = TabNetClassifier(
-        n_d=32, n_a=32,             # embedding width
-        n_steps=4,                  # decision steps
-        gamma=1.3,
-        n_independent=2,
-        n_shared=2,
-        momentum=0.02,
-        epsilon=1e-15,
-        seed=42,
-        verbose=0,
-        device_name="auto",
-    )
-    clf_tn.fit(
-        X_train_np, y_train_np,
-        eval_set=[(X_test_np, y_test.values)],
-        # "mae" doesn't work with classifier scores — use default accuracy-based early stopping
-        max_epochs=200,
-        patience=20,
-        batch_size=256,
-        virtual_batch_size=64,
-        weights=weights_dict,
-    )
-
-    probs_tn    = clf_tn.predict_proba(X_test_np)
-    classes_arr = np.arange(n_classes)
-    tn_ev       = (probs_tn * classes_arr).sum(axis=1)
-    tn_int      = np.clip(np.round(tn_ev), 0, max_val).astype(int)
-    return clf_tn, tn_int, tn_ev
-
-
-VALID_MODELS = {"clf_argmax"}# "regressor","clf_expected_val", "ordinal_mlp", "tabnet"}
+VALID_MODELS = {"regressor", "clf_argmax"}
 
 def train_one(df, target_col, model_dir, tune=False, tune_iter=25, models=None):
     valid = df[df[target_col].notna()].copy()
@@ -662,69 +489,6 @@ def train_one(df, target_col, model_dir, tune=False, tune_iter=25, models=None):
     else:
         clf_ev = clf_ev_int = clf_mae_ev = clf_mse_ev = clf_qwk_ev = clf_acc_ev = clf_err_dist_ev = clf_entropy_ev = None
 
-    # ── Shared preprocessing for neural models ───────────────────────────────────
-    # Impute + StandardScale on a copy; trees already handle NaNs natively.
-    need_nn = ("ordinal_mlp" in run) or ("tabnet" in run)
-    if need_nn:
-        from sklearn.preprocessing import StandardScaler
-        from sklearn.impute import SimpleImputer
-        import torch
-
-        X_train_nn_df = X_train.copy()
-        X_test_nn_df  = X_test.copy()
-        all_nan_cols  = [c for c in X_train_nn_df.columns
-                         if X_train_nn_df[c].isna().all()]
-        if all_nan_cols:
-            X_train_nn_df = X_train_nn_df.drop(columns=all_nan_cols)
-            X_test_nn_df  = X_test_nn_df.drop(columns=all_nan_cols)
-
-        imputer = SimpleImputer(strategy="median")
-        scaler  = StandardScaler()
-        X_tr_nn = scaler.fit_transform(imputer.fit_transform(X_train_nn_df.values.astype(np.float32)))
-        X_te_nn = scaler.transform(imputer.transform(X_test_nn_df.values.astype(np.float32)))
-
-        device_str = "cuda" if torch.cuda.is_available() else "cpu"
-        device     = torch.device(device_str)
-        cw_tensor  = _get_class_weights_tensor(y_train.values, n_classes, device)
-        cw_np      = cw_tensor.cpu().numpy()
-
-    # ── Option C: Ordinal MLP ──────────────────────────────────────────────────
-    if "ordinal_mlp" in run:
-        print(f"    training OrdinalMLP on {device_str}...")
-        mlp = _OrdinalMLP(
-            n_features=X_tr_nn.shape[1],
-            n_classes=n_classes,
-            device=device_str,
-            hidden=(512, 256),
-            dropout=(0.3, 0.2),
-            lr=1e-3,
-            weight_decay=1e-4,
-            epochs=150,
-            batch_size=256,
-            patience=20,
-        )
-        mlp.fit(X_tr_nn, y_train.values, X_te_nn, y_test.values, class_weights=cw_tensor)
-        mlp_int, mlp_soft = mlp.predict(X_te_nn)
-        mlp_int  = np.clip(mlp_int, 0, max_val)
-        mlp_soft = np.clip(mlp_soft, 0, max_val)
-        mlp_mae, mlp_mse, mlp_qwk, mlp_acc, mlp_err_dist, mlp_entropy = _eval_preds(
-            y_test, mlp_int, mlp_soft, max_val, "OrdinalMLP")
-    else:
-        mlp = mlp_int = mlp_soft = mlp_mae = mlp_mse = mlp_qwk = mlp_acc = mlp_err_dist = mlp_entropy = None
-
-    # ── Option D: TabNet ───────────────────────────────────────────────────────
-    if "tabnet" in run:
-        tabnet_result = _run_tabnet(X_tr_nn, y_train.values, X_te_nn, y_test,
-                                    n_classes, max_val, cw_np)
-    else:
-        tabnet_result = None
-    if tabnet_result is not None:
-        clf_tn, tn_int, tn_ev = tabnet_result
-        tn_int  = np.clip(tn_int, 0, max_val)
-        tn_ev   = np.clip(tn_ev,  0, max_val)
-        tn_mae, tn_mse, tn_qwk, tn_acc, tn_err_dist, tn_entropy = _eval_preds(
-            y_test, tn_int, tn_ev, max_val, "TabNet")
-
     # ── Pick winner and save it ────────────────────────────────────────────────
     candidates = []
     if "regressor" in run:
@@ -733,10 +497,6 @@ def train_one(df, target_col, model_dir, tune=False, tune_iter=25, models=None):
         candidates.append(("clf_argmax",       clf_qwk_am, clf_mae_am, clf_mse_am, clf_acc_am, clf_argmax, clf_argmax.astype(float), clf,    "argmax", clf_argmax))
     if "clf_expected_val" in run:
         candidates.append(("clf_expected_val", clf_qwk_ev, clf_mae_ev, clf_mse_ev, clf_acc_ev, clf_ev_int, clf_ev,                   clf,    "ev",     clf_ev_int))
-    if "ordinal_mlp" in run:
-        candidates.append(("ordinal_mlp",      mlp_qwk,    mlp_mae,    mlp_mse,    mlp_acc,    mlp_int,    mlp_soft,                 mlp,    "ev",     mlp_int))
-    if tabnet_result is not None:
-        candidates.append(("tabnet",           tn_qwk,     tn_mae,     tn_mse,     tn_acc,     tn_int,     tn_ev,                    clf_tn, "ev",     tn_int))
     # Primary sort: MAE (lower = better); tiebreak: QWK (higher = better)
     winner_name, best_qwk, best_mae, best_mse, best_acc, best_int, best_soft, best_model, pred_mode, _ = \
         max(candidates, key=lambda c: (-c[2], c[1]))
@@ -744,16 +504,8 @@ def train_one(df, target_col, model_dir, tune=False, tune_iter=25, models=None):
     print(f"    → winner: {winner_name}  (QWK={best_qwk:.3f}  MAE={best_mae:.3f})")
 
     os.makedirs(model_dir, exist_ok=True)
-    if winner_name == "ordinal_mlp":
-        import torch
-        model_path = os.path.join(model_dir, f"model_{target_col}.pt")
-        torch.save(best_model.net.state_dict(), model_path)
-    elif winner_name == "tabnet":
-        model_path = os.path.join(model_dir, f"model_{target_col}_tabnet")
-        best_model.save_model(model_path)
-    else:
-        model_path = os.path.join(model_dir, f"model_{target_col}.lgb")
-        best_model.booster_.save_model(model_path)
+    model_path = os.path.join(model_dir, f"model_{target_col}.lgb")
+    best_model.booster_.save_model(model_path)
 
     importance = sorted(
         zip(feature_cols, best_model.feature_importances_), key=lambda x: -x[1])[:25]
@@ -773,8 +525,6 @@ def train_one(df, target_col, model_dir, tune=False, tune_iter=25, models=None):
             **( {"regressor":        {"qwk": round(reg_qwk, 4),    "mae": round(reg_mae, 4),    "mse": round(reg_mse, 4),    "exact": round(float(reg_acc), 4),    "pred_entropy": reg_entropy,    "error_dist": reg_err_dist}}        if "regressor"        in run else {} ),
             **( {"clf_argmax":       {"qwk": round(clf_qwk_am, 4), "mae": round(clf_mae_am, 4), "mse": round(clf_mse_am, 4), "exact": round(float(clf_acc_am), 4), "pred_entropy": clf_entropy_am, "error_dist": clf_err_dist_am}}       if "clf_argmax"       in run else {} ),
             **( {"clf_expected_val": {"qwk": round(clf_qwk_ev, 4), "mae": round(clf_mae_ev, 4), "mse": round(clf_mse_ev, 4), "exact": round(float(clf_acc_ev), 4), "pred_entropy": clf_entropy_ev, "error_dist": clf_err_dist_ev}}       if "clf_expected_val" in run else {} ),
-            **( {"ordinal_mlp":      {"qwk": round(mlp_qwk, 4),    "mae": round(mlp_mae, 4),    "mse": round(mlp_mse, 4),    "exact": round(float(mlp_acc), 4),    "pred_entropy": mlp_entropy,    "error_dist": mlp_err_dist}}           if "ordinal_mlp"      in run else {} ),
-            **( {"tabnet": {"qwk": round(tn_qwk, 4), "mae": round(tn_mae, 4), "mse": round(tn_mse, 4), "exact": round(float(tn_acc), 4), "pred_entropy": tn_entropy, "error_dist": tn_err_dist}} if tabnet_result is not None else {} ),
         },
         "label_dist":   y.value_counts().sort_index().to_dict(),
         "true_test_distribution":        {str(k): int(v) for k, v in pd.Series(y_test.values).value_counts().sort_index().items()},

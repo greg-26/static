@@ -51,6 +51,24 @@ jobs:
           git diff --cached --quiet || git commit -m "chore: update scraped data [skip ci]"
           git push
 
+      # ── Run ML predictions ─────────────────────────────────────────────────────
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: pip install lightgbm scikit-learn numpy pandas
+
+      - name: Predict
+        working-directory: scraper
+        run: python predict.py --cache ./cache.json.gz --extra ../website/public/extra.json
+
+      - name: Commit predictions
+        run: |
+          git add -A
+          git diff --cached --quiet || git commit -m "chore: update predictions [skip ci]"
+          git push
+
       # ── Build website ──────────────────────────────────────────────────────────
       - name: Install website dependencies
         working-directory: website
