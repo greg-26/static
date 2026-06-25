@@ -24,6 +24,7 @@ export function scoreCssClass(score) {
 
 /** Extract the 0–5 float score for a category from a 16-bit matMask. */
 export function getScore(matMask, shift) {
+  if (matMask == null) return NaN;
   return decodeNibble((matMask >>> shift) & 0xf);
 }
 
