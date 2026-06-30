@@ -126,38 +126,40 @@
               </div>
             </div>
 
-            <!-- Score grid from stored bitmask -->
+            <!-- Score grid from stored bitmask, with per-category detail tags -->
             <div v-if="movie.mat !== undefined" class="mat-score-grid">
               <div
                 v-for="cat in MATURITY_CATEGORIES"
                 :key="cat.key"
                 class="mat-score-row"
               >
-                <span class="mat-score-name">{{ cat.label }}</span>
-               
-                <div class="mat-score-bar-wrap">
-                  <div
-                    class="mat-score-bar"
-                    :class="scoreCssClass(Math.round(getScore(movie.mat, cat.shift)))"
-                    :style="{ width: `${getScore(movie.mat, cat.shift) / 5 * 95+5}%` }"
-                  ></div>
+                <div class="mat-score-line">
+                  <span class="mat-score-name">{{ cat.label }}</span>
 
+                  <div class="mat-score-bar-wrap">
+                    <div
+                      class="mat-score-bar"
+                      :class="scoreCssClass(Math.round(getScore(movie.mat, cat.shift)))"
+                      :style="{ width: `${getScore(movie.mat, cat.shift) / 5 * 95+5}%` }"
+                    ></div>
+
+                  </div>
+                  <span style="font-size: 12px; color: var(--muted); min-width: 20px; flex-shrink: 0;">{{ formatScore(getScore(movie.mat, cat.shift)) }}</span>
+                  <!--<span class="mat-score-label">
+                    {{ SEVERITY_LABELS[Math.round(getScore(movie.mat, cat.shift))] }}
+                  </span>-->
                 </div>
-                 <span style="font-size: 12px; color: var(--muted); min-width: 20px; flex-shrink: 0;">{{ formatScore(getScore(movie.mat, cat.shift)) }}</span>
-                <!--<span class="mat-score-label">
-                  {{ SEVERITY_LABELS[Math.round(getScore(movie.mat, cat.shift))] }}
-                </span>-->
-                
+
+                <div class="mat-score-tags" v-if="extraDetails?.tags?.[TAG_KEYS[cat.key]]?.length">
+                  <span  class="mat-tag"> &#8627; </span>
+                  <span
+                    v-for="g in extraDetails.tags[TAG_KEYS[cat.key]]"
+                    :key="g"
+                    class="mat-tag"
+                  >&nbsp;{{ g.replaceAll('_', ' ').toLowerCase() }}</span>
+                </div>
               </div>
             </div>
-
-            <div class="modal-genres" v-if="extraDetails?.tags">
-              <span v-for="g in extraDetails.tags.SEXUAL_CONTENT" :key="g" class="genre-chip">{{ g.replaceAll('_', ' ') }}</span>    
-              <span v-for="g in extraDetails.tags.VIOLENCE" :key="g" class="genre-chip genre-chip--alt">{{ g.replaceAll('_', ' ') }}</span> 
-              <span v-for="g in extraDetails.tags.PROFANITY" :key="g" class="genre-chip">{{ g.replaceAll('_', ' ') }}</span> 
-              <span v-for="g in extraDetails.tags.ALCOHOL_DRUGS" :key="g" class="genre-chip genre-chip--alt">{{ g.replaceAll('_', ' ') }}</span> 
-            
-          </div>
 
             <!-- Community review excerpts from IMDb (collapsed per category) -->
             <div v-if="matReviewsLoading" class="mat-loading"><!--Loading community reviews…--></div>
@@ -308,13 +310,17 @@ const matReviewCategories = computed(() => {
   }).filter(cat => cat.items.length > 0);
 });
 
+// Maps a maturity category key to its corresponding extraDetails.tags key
+const TAG_KEYS = {
+  sex: "SEXUAL_CONTENT",
+  violence: "VIOLENCE",
+  language: "PROFANITY",
+  drugs: "ALCOHOL_DRUGS",
+};
+
 function formatScore(raw) {
-  if (raw === null || raw === undefined) return '?';
-  const base = Math.floor(raw);
-  const frac = raw - base;
-  if (frac < 0.2) return `${base}`;
-  if (frac > 0.6) return `${base + 1}-`;
-  return `${base}+`;
+  if (raw === null || raw === undefined || Number.isNaN(raw)) return '?';
+  return raw.toFixed(1);
 }
 
 async function loadReviews(imdbId) {
@@ -593,7 +599,7 @@ watch(() => props.movie, (movie) => {
   margin-left: 6px;
   font-size: 12px;
   color: var(--muted);
-  opacity: 0.6;
+  /*opacity: 0.6;*/
   letter-spacing: 0.01em;
 }
 
@@ -725,8 +731,36 @@ watch(() => props.movie, (movie) => {
 
 .mat-score-row {
   display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mat-score-line {
+  display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.mat-score-tags {
+  display: flex;
+  flex-wrap: nowrap;
+  /*justify-content: flex-end;*/
+  overflow-x: auto;
+  scrollbar-width: none;    /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  padding-left: 15px;
+}
+.mat-score-tags::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+
+.mat-tag {
+  font-size: 11px;
+  color: var(--muted);
+  opacity: 0.9;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.mat-tag:not(:last-child):not(:first-child)::after {
+  content: ", ";
 }
 
 .mat-score-name {
