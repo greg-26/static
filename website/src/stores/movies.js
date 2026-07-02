@@ -120,13 +120,19 @@ export const useMovieStore = defineStore("movies", () => {
 
     let pool = scored;
 
-    // When no search query
-    if (query.length < 2) {
-      // hide movies without a poster
-      pool = pool.filter(({ item }) => item.p);
-      // Hide movies with very explicit sex/nudity (score >= 4.5)
-      pool = pool.filter(({ item }) => (getScore(item.mat, 0) || 0) < 4.5);
+    // When there's an active search query, ignore all other filters
+    // (genre, provider, rating, maturity) and just return the search results.
+    if (query.length >= 2) {
+      pool.sort((a, b) => {
+        return (a.score || 0.001) * pop(b.item) * maturityScore(b.item) - (b.score || 0.001) * pop(a.item) * maturityScore(a.item);
+      });
+      return pool.map(({ item }) => item);
     }
+
+    // No search query: hide movies without a poster
+    pool = pool.filter(({ item }) => item.p);
+    // Hide movies with very explicit sex/nudity (maturity score >= 4.5)
+    pool = pool.filter(({ item }) => (getScore(item.mat, 0) || 0) < 4.5);
 
     if (selectedGenres.value.size > 0) {
       let mask = 0;
@@ -153,12 +159,6 @@ export const useMovieStore = defineStore("movies", () => {
           if (Math.round(getScore(item.mat, MATURITY_CATEGORIES[i].shift) || 6) >= threshold) return false;
         }
         return true;
-      });
-    }
-
-    if (query.length >= 1) {
-      pool.sort((a, b) => {
-        return (a.score || 0.001) * pop(b.item) * maturityScore(b.item) - (b.score || 0.001) * pop(a.item) * maturityScore(a.item);
       });
     }
 
