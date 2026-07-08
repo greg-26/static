@@ -89,7 +89,6 @@ import { useMovieStore } from "@/stores/movies.js";
 import { useUserStore } from "@/stores/user.js";
 import HeroSection from "@/components/HeroSection.vue";
 import MovieRow from "@/components/MovieRow.vue";
-import MovieCard from "@/components/MovieCard.vue";
 import MovieModal from "@/components/MovieModal.vue";
 import ConfigModal from "@/components/ConfigModal.vue";
 
@@ -142,7 +141,16 @@ const watchedRow = computed(() => {
 
 // ── URL routing ──────────────────────────────────────────────────────────────
 function movieToUrl(movie) {
-  return `?movie=${movie.id}`;
+  const url = new URL(window.location.href);
+  url.searchParams.set("movie", movie.id);
+  return `${url.pathname}${url.search}${url.hash}`;
+}
+
+function urlWithoutMovie() {
+  const url = new URL(window.location.href);
+  url.searchParams.delete("movie");
+  const qs = url.searchParams.toString();
+  return `${url.pathname}${qs ? `?${qs}` : ""}${url.hash}`;
 }
 
 function openMovieById(imdbId) {
@@ -151,19 +159,28 @@ function openMovieById(imdbId) {
   if (movie) selectedMovie.value = movie;
 }
 
-// Push URL when modal opens/closes
+let syncingFromHistory = false;
+
+// Push URL when the modal opens. Closing replaces the current entry so
+// backdrop/close-button clicks don't create a Back button loop that reopens it.
 watch(selectedMovie, (movie) => {
+  if (syncingFromHistory) return;
   if (movie) {
-    history.pushState({ imdbId: movie.id }, "", movieToUrl(movie));
+    const currentId = new URLSearchParams(window.location.search).get("movie");
+    if (currentId !== movie.id) history.pushState({ imdbId: movie.id }, "", movieToUrl(movie));
   } else {
-    history.pushState(null, "", window.location.pathname);
+    if (new URLSearchParams(window.location.search).has("movie")) {
+      history.replaceState(null, "", urlWithoutMovie());
+    }
   }
-});
+}, { flush: "sync" });
 
 function onPopState() {
   const id = new URLSearchParams(window.location.search).get("movie");
+  syncingFromHistory = true;
   if (id) openMovieById(id);
   else selectedMovie.value = null;
+  syncingFromHistory = false;
 }
 
 // ── Filter persistence ────────────────────────────────────────────────────────

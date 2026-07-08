@@ -1,9 +1,17 @@
 <template>
   <Teleport to="body">
-    <div class="modal-backdrop" @click.self="$emit('close')" v-if="movie">
-      <div class="modal">
+    <div class="modal-backdrop" @click.self="emit('close')" v-if="movie">
+      <div
+        ref="dialogRef"
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        :aria-labelledby="titleId"
+        tabindex="-1"
+        @keydown="handleDialogKeydown"
+      >
         <!-- Desktop: button sits to the left of the poster, outside it -->
-        <button class="modal-close modal-close--desktop" @click="$emit('close')" aria-label="Go back">
+        <button class="modal-close modal-close--desktop" @click="emit('close')" aria-label="Close movie details">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
@@ -15,7 +23,7 @@
             <span>{{ movie.t }}</span>
           </div>
           <!-- Mobile: button overlaps the poster -->
-          <button class="modal-close modal-close--mobile" @click="$emit('close')" aria-label="Go back">
+          <button class="modal-close modal-close--mobile" @click="emit('close')" aria-label="Close movie details">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
@@ -59,7 +67,7 @@
             </a>
             <span v-if="movie.s" class="modal-badge">TV Season</span>
           </div>
-          <h2 class="modal-title">{{ movie.t }}</h2>
+          <h2 :id="titleId" class="modal-title">{{ movie.t }}</h2>
 
           <div class="modal-genres">
             <span v-for="g in genreLabels" :key="g" class="genre-chip">{{ g }}</span>
@@ -188,9 +196,12 @@
               <a v-for="p in providerNames" target="_blank" rel="noopener" :key="p" :href="extraDetails?.tmdbUrl+'/watch'" class="provider-chip">{{ p }}</a>
 
               <!-- Custom provider chips -->
-              <a
+              <span
                 v-for="cp in resolvedCustomProviders"
                 :key="cp.urlTemplate"
+                class="provider-chip-wrap"
+              >
+                <a
                 :href="cp.url"
                 target="_blank"
                 rel="noopener"
@@ -198,12 +209,13 @@
                 :title="cp.urlTemplate"
               >
                 {{ cp.domain }}
+                </a>
                 <button
                   class="provider-chip-remove"
                   @click.prevent.stop="userStore.removeCustomProvider(cp.urlTemplate)"
-                  title="Remove provider"
+                  :aria-label="`Remove ${cp.domain} provider`"
                 >×</button>
-              </a>
+              </span>
 
               <!-- Add custom provider button -->
               <div v-if="userStore.isLoggedIn" class="custom-provider-add">
@@ -211,7 +223,7 @@
                   v-if="!showProviderForm"
                   class="provider-chip provider-chip--add"
                   @click="showProviderForm = true"
-                  title="Add custom search provider"
+                  aria-label="Add custom search provider"
                 >+ Add</button>
 
                 <div v-else class="provider-form">
@@ -221,10 +233,10 @@
                     class="provider-input"
                     placeholder="e.g. netflix.com/search?q={title}&y={year}"
                     @keydown.enter="commitProvider"
-                    @keydown.escape="showProviderForm = false; providerInput = ''"
+                    @keydown.escape.stop="showProviderForm = false; providerInput = ''"
                   />
-                  <button class="provider-form-btn provider-form-btn--ok" @click="commitProvider" title="Add">✓</button>
-                  <button class="provider-form-btn provider-form-btn--cancel" @click="showProviderForm = false; providerInput = ''" title="Cancel">×</button>
+                  <button class="provider-form-btn provider-form-btn--ok" @click="commitProvider" aria-label="Add provider">✓</button>
+                  <button class="provider-form-btn provider-form-btn--cancel" @click="showProviderForm = false; providerInput = ''" aria-label="Cancel adding provider">×</button>
                 </div>
               </div>
             </div>
@@ -236,15 +248,40 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from "vue";
+import { ref, computed, watch, nextTick, onUnmounted } from "vue";
 import { GENRES, PROVIDERS } from "@/stores/movies.js";
 import { MATURITY_CATEGORIES, SEVERITY_LABELS, getScore, scoreCssClass } from "@/maturity.js";
 import { useUserStore } from "@/stores/user.js";
+import { lockBodyScroll, unlockBodyScroll, trapTabKey } from "@/composables/modalGuards.js";
 
 const userStore = useUserStore();
 
 const props = defineProps({ movie: { type: Object, default: null } });
-defineEmits(["close"]);
+const emit = defineEmits(["close"]);
+
+const dialogRef = ref(null);
+const previouslyFocused = ref(null);
+let bodyLocked = false;
+
+const titleId = computed(() => props.movie?.id ? `movie-dialog-title-${props.movie.id}` : "movie-dialog-title");
+
+function focusDialog() {
+  dialogRef.value?.focus({ preventScroll: true });
+}
+
+function handleDialogKeydown(event) {
+  if (event.key === "Escape") {
+    event.preventDefault();
+    emit("close");
+    return;
+  }
+  trapTabKey(event, dialogRef.value);
+}
+
+function restoreFocus() {
+  previouslyFocused.value?.focus?.({ preventScroll: true });
+  previouslyFocused.value = null;
+}
 
 // ─── Extra Data Lookup Management ───────────────────────────────────────────
 // Holds the parsed key-value dictionary from extra.json
@@ -277,10 +314,8 @@ const synopsis = computed(() => {
   if (!props.movie) return null;
   // 1. Check if the active movie element already contains an overview variant
   if (props.movie.overviewEs || props.movie.overviewEn) {
-    console.log(props, props.movie)
     return props.movie.overviewEs || props.movie.overviewEn;
   }
-  console.log(extraDetails.value)
   // 2. Return the pre-scraped English synopsis retrieved from our table
   return extraDetails.value?.synopsisEn || null;
 });
@@ -427,15 +462,30 @@ function commitProvider() {
 // ─── Watch for movie changes ──────────────────────────────────────────────────
 watch(() => props.movie, (movie) => {
   if (movie) {
+    if (!bodyLocked) {
+      previouslyFocused.value = document.activeElement;
+      lockBodyScroll();
+      bodyLocked = true;
+    }
     //loadSynopsis(movie);
     loadExtraJsonData()
     //loadReviews(movie.id);
+    nextTick(focusDialog);
   } else {
     //synopsis.value = null;
     matReviews.value = null;
     matReviewsError.value = null;
+    if (bodyLocked) {
+      unlockBodyScroll();
+      bodyLocked = false;
+    }
+    nextTick(restoreFocus);
   }
 }, { immediate: true });
+
+onUnmounted(() => {
+  if (bodyLocked) unlockBodyScroll();
+});
 </script>
 
 <style scoped>
@@ -445,15 +495,17 @@ watch(() => props.movie, (movie) => {
   inset: 0;
   background: var(--background, #0b0b0e);
   z-index: 100;
-  width: 100vw;
+  width: 100%;
   height: 100vh;
+  height: 100dvh;
   display: flex;
   align-items: flex-start;
   justify-content: center;
   padding: 0;
   backdrop-filter: blur(6px);
   animation: fadeIn 0.15s ease;
-  overflow-y: auto;
+  overflow: hidden;
+  overscroll-behavior: contain;
 }
 
 @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
@@ -464,12 +516,16 @@ watch(() => props.movie, (movie) => {
   border-radius: 0;
   max-width: 900px;
   width: 100%;
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
   display: flex;
   gap: 24px;
   padding: 32px 24px 56px 24px;
   position: relative;
-  overflow-y: visible;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  outline: none;
 }
 
 .modal-close {
@@ -625,8 +681,11 @@ watch(() => props.movie, (movie) => {
 }
 
 /* ── Custom providers ── */
-.provider-chip--custom {
+.provider-chip-wrap {
   position: relative;
+  display: inline-flex;
+}
+.provider-chip--custom {
   padding-right: 22px;
 }
 .provider-chip-remove {
@@ -749,6 +808,8 @@ watch(() => props.movie, (movie) => {
   scrollbar-width: none;    /* Firefox */
   -ms-overflow-style: none; /* IE/Edge */
   padding-left: 15px;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
 }
 .mat-score-tags::-webkit-scrollbar { display: none; } /* Chrome/Safari */
 
@@ -939,6 +1000,7 @@ watch(() => props.movie, (movie) => {
     flex-direction: column;
     padding: 16px 16px 40px 16px;
     gap: 16px;
+    max-width: none;
   }
   .modal-poster { width: 100%; height: 200px; }
   .modal-poster img { object-position: center top; }

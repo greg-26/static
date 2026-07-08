@@ -1,10 +1,18 @@
 <template>
   <Teleport to="body">
-    <div class="config-backdrop" @click.self="$emit('close')">
-      <div class="config-modal">
-        <button class="config-close" @click="$emit('close')">✕</button>
+    <div class="config-backdrop" @click.self="emit('close')">
+      <div
+        ref="dialogRef"
+        class="config-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="config-dialog-title"
+        tabindex="-1"
+        @keydown="handleDialogKeydown"
+      >
+        <button class="config-close" @click="emit('close')" aria-label="Close settings">✕</button>
 
-        <h2 class="config-title">Settings</h2>
+        <h2 id="config-dialog-title" class="config-title">Settings</h2>
 
         <!-- NOT LOGGED IN -->
         <template v-if="!userStore.isLoggedIn">
@@ -154,16 +162,19 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref, watch, nextTick, onMounted, onUnmounted } from "vue";
 import { useUserStore } from "@/stores/user.js";
+import { lockBodyScroll, unlockBodyScroll, trapTabKey } from "@/composables/modalGuards.js";
 
 const props = defineProps({
   pendingListToken: { type: String, default: null },
 });
 
-defineEmits(["close"]);
+const emit = defineEmits(["close"]);
 
 const userStore = useUserStore();
+const dialogRef = ref(null);
+const previouslyFocused = ref(null);
 
 // Not logged in state
 const newName = ref("");
@@ -269,6 +280,27 @@ async function handleAddList() {
 function handleLogout() {
   userStore.logout();
 }
+
+function handleDialogKeydown(event) {
+  if (event.key === "Escape") {
+    event.preventDefault();
+    emit("close");
+    return;
+  }
+  trapTabKey(event, dialogRef.value);
+}
+
+onMounted(async () => {
+  previouslyFocused.value = document.activeElement;
+  lockBodyScroll();
+  await nextTick();
+  dialogRef.value?.focus({ preventScroll: true });
+});
+
+onUnmounted(() => {
+  unlockBodyScroll();
+  previouslyFocused.value?.focus?.({ preventScroll: true });
+});
 </script>
 
 <style scoped>
@@ -278,11 +310,16 @@ function handleLogout() {
   background: rgba(0, 0, 0, 0.75);
   z-index: 200;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 20px;
+  padding: max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom));
   backdrop-filter: blur(6px);
   animation: fadeIn 0.15s ease;
+  height: 100vh;
+  height: 100dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
@@ -296,11 +333,15 @@ function handleLogout() {
   padding: 28px;
   position: relative;
   animation: slideUp 0.2s ease;
-  max-height: 90vh;
+  max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
   gap: 0;
+  outline: none;
 }
 
 @keyframes slideUp { from { transform: translateY(16px); opacity: 0 } to { transform: none; opacity: 1 } }
