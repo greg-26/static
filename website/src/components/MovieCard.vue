@@ -87,6 +87,10 @@ const posterStyle = computed(() => ({
   z-index: 10;
 }
 
+.card:active {
+  transform: scale(0.98);
+}
+
 .card:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 4px;

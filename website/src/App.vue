@@ -30,7 +30,7 @@
             <MovieRow
               :key="store.searchQuery"
               :row="{ movies: store.filteredMovies, label: ''}"
-              @selectMovie="selectedMovie = $event"
+              @selectMovie="openMovie"
             />
           </div>
 
@@ -41,21 +41,21 @@
               v-for="row in listRows"
               :key="row.id"
               :row="row"
-              @selectMovie="selectedMovie = $event"
+              @selectMovie="openMovie"
             />
             <!-- Regular store rows -->
             <MovieRow
               v-for="row in filteredMovieRows"
               :key="row.id"
               :row="row"
-              @selectMovie="selectedMovie = $event"
+              @selectMovie="openMovie"
             />
             <!-- Watched row (always last) -->
             <MovieRow
               v-if="watchedRow"
               :key="watchedRow.id"
               :row="watchedRow"
-              @selectMovie="selectedMovie = $event"
+              @selectMovie="openMovie"
             />
           </template>
         </template>
@@ -66,9 +66,22 @@
       <p>Data from <a href="https://www.imdb.com" target="_blank" rel="noopener">IMDb</a> &amp; <a href="https://www.themoviedb.org" target="_blank" rel="noopener">TMDB</a>. Not affiliated with either.</p>
     </footer>
 
+    <div
+      v-if="pendingMovieId && !selectedMovie"
+      class="movie-loading-backdrop"
+      role="status"
+      aria-live="polite"
+      aria-label="Loading movie details"
+    >
+      <div class="movie-loading-card">
+        <div class="movie-loading-spinner" aria-hidden="true"></div>
+        <p class="movie-loading-title">Loading movie details…</p>
+      </div>
+    </div>
+
     <MovieModal
       :movie="selectedMovie"
-      @close="selectedMovie = null"
+      @close="closeMovie"
     />
 
     <!-- Gear button -->
@@ -95,6 +108,7 @@ import ConfigModal from "@/components/ConfigModal.vue";
 const store = useMovieStore();
 const userStore = useUserStore();
 const selectedMovie = ref(null);
+const pendingMovieId = ref(null);
 const showConfig = ref(false);
 const pendingListToken = ref(null);
 
@@ -153,10 +167,23 @@ function urlWithoutMovie() {
   return `${url.pathname}${qs ? `?${qs}` : ""}${url.hash}`;
 }
 
+function openMovie(movie) {
+  if (!movie) return;
+  pendingMovieId.value = movie.id;
+  selectedMovie.value = movie;
+}
+
+function closeMovie() {
+  selectedMovie.value = null;
+  pendingMovieId.value = null;
+}
+
 function openMovieById(imdbId) {
   if (!imdbId) return;
+  pendingMovieId.value = imdbId;
   const movie = movieById.value.get(imdbId);
   if (movie) selectedMovie.value = movie;
+  else pendingMovieId.value = null;
 }
 
 let syncingFromHistory = false;
@@ -179,7 +206,7 @@ function onPopState() {
   const id = new URLSearchParams(window.location.search).get("movie");
   syncingFromHistory = true;
   if (id) openMovieById(id);
-  else selectedMovie.value = null;
+  else closeMovie();
   syncingFromHistory = false;
 }
 
@@ -213,13 +240,15 @@ watch([() => [...store.maxMaturityCat], () => store.selectedProviders], () => {
 onMounted(async () => {
   window.addEventListener("popstate", onPopState);
 
+  const params = new URLSearchParams(window.location.search);
+  const addToken = params.get("add");
+  const movieId  = params.get("movie");
+  if (movieId) pendingMovieId.value = movieId;
+
   await store.loadMovies();
   await userStore.init();
 
   // Handle ?add= URL param
-  const params = new URLSearchParams(window.location.search);
-  const addToken = params.get("add");
-  const movieId  = params.get("movie");
 
   if (addToken) {
     if (userStore.isLoggedIn) {
@@ -290,6 +319,46 @@ onMounted(async () => {
   font-size: 13px;
   color: var(--muted);
 }
+
+.movie-loading-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(8, 8, 16, 0.72);
+  backdrop-filter: blur(6px);
+}
+
+.movie-loading-card {
+  width: min(260px, 100%);
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+}
+
+.movie-loading-spinner {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid var(--surface3);
+  border-top-color: var(--accent);
+  animation: spin 0.8s linear infinite;
+}
+
+.movie-loading-title {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
 
 /* ── Catalog ── */
 .catalog {
