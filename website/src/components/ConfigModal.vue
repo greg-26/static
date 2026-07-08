@@ -58,6 +58,7 @@
             </div>
             <p v-if="importError" class="form-error">{{ importError }}</p>
           </div>
+
         </template>
 
         <!-- LOGGED IN -->
@@ -155,15 +156,67 @@
               </div>
             </div>
           </div>
+
         </template>
+
+          <!-- Viewing preferences -->
+          <div class="config-section">
+            <p class="section-label">Viewing preferences</p>
+
+            <div class="family-limits">
+              <button
+                class="family-limits-toggle"
+                type="button"
+                :aria-expanded="familyLimitsOpen"
+                @click="familyLimitsOpen = !familyLimitsOpen"
+              >
+                <span>Family maturity limits</span>
+                <span class="family-limits-summary">{{ maturitySummary }}</span>
+                <span class="family-limits-caret" aria-hidden="true">{{ familyLimitsOpen ? "−" : "+" }}</span>
+              </button>
+
+              <div v-if="familyLimitsOpen" class="family-limits-panel">
+                <p class="family-limits-help">Choose the highest allowed severity per category. Off ignores that category.</p>
+                <div
+                  v-for="(cat, catIdx) in MATURITY_CATEGORIES"
+                  :key="cat.key"
+                  class="mat-cat-row"
+                >
+                  <span class="mat-cat-name">{{ cat.label }}</span>
+                  <div class="mat-chip-row">
+                    <button
+                      class="maturity-chip maturity-chip--off"
+                      :class="{ active: movieStore.maxMaturityCat[catIdx] === -1 }"
+                      type="button"
+                      @click="movieStore.setMaxMaturityCat(catIdx, -1)"
+                    >Off</button>
+                    <button
+                      v-for="(label, sev) in SEVERITY_LABELS"
+                      :key="sev"
+                      class="maturity-chip"
+                      :class="[`maturity-chip--sev-${sev}`, { active: movieStore.maxMaturityCat[catIdx] === sev }]"
+                      type="button"
+                      @click="movieStore.setMaxMaturityCat(catIdx, sev)"
+                    >{{ label }}</button>
+                  </div>
+                </div>
+                <button class="btn btn--ghost btn--sm maturity-clear" type="button" @click="movieStore.clearMaturityFilters">
+                  Clear family limits
+                </button>
+              </div>
+            </div>
+          </div>
+
       </div>
     </div>
   </Teleport>
 </template>
 
 <script setup>
-import { ref, watch, nextTick, onMounted, onUnmounted } from "vue";
+import { computed, ref, watch, nextTick, onMounted, onUnmounted } from "vue";
 import { useUserStore } from "@/stores/user.js";
+import { useMovieStore } from "@/stores/movies.js";
+import { MATURITY_CATEGORIES, SEVERITY_LABELS } from "@/maturity.js";
 import { lockBodyScroll, unlockBodyScroll, trapTabKey } from "@/composables/modalGuards.js";
 
 const props = defineProps({
@@ -173,6 +226,7 @@ const props = defineProps({
 const emit = defineEmits(["close"]);
 
 const userStore = useUserStore();
+const movieStore = useMovieStore();
 const dialogRef = ref(null);
 const previouslyFocused = ref(null);
 
@@ -192,6 +246,15 @@ const creatingList = ref(false);
 const addListToken = ref("");
 const addingList = ref(false);
 const addListError = ref("");
+const familyLimitsOpen = ref(false);
+
+const maturitySummary = computed(() => {
+  const active = movieStore.maxMaturityCat
+    .map((level, i) => ({ level, category: MATURITY_CATEGORIES[i] }))
+    .filter(({ level }) => level >= 0);
+  if (!active.length) return "Off";
+  return active.map(({ level, category }) => `${category.label} ≤ ${SEVERITY_LABELS[level]}`).join(" · ");
+});
 
 watch(() => userStore.userData?.name, (n) => {
   if (n != null) editName.value = n;
@@ -463,6 +526,103 @@ onUnmounted(() => {
 .btn--danger:hover:not(:disabled) { background: rgba(248, 113, 113, 0.2); }
 
 .btn--sm { padding: 5px 10px; font-size: 12px; }
+
+
+/* Viewing preferences */
+.family-limits {
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.family-limits-toggle {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 10px;
+  align-items: center;
+  padding: 12px;
+  border: 0;
+  background: transparent;
+  color: var(--white);
+  font-family: var(--font-body);
+  text-align: left;
+  cursor: pointer;
+}
+
+.family-limits-summary {
+  grid-column: 1 / -1;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.family-limits-caret {
+  grid-column: 2;
+  grid-row: 1;
+  color: var(--muted);
+  font-size: 18px;
+}
+
+.family-limits-panel {
+  border-top: 1px solid var(--border);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.family-limits-help {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.mat-cat-row {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.mat-cat-name {
+  font-size: 12px;
+  color: rgba(255,255,255,0.78);
+}
+
+.mat-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.maturity-chip {
+  padding: 5px 9px;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 99px;
+  background: rgba(18,18,28,0.72);
+  color: rgba(255,255,255,0.76);
+  font-family: var(--font-body);
+  font-size: 11px;
+  cursor: pointer;
+}
+.maturity-chip:hover { border-color: var(--sev-color, rgba(255,255,255,0.35)); color: var(--sev-color, var(--white)); }
+.maturity-chip.active { border-color: var(--sev-color, var(--accent)); color: var(--sev-color, var(--accent)); }
+.maturity-chip--off.active { background: rgba(255,255,255,0.08); }
+.maturity-chip--sev-0 { --sev-color: #4ade80; }
+.maturity-chip--sev-1 { --sev-color: #a3e635; }
+.maturity-chip--sev-2 { --sev-color: #facc15; }
+.maturity-chip--sev-3 { --sev-color: #fb923c; }
+.maturity-chip--sev-4 { --sev-color: #f87171; }
+.maturity-chip--sev-5 { --sev-color: #dc2626; }
+.maturity-chip--sev-0.active { background: rgba(74,222,128,0.13); }
+.maturity-chip--sev-1.active { background: rgba(163,230,53,0.13); }
+.maturity-chip--sev-2.active { background: rgba(250,204,21,0.13); }
+.maturity-chip--sev-3.active { background: rgba(251,146,60,0.13); }
+.maturity-chip--sev-4.active { background: rgba(248,113,113,0.13); }
+.maturity-chip--sev-5.active { background: rgba(220,38,38,0.13); }
+.maturity-clear { align-self: flex-start; }
 
 /* Profile section */
 .profile-row { display: flex; flex-direction: column; gap: 8px; }

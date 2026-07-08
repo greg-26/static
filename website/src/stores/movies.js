@@ -156,7 +156,8 @@ export const useMovieStore = defineStore("movies", () => {
         for (let i = 0; i < MATURITY_CATEGORIES.length; i++) {
           const threshold = catThresholds[i];
           if (threshold < 0) continue;
-          if (Math.round(getScore(item.mat, MATURITY_CATEGORIES[i].shift) || 6) >= threshold) return false;
+          const score = getScore(item.mat, MATURITY_CATEGORIES[i].shift);
+          if ((Number.isFinite(score) ? Math.round(score) : 6) > threshold) return false;
         }
         return true;
       });
@@ -214,11 +215,26 @@ export const useMovieStore = defineStore("movies", () => {
     selectedProviders.value ^= bit;
   }
 
+  function normalizeMaturityLevel(level) {
+    const numeric = Number(level);
+    if (!Number.isFinite(numeric) || numeric < 0) return -1;
+    return Math.min(5, Math.max(0, Math.round(numeric)));
+  }
+
   function setMaxMaturityCat(catIndex, level) {
+    if (catIndex < 0 || catIndex >= MATURITY_CATEGORIES.length) return;
     const arr = [...maxMaturityCat.value];
-    // Toggle off if tapping the already-active level; otherwise set, clamped to 0–5
-    arr[catIndex] = arr[catIndex] === level ? -1 : Math.min(5, Math.max(0, level));
+    arr[catIndex] = normalizeMaturityLevel(level);
     maxMaturityCat.value = arr;
+  }
+
+  function setMaxMaturityCats(values) {
+    const next = MATURITY_CATEGORIES.map((_, i) => normalizeMaturityLevel(values?.[i] ?? -1));
+    maxMaturityCat.value = next;
+  }
+
+  function clearMaturityFilters() {
+    maxMaturityCat.value = MATURITY_CATEGORIES.map(() => -1);
   }
 
   function clearFilters() {
@@ -226,7 +242,7 @@ export const useMovieStore = defineStore("movies", () => {
     selectedGenres.value = new Set();
     selectedProviders.value = 0;
     minRating.value = 0;
-    maxMaturityCat.value = [-1, -1, -1, -1];
+    clearMaturityFilters();
   }
 
   const availableProviders = computed(() => {
@@ -240,7 +256,7 @@ export const useMovieStore = defineStore("movies", () => {
     allMovies, loading, error,
     searchQuery, selectedGenres, selectedProviders, minRating, maxMaturityCat,
     filteredMovies, movieRows, availableProviders,
-    loadMovies, toggleGenre, toggleProvider, setMaxMaturityCat, clearFilters,
+    loadMovies, toggleGenre, toggleProvider, setMaxMaturityCat, setMaxMaturityCats, clearMaturityFilters, clearFilters,
   };
 });
 

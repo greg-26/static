@@ -1,6 +1,6 @@
 <template>
   <div class="app">
-    <HeroSection />
+    <HeroSection @open-settings="showConfig = true" />
 
     <main class="catalog">
       <!-- Still loading: show skeleton rows -->
@@ -217,7 +217,7 @@ watch(() => userStore.isLoggedIn, (loggedIn) => {
   const prefs = userStore.userData?.filterPrefs;
   if (!prefs) return;
   if (Array.isArray(prefs.maxMaturityCat)) {
-    prefs.maxMaturityCat.forEach((v, i) => store.setMaxMaturityCat(i, v));
+    store.setMaxMaturityCats(prefs.maxMaturityCat);
   }
   if (prefs.selectedProviders !== undefined) {
     store.selectedProviders = prefs.selectedProviders;
