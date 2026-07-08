@@ -29,27 +29,9 @@
       <transition name="slide-filters">
         <div class="filters" v-show="true || !store.searchQuery">
 
-          <!-- Per-category maturity filter (top) -->
-          <div class="filter-group">
-            <p class="filter-label">Max maturity per category</p>
-            <div class="mat-cat-grid">
-              <div
-                v-for="(cat, catIdx) in MATURITY_CATEGORIES"
-                :key="cat.key"
-                class="mat-cat-row"
-              >
-                <span class="mat-cat-name">{{ cat.label }}</span>
-                <div class="filter-chips">
-                  <button
-                    v-for="(label, sev) in SEVERITY_LABELS"
-                    :key="sev"
-                    class="chip chip--maturity chip--sm"
-                    :class="[`chip--sev-${sev}`, { active: store.maxMaturityCat[catIdx] === sev }]"
-                    @click="store.setMaxMaturityCat(catIdx, sev)"
-                  >{{ label }}</button>
-                </div>
-              </div>
-            </div>
+          <div v-if="activeMaturitySummary" class="filter-group filter-group--full family-summary">
+            <span class="family-summary-text">{{ activeMaturitySummary }}</span>
+            <button class="family-summary-edit" @click="emit('open-settings')">Edit in settings</button>
           </div>
 
           <!-- Genres -->
@@ -134,6 +116,7 @@ import { computed, ref, watch } from "vue";
 import { useMovieStore, GENRE_LABELS, PROVIDERS } from "@/stores/movies.js";
 import { MATURITY_CATEGORIES, SEVERITY_LABELS } from "@/maturity.js";
 
+const emit = defineEmits(["open-settings"]);
 const store = useMovieStore();
 
 // Local value for instant input feel; debounce the store update by 150ms
@@ -154,6 +137,15 @@ const HERO_POSTER_COLS = [
   ["ybrX94xQm8lXYpZAPRmwD9iIbWP","eTp7gSPkSF3Aw79mNx1NkBP1PZT","yQvGrMoipbRoddT0ZR8tPoR7NfX","RYMX2wcKCBAr24UyPD7xwmjaTn","tVvpFIoteRHNnoZMhdnwIVwJpCA","1g0dhYtq4irTY1GPXvft6k4YLjm"],
   ["iB64vpL3dIObOtMZgX3RqdVdQDc","fWVSwgjpT2D78VUh6X8UBd2rorW","cWsBscZzwu5brg9YjNkGewRUvJX","cRY25Q32kDNPFDkFkxAs6bgCq3L","ril8yx5SOmj0KjNlftsdfIp00fr","vqBmyAj0Xm9LnS1xe1MSlMAJyHq"],
 ].map(col => col.map(hash => BASE + hash + ".jpg"));
+
+
+const activeMaturitySummary = computed(() => {
+  const active = store.maxMaturityCat
+    .map((level, i) => ({ level, category: MATURITY_CATEGORIES[i] }))
+    .filter(({ level }) => level >= 0);
+  if (!active.length) return "";
+  return `Family limits: ${active.map(({ level, category }) => `${category.label} ≤ ${SEVERITY_LABELS[level]}`).join(" · ")}`;
+});
 
 const hasFilters = computed(() =>
   store.searchQuery ||
@@ -396,26 +388,30 @@ const hasFilters = computed(() =>
 
 .chip--sm { padding: 3px 8px; font-size: 11px; }
 
-/* Per-category maturity grid */
-.mat-cat-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-
-.mat-cat-row {
-  display: flex;
+/* Compact family limits summary */
+.family-summary {
+  flex-direction: row;
   align-items: center;
-  gap: 10px;
   flex-wrap: wrap;
+  gap: 8px 12px;
 }
 
-.mat-cat-name {
-  font-size: 12px;
-  color: rgba(255,255,255,0.70);
-  min-width: 90px;
-  flex-shrink: 0;
+.family-summary-text {
+  font-size: 13px;
+  color: rgba(255,255,255,0.82);
 }
+
+.family-summary-edit {
+  padding: 4px 10px;
+  border: 1px solid rgba(255,255,255,0.22);
+  border-radius: 99px;
+  background: rgba(30,30,42,0.72);
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 12px;
+  cursor: pointer;
+}
+.family-summary-edit:hover { border-color: var(--accent); color: var(--accent); }
 
 /* ── Rating slider ── */
 .rating-slider-wrap {
