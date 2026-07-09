@@ -10,203 +10,162 @@
         tabindex="-1"
         @keydown="handleDialogKeydown"
       >
-        <button class="config-close" @click="emit('close')" aria-label="Close settings">✕</button>
-
-        <h2 id="config-dialog-title" class="config-title">Settings</h2>
-
-        <!-- NOT LOGGED IN -->
-        <template v-if="!userStore.isLoggedIn">
-          <p class="config-subtitle">Create a profile to save watchlists and track what you've watched.</p>
-
-          <!-- Pending list add notice -->
-          <div v-if="pendingListToken" class="notice">
-            <span>A shared list is waiting — log in or create a profile to add it.</span>
+        <header class="config-header">
+          <div>
+            <p class="eyebrow">Ohana TV</p>
+            <h2 id="config-dialog-title" class="config-title">Settings</h2>
+            <p class="config-subtitle">Profile, shared lists, and family viewing preferences in one place.</p>
           </div>
+          <button class="config-close" @click="emit('close')" aria-label="Close settings">✕</button>
+        </header>
 
-          <!-- Create -->
-          <div class="config-section">
-            <p class="section-label">New Profile</p>
-            <div class="inline-form">
-              <input
-                v-model="newName"
-                class="config-input"
-                placeholder="Your name"
-                maxlength="40"
-                @keydown.enter="handleCreate"
-              />
-              <button class="btn btn--accent" :disabled="creating || !newName.trim()" @click="handleCreate">
-                <span v-if="creating">Creating…</span>
-                <span v-else>Create</span>
-              </button>
+        <div v-if="pendingListToken" class="notice">
+          A shared list is waiting — log in or create a profile to add it.
+        </div>
+
+        <div class="settings-grid">
+          <section v-if="!userStore.isLoggedIn" class="settings-card settings-card--primary">
+            <div class="card-heading">
+              <div>
+                <p class="section-label">Profile</p>
+                <h3>Save your setup</h3>
+              </div>
+              <span class="status-pill">Not signed in</span>
             </div>
-          </div>
+            <p class="section-copy">Create a lightweight profile to save watchlists, watched titles, and maturity limits.</p>
 
-          <!-- Import -->
-          <div class="config-section">
-            <p class="section-label">Import Existing Profile</p>
-            <div class="inline-form">
-              <input
-                v-model="importToken"
-                class="config-input config-input--mono"
-                placeholder="Paste your token"
-                @keydown.enter="handleImport"
-              />
-              <button class="btn btn--ghost" :disabled="importing || !importToken.trim()" @click="handleImport">
-                <span v-if="importing">Loading…</span>
-                <span v-else>Import</span>
-              </button>
-            </div>
-            <p v-if="importError" class="form-error">{{ importError }}</p>
-          </div>
-
-        </template>
-
-        <!-- LOGGED IN -->
-        <template v-else>
-          <!-- Profile section -->
-          <div class="config-section">
-            <p class="section-label">Profile</p>
-
-            <div class="profile-row">
+            <div class="form-stack">
+              <label class="field-label" for="new-profile-name">Create profile</label>
               <div class="inline-form">
-                <input
-                  v-model="editName"
-                  class="config-input"
-                  placeholder="Your name"
-                  maxlength="40"
-                  @keydown.enter="handleSetName"
-                />
-                <button class="btn btn--ghost" :disabled="userStore.saving || editName === userStore.userData?.name" @click="handleSetName">
-                  Save
+                <input id="new-profile-name" v-model="newName" class="config-input" placeholder="Your name" maxlength="40" @keydown.enter="handleCreate" />
+                <button class="btn btn--accent" :disabled="creating || !newName.trim()" @click="handleCreate">
+                  {{ creating ? "Creating…" : "Create" }}
                 </button>
-                <button class="btn btn--ghost btn--sm" @click="copyToken">
-                {{ tokenCopied ? "✓ Copied" : "Copy access token" }}
-              </button>
               </div>
             </div>
 
-            <!--<div class="token-row">
-              <span class="token-label">Your token</span>
-              <code class="token-value">{{ userStore.userToken?.slice(0, 16) }}…</code>
-            </div>-->
+            <div class="divider"></div>
 
-            <button class="btn btn--danger btn--sm" @click="handleLogout">Log out</button>
-          </div>
-
-          <!-- Lists section -->
-          <div class="config-section">
-            <p class="section-label">My Lists</p>
-
-            <div v-if="userStore.lists.length === 0 && !userStore.loading" class="empty-lists">
-              No lists yet. Create one below.
+            <div class="form-stack">
+              <label class="field-label" for="import-profile-token">Import existing profile</label>
+              <div class="inline-form">
+                <input id="import-profile-token" v-model="importToken" class="config-input config-input--mono" placeholder="Paste access token" @keydown.enter="handleImport" />
+                <button class="btn btn--ghost" :disabled="importing || !importToken.trim()" @click="handleImport">
+                  {{ importing ? "Loading…" : "Import" }}
+                </button>
+              </div>
+              <p v-if="importError" class="form-error">{{ importError }}</p>
             </div>
+          </section>
 
-            <div class="lists-container">
-              <div
-                v-for="list in userStore.lists"
-                :key="list.token"
-                class="list-row"
-              >
-                <span class="list-name">{{ list.name }}</span>
-                <span class="list-count">{{ list.movies.length }} films</span>
-                <div class="list-actions">
-                  <button class="btn btn--ghost btn--sm" @click="shareList(list.token)">
-                    {{ shareStates[list.token] ? "✓ Copied!" : "Share" }}
-                  </button>
-                  <button class="btn btn--danger btn--sm" @click="handleRemoveList(list.token)">
-                    Remove
-                  </button>
+          <template v-else>
+            <section class="settings-card settings-card--primary">
+              <div class="card-heading">
+                <div>
+                  <p class="section-label">Profile</p>
+                  <h3>{{ userStore.userData?.name || "Your profile" }}</h3>
                 </div>
+                <span class="status-pill status-pill--ok">Signed in</span>
               </div>
-            </div>
+              <p class="section-copy">This token is your portable access key. Copy it before changing devices.</p>
 
-            <!-- Add list by token - ->
-            <div class="add-list-section">
-              <p class="add-list-label">Add a shared list</p>
               <div class="inline-form">
-                <input
-                  v-model="addListToken"
-                  class="config-input config-input--mono"
-                  placeholder="Paste list token or share URL"
-                  @keydown.enter="handleAddList"
-                />
-                <button class="btn btn--ghost" :disabled="addingList || !addListToken.trim()" @click="handleAddList">
-                  <span v-if="addingList">Adding…</span>
-                  <span v-else>Add</span>
-                </button>
+                <input v-model="editName" class="config-input" placeholder="Your name" maxlength="40" @keydown.enter="handleSetName" />
+                <button class="btn btn--ghost" :disabled="userStore.saving || editName.trim() === userStore.userData?.name" @click="handleSetName">Save</button>
               </div>
-              <p v-if="addListError" class="form-error">{{ addListError }}</p>
-            </div>-->
 
-            <!-- New list -->
-            <div class="new-list-section">
-              <p class="add-list-label">Create new list</p>
-              <div class="inline-form">
-                <input
-                  v-model="newListName"
-                  class="config-input"
-                  placeholder="List name"
-                  maxlength="40"
-                  @keydown.enter="handleCreateList"
-                />
-                <button class="btn btn--accent" :disabled="creatingList || !newListName.trim()" @click="handleCreateList">
-                  <span v-if="creatingList">Creating…</span>
-                  <span v-else>Create</span>
-                </button>
+              <div class="profile-actions">
+                <button class="btn btn--ghost btn--sm" @click="copyToken">{{ tokenCopied ? "✓ Token copied" : "Copy access token" }}</button>
+                <button class="btn btn--danger btn--sm" @click="handleLogout">Log out</button>
               </div>
-            </div>
-          </div>
+            </section>
 
-        </template>
+            <section class="settings-card">
+              <div class="card-heading">
+                <div>
+                  <p class="section-label">Lists</p>
+                  <h3>Watchlists</h3>
+                </div>
+                <span class="status-pill">{{ userStore.lists.length }} lists</span>
+              </div>
+              <p class="section-copy">Lists stay available in the catalog, but management stays tucked away here.</p>
 
-          <!-- Viewing preferences -->
-          <div class="config-section">
-            <p class="section-label">Viewing preferences</p>
-
-            <div class="family-limits">
-              <button
-                class="family-limits-toggle"
-                type="button"
-                :aria-expanded="familyLimitsOpen"
-                @click="familyLimitsOpen = !familyLimitsOpen"
-              >
-                <span>Family maturity limits</span>
-                <span class="family-limits-summary">{{ maturitySummary }}</span>
-                <span class="family-limits-caret" aria-hidden="true">{{ familyLimitsOpen ? "−" : "+" }}</span>
-              </button>
-
-              <div v-if="familyLimitsOpen" class="family-limits-panel">
-                <p class="family-limits-help">Choose the highest allowed severity per category. Off ignores that category.</p>
-                <div
-                  v-for="(cat, catIdx) in MATURITY_CATEGORIES"
-                  :key="cat.key"
-                  class="mat-cat-row"
-                >
-                  <span class="mat-cat-name">{{ cat.label }}</span>
-                  <div class="mat-chip-row">
-                    <button
-                      class="maturity-chip maturity-chip--off"
-                      :class="{ active: movieStore.maxMaturityCat[catIdx] === -1 }"
-                      type="button"
-                      @click="movieStore.setMaxMaturityCat(catIdx, -1)"
-                    >Off</button>
-                    <button
-                      v-for="(label, sev) in SEVERITY_LABELS"
-                      :key="sev"
-                      class="maturity-chip"
-                      :class="[`maturity-chip--sev-${sev}`, { active: movieStore.maxMaturityCat[catIdx] === sev }]"
-                      type="button"
-                      @click="movieStore.setMaxMaturityCat(catIdx, sev)"
-                    >{{ label }}</button>
+              <div v-if="userStore.lists.length" class="lists-container">
+                <div v-for="list in userStore.lists" :key="list.token" class="list-row">
+                  <div class="list-main">
+                    <span class="list-name">{{ list.name }}</span>
+                    <span class="list-count">{{ list.movies.length }} films</span>
+                  </div>
+                  <div class="list-actions">
+                    <button class="btn btn--ghost btn--sm" @click="shareList(list.token)">
+                      {{ shareStates[list.token] ? "✓ Copied" : "Share" }}
+                    </button>
+                    <button class="btn btn--danger btn--sm" @click="handleRemoveList(list.token)">Remove</button>
                   </div>
                 </div>
-                <button class="btn btn--ghost btn--sm maturity-clear" type="button" @click="movieStore.clearMaturityFilters">
-                  Clear family limits
-                </button>
               </div>
-            </div>
-          </div>
+              <p v-else class="empty-lists">No lists yet. Create one when you want a shortlist for a night.</p>
 
+              <details class="add-list-details">
+                <summary>Add a shared list</summary>
+                <div class="inline-form inline-form--stackable">
+                  <input v-model="addListToken" class="config-input config-input--mono" placeholder="Paste list token or share URL" @keydown.enter="handleAddList" />
+                  <button class="btn btn--ghost" :disabled="addingList || !addListToken.trim()" @click="handleAddList">
+                    {{ addingList ? "Adding…" : "Add" }}
+                  </button>
+                </div>
+                <p v-if="addListError" class="form-error">{{ addListError }}</p>
+              </details>
+
+              <div class="new-list-box">
+                <label class="field-label" for="new-list-name">Create list</label>
+                <div class="inline-form">
+                  <input id="new-list-name" v-model="newListName" class="config-input" placeholder="Family night, classics…" maxlength="40" @keydown.enter="handleCreateList" />
+                  <button class="btn btn--accent" :disabled="creatingList || !newListName.trim()" @click="handleCreateList">
+                    {{ creatingList ? "Creating…" : "Create" }}
+                  </button>
+                </div>
+              </div>
+            </section>
+          </template>
+
+          <section class="settings-card settings-card--wide">
+            <div class="card-heading">
+              <div>
+                <p class="section-label">Viewing preferences</p>
+                <h3>Family maturity limits</h3>
+              </div>
+              <span class="status-pill" :class="{ 'status-pill--ok': maturitySummary !== 'Off' }">{{ maturitySummary === 'Off' ? 'Off' : 'Active' }}</span>
+            </div>
+            <p class="section-copy">Choose the highest allowed severity per category. These filters are saved with your profile when signed in.</p>
+
+            <button class="family-limits-toggle" type="button" :aria-expanded="familyLimitsOpen" @click="familyLimitsOpen = !familyLimitsOpen">
+              <span>{{ maturitySummary }}</span>
+              <span aria-hidden="true">{{ familyLimitsOpen ? "−" : "+" }}</span>
+            </button>
+
+            <div v-if="familyLimitsOpen" class="family-limits-panel">
+              <div v-for="(cat, catIdx) in MATURITY_CATEGORIES" :key="cat.key" class="mat-cat-row">
+                <div class="mat-cat-title">
+                  <span>{{ cat.label }}</span>
+                  <small>{{ categorySummary(catIdx) }}</small>
+                </div>
+                <div class="mat-chip-row">
+                  <button class="maturity-chip maturity-chip--off" :class="{ active: movieStore.maxMaturityCat[catIdx] === -1 }" type="button" @click="movieStore.setMaxMaturityCat(catIdx, -1)">Off</button>
+                  <button
+                    v-for="(label, sev) in SEVERITY_LABELS"
+                    :key="sev"
+                    class="maturity-chip"
+                    :class="[`maturity-chip--sev-${sev}`, { active: movieStore.maxMaturityCat[catIdx] === sev }]"
+                    type="button"
+                    @click="movieStore.setMaxMaturityCat(catIdx, sev)"
+                  >{{ label }}</button>
+                </div>
+              </div>
+              <button class="btn btn--ghost btn--sm maturity-clear" type="button" @click="movieStore.clearMaturityFilters">Clear family limits</button>
+            </div>
+          </section>
+        </div>
       </div>
     </div>
   </Teleport>
@@ -219,10 +178,7 @@ import { useMovieStore } from "@/stores/movies.js";
 import { MATURITY_CATEGORIES, SEVERITY_LABELS } from "@/maturity.js";
 import { lockBodyScroll, unlockBodyScroll, trapTabKey } from "@/composables/modalGuards.js";
 
-const props = defineProps({
-  pendingListToken: { type: String, default: null },
-});
-
+const props = defineProps({ pendingListToken: { type: String, default: null } });
 const emit = defineEmits(["close"]);
 
 const userStore = useUserStore();
@@ -230,14 +186,12 @@ const movieStore = useMovieStore();
 const dialogRef = ref(null);
 const previouslyFocused = ref(null);
 
-// Not logged in state
 const newName = ref("");
 const creating = ref(false);
 const importToken = ref("");
 const importing = ref(false);
 const importError = ref("");
 
-// Logged in state
 const editName = ref(userStore.userData?.name ?? "");
 const tokenCopied = ref(false);
 const shareStates = ref({});
@@ -260,32 +214,31 @@ watch(() => userStore.userData?.name, (n) => {
   if (n != null) editName.value = n;
 }, { immediate: true });
 
+function categorySummary(catIdx) {
+  const level = movieStore.maxMaturityCat[catIdx];
+  return level >= 0 ? `Up to ${SEVERITY_LABELS[level]}` : "Not filtered";
+}
+
 async function handleCreate() {
   if (!newName.value.trim() || creating.value) return;
   creating.value = true;
-  try {
-    await userStore.createUser(newName.value.trim());
-  } finally {
-    creating.value = false;
-  }
+  try { await userStore.createUser(newName.value.trim()); }
+  finally { creating.value = false; }
 }
 
 async function handleImport() {
   if (!importToken.value.trim() || importing.value) return;
   importing.value = true;
   importError.value = "";
-  try {
-    await userStore.importUser(importToken.value.trim());
-  } catch (e) {
-    importError.value = e.message;
-  } finally {
-    importing.value = false;
-  }
+  try { await userStore.importUser(importToken.value.trim()); }
+  catch (e) { importError.value = e.message; }
+  finally { importing.value = false; }
 }
 
 async function handleSetName() {
-  if (editName.value === userStore.userData?.name) return;
-  await userStore.setName(editName.value.trim());
+  const name = editName.value.trim();
+  if (!name || name === userStore.userData?.name) return;
+  await userStore.setName(name);
 }
 
 async function copyToken() {
@@ -301,15 +254,11 @@ async function shareList(token) {
   try {
     await navigator.clipboard.writeText(url);
     shareStates.value = { ...shareStates.value, [token]: true };
-    setTimeout(() => {
-      shareStates.value = { ...shareStates.value, [token]: false };
-    }, 2000);
+    setTimeout(() => { shareStates.value = { ...shareStates.value, [token]: false }; }, 2000);
   } catch {}
 }
 
-async function handleRemoveList(token) {
-  await userStore.removeList(token);
-}
+async function handleRemoveList(token) { await userStore.removeList(token); }
 
 async function handleCreateList() {
   if (!newListName.value.trim() || creatingList.value) return;
@@ -317,9 +266,7 @@ async function handleCreateList() {
   try {
     await userStore.createList(newListName.value.trim());
     newListName.value = "";
-  } finally {
-    creatingList.value = false;
-  }
+  } finally { creatingList.value = false; }
 }
 
 async function handleAddList() {
@@ -327,7 +274,6 @@ async function handleAddList() {
   addingList.value = true;
   addListError.value = "";
   try {
-    // Accept full share URL or raw token
     let token = addListToken.value.trim();
     const urlParam = new URL(token, window.location.href).searchParams.get("add");
     if (urlParam) token = urlParam;
@@ -335,14 +281,10 @@ async function handleAddList() {
     addListToken.value = "";
   } catch (e) {
     addListError.value = e.message;
-  } finally {
-    addingList.value = false;
-  }
+  } finally { addingList.value = false; }
 }
 
-function handleLogout() {
-  userStore.logout();
-}
+function handleLogout() { userStore.logout(); }
 
 function handleDialogKeydown(event) {
   if (event.key === "Escape") {
@@ -370,357 +312,102 @@ onUnmounted(() => {
 .config-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
   z-index: 200;
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom));
-  backdrop-filter: blur(6px);
-  animation: fadeIn 0.15s ease;
-  height: 100vh;
-  height: 100dvh;
+  padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom));
+  min-height: 100vh;
+  min-height: 100dvh;
   overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
+  background: rgba(0,0,0,0.76);
+  backdrop-filter: blur(8px);
 }
-
-@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
 
 .config-modal {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  max-width: 480px;
-  width: 100%;
-  padding: 28px;
-  position: relative;
-  animation: slideUp 0.2s ease;
-  max-height: calc(100vh - 40px);
-  max-height: calc(100dvh - 40px);
+  width: min(760px, 100%);
+  max-height: calc(100dvh - 36px);
   overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
+  padding: 24px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(22,22,31,0.98), rgba(15,15,26,0.98));
+  box-shadow: 0 30px 100px rgba(0,0,0,0.5);
   outline: none;
 }
 
-@keyframes slideUp { from { transform: translateY(16px); opacity: 0 } to { transform: none; opacity: 1 } }
+.config-header { display: flex; justify-content: space-between; gap: 18px; margin-bottom: 18px; }
+.eyebrow, .section-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent); }
+.config-title { font-family: var(--font-display); font-size: 46px; letter-spacing: 0.06em; line-height: 1; margin-top: 3px; }
+.config-subtitle, .section-copy { color: var(--muted); font-size: 14px; }
+.config-close { width: 36px; height: 36px; flex: 0 0 auto; border-radius: 50%; border: 1px solid rgba(255,255,255,0.13); background: rgba(255,255,255,0.04); color: var(--muted); cursor: pointer; }
+.config-close:hover { color: var(--white); border-color: var(--accent); }
 
-.config-close {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: transparent;
-  border: none;
-  color: var(--muted);
-  font-size: 18px;
-  cursor: pointer;
-  line-height: 1;
-  padding: 4px 8px;
-  transition: color 0.15s;
-}
-.config-close:hover { color: var(--white); }
+.notice { margin-bottom: 16px; padding: 12px 14px; border: 1px solid rgba(45,212,191,0.3); border-radius: 14px; background: rgba(45,212,191,0.1); color: rgba(255,255,255,0.84); font-size: 14px; }
+.settings-grid { display: grid; gap: 14px; }
+.settings-card { padding: 18px; border: 1px solid rgba(255,255,255,0.09); border-radius: 18px; background: rgba(255,255,255,0.035); }
+.settings-card--primary { background: rgba(232,54,93,0.06); border-color: rgba(232,54,93,0.18); }
+.card-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; margin-bottom: 8px; }
+.card-heading h3 { font-size: 19px; line-height: 1.2; }
+.status-pill { flex: 0 0 auto; padding: 4px 9px; border: 1px solid rgba(255,255,255,0.13); border-radius: 99px; color: var(--muted); font-size: 12px; }
+.status-pill--ok { border-color: rgba(45,212,191,0.35); background: rgba(45,212,191,0.1); color: var(--teal); }
 
-.config-title {
-  font-family: var(--font-display);
-  font-size: 26px;
-  letter-spacing: 0.06em;
-  margin-bottom: 8px;
-}
+.form-stack, .new-list-box { display: grid; gap: 7px; margin-top: 14px; }
+.field-label { color: rgba(255,255,255,0.72); font-size: 13px; }
+.inline-form { display: flex; gap: 8px; align-items: center; }
+.config-input { min-width: 0; flex: 1; padding: 11px 12px; border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; background: rgba(8,8,16,0.72); color: var(--white); font: inherit; outline: none; }
+.config-input:focus { border-color: rgba(232,54,93,0.62); }
+.config-input--mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
+.divider { height: 1px; margin: 18px 0 4px; background: rgba(255,255,255,0.08); }
 
-.config-subtitle {
-  font-size: 13px;
-  color: var(--muted);
-  margin-bottom: 20px;
-  line-height: 1.5;
-}
+.btn { flex: 0 0 auto; padding: 10px 14px; border-radius: 12px; border: 1px solid transparent; font-family: var(--font-body); font-weight: 600; cursor: pointer; color: var(--white); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn--accent { background: var(--accent); }
+.btn--ghost { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.13); color: rgba(255,255,255,0.82); }
+.btn--ghost:hover:not(:disabled) { border-color: var(--accent); color: var(--white); }
+.btn--danger { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.26); color: #fca5a5; }
+.btn--sm { padding: 7px 10px; font-size: 12px; }
+.profile-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.form-error { color: #fca5a5; font-size: 13px; }
 
-.notice {
-  background: rgba(232, 54, 93, 0.1);
-  border: 1px solid rgba(232, 54, 93, 0.25);
-  border-radius: var(--radius);
-  padding: 10px 14px;
-  font-size: 12px;
-  color: var(--accent);
-  margin-bottom: 18px;
-}
+.lists-container { display: grid; gap: 8px; margin-top: 14px; }
+.list-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px; border-radius: 14px; background: rgba(8,8,16,0.42); border: 1px solid rgba(255,255,255,0.07); }
+.list-main { display: grid; min-width: 0; }
+.list-name { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.list-count { color: var(--muted); font-size: 12px; }
+.list-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.empty-lists { margin-top: 14px; padding: 12px; border-radius: 14px; background: rgba(8,8,16,0.34); color: var(--muted); font-size: 14px; }
+.add-list-details { margin-top: 14px; color: var(--muted); font-size: 13px; }
+.add-list-details summary { cursor: pointer; width: fit-content; }
+.add-list-details .inline-form { margin-top: 8px; }
 
-.config-section {
-  border-top: 1px solid var(--border);
-  padding-top: 20px;
-  margin-top: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.config-section:first-of-type {
-  border-top: none;
-  padding-top: 0;
-  margin-top: 0;
-}
-
-.section-label {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-}
-
-.inline-form {
-  display: flex;
-  gap: 8px;
-}
-
-.config-input {
-  flex: 1;
-  background: var(--surface3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  color: var(--white);
-  font-family: var(--font-body);
-  font-size: 13px;
-  padding: 8px 12px;
-  outline: none;
-  transition: border-color 0.15s;
-  min-width: 0;
-}
-.config-input:focus { border-color: rgba(255, 255, 255, 0.2); }
-.config-input::placeholder { color: var(--muted); }
-
-.config-input--mono { font-family: monospace; font-size: 11px; }
-
-/* Buttons */
-.btn {
-  flex-shrink: 0;
-  padding: 8px 16px;
-  border-radius: var(--radius);
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  border: none;
-  transition: opacity 0.15s, background 0.15s;
-  white-space: nowrap;
-}
-.btn:disabled { opacity: 0.45; cursor: default; }
-
-.btn--accent { background: var(--accent); color: #fff; }
-.btn--accent:hover:not(:disabled) { opacity: 0.85; }
-
-.btn--ghost {
-  background: var(--surface3);
-  border: 1px solid var(--border);
-  color: var(--white);
-}
-.btn--ghost:hover:not(:disabled) { border-color: rgba(255, 255, 255, 0.2); }
-
-.btn--danger {
-  background: rgba(248, 113, 113, 0.12);
-  border: 1px solid rgba(248, 113, 113, 0.25);
-  color: #f87171;
-}
-.btn--danger:hover:not(:disabled) { background: rgba(248, 113, 113, 0.2); }
-
-.btn--sm { padding: 5px 10px; font-size: 12px; }
-
-
-/* Viewing preferences */
-.family-limits {
-  background: var(--surface3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-
-.family-limits-toggle {
-  width: 100%;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 4px 10px;
-  align-items: center;
-  padding: 12px;
-  border: 0;
-  background: transparent;
-  color: var(--white);
-  font-family: var(--font-body);
-  text-align: left;
-  cursor: pointer;
-}
-
-.family-limits-summary {
-  grid-column: 1 / -1;
-  min-width: 0;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.45;
-}
-
-.family-limits-caret {
-  grid-column: 2;
-  grid-row: 1;
-  color: var(--muted);
-  font-size: 18px;
-}
-
-.family-limits-panel {
-  border-top: 1px solid var(--border);
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.family-limits-help {
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.45;
-}
-
-.mat-cat-row {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-
-.mat-cat-name {
-  font-size: 12px;
-  color: rgba(255,255,255,0.78);
-}
-
-.mat-chip-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.maturity-chip {
-  padding: 5px 9px;
-  border: 1px solid rgba(255,255,255,0.18);
-  border-radius: 99px;
-  background: rgba(18,18,28,0.72);
-  color: rgba(255,255,255,0.76);
-  font-family: var(--font-body);
-  font-size: 11px;
-  cursor: pointer;
-}
-.maturity-chip:hover { border-color: var(--sev-color, rgba(255,255,255,0.35)); color: var(--sev-color, var(--white)); }
-.maturity-chip.active { border-color: var(--sev-color, var(--accent)); color: var(--sev-color, var(--accent)); }
-.maturity-chip--off.active { background: rgba(255,255,255,0.08); }
+.family-limits-toggle { width: 100%; margin-top: 14px; display: flex; justify-content: space-between; gap: 12px; padding: 13px 14px; border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; background: rgba(8,8,16,0.42); color: var(--white); font: inherit; text-align: left; cursor: pointer; }
+.family-limits-toggle span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: rgba(255,255,255,0.86); }
+.family-limits-panel { display: grid; gap: 14px; margin-top: 14px; }
+.mat-cat-row { display: grid; gap: 8px; }
+.mat-cat-title { display: flex; justify-content: space-between; gap: 12px; color: rgba(255,255,255,0.82); font-weight: 700; }
+.mat-cat-title small { color: var(--muted); font-weight: 400; }
+.mat-chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.maturity-chip { padding: 6px 10px; border: 1px solid rgba(255,255,255,0.13); border-radius: 99px; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.72); font: inherit; font-size: 12px; cursor: pointer; }
+.maturity-chip--off.active { background: rgba(255,255,255,0.14); color: var(--white); }
 .maturity-chip--sev-0 { --sev-color: #4ade80; }
 .maturity-chip--sev-1 { --sev-color: #a3e635; }
 .maturity-chip--sev-2 { --sev-color: #facc15; }
 .maturity-chip--sev-3 { --sev-color: #fb923c; }
 .maturity-chip--sev-4 { --sev-color: #f87171; }
 .maturity-chip--sev-5 { --sev-color: #dc2626; }
-.maturity-chip--sev-0.active { background: rgba(74,222,128,0.13); }
-.maturity-chip--sev-1.active { background: rgba(163,230,53,0.13); }
-.maturity-chip--sev-2.active { background: rgba(250,204,21,0.13); }
-.maturity-chip--sev-3.active { background: rgba(251,146,60,0.13); }
-.maturity-chip--sev-4.active { background: rgba(248,113,113,0.13); }
-.maturity-chip--sev-5.active { background: rgba(220,38,38,0.13); }
-.maturity-clear { align-self: flex-start; }
+.maturity-chip:hover, .maturity-chip.active { border-color: var(--sev-color, var(--accent)); color: var(--sev-color, var(--white)); }
+.maturity-chip.active { background: rgba(255,255,255,0.08); }
+.maturity-clear { justify-self: start; }
 
-/* Profile section */
-.profile-row { display: flex; flex-direction: column; gap: 8px; }
-
-.token-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.token-label {
-  font-size: 12px;
-  color: var(--muted);
-  flex-shrink: 0;
-}
-
-.token-value {
-  font-family: monospace;
-  font-size: 11px;
-  color: var(--muted);
-  background: var(--surface3);
-  padding: 3px 8px;
-  border-radius: 4px;
-  border: 1px solid var(--border);
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Lists */
-.empty-lists {
-  font-size: 13px;
-  color: var(--muted);
-  padding: 4px 0;
-}
-
-.lists-container {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.list-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: var(--surface3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 8px 12px;
-}
-
-.list-name {
-  flex: 1;
-  font-size: 13px;
-  color: var(--white);
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.list-count {
-  font-size: 11px;
-  color: var(--muted);
-  flex-shrink: 0;
-}
-
-.list-actions {
-  display: flex;
-  gap: 6px;
-  flex-shrink: 0;
-}
-
-.add-list-section,
-.new-list-section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.add-list-label {
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.form-error {
-  font-size: 12px;
-  color: #f87171;
-  padding: 2px 0;
-}
-
-@media (max-width: 480px) {
-  .config-modal { padding: 20px 16px; }
-  .token-row { flex-wrap: wrap; }
-  .list-row { flex-wrap: wrap; }
+@media (max-width: 640px) {
+  .config-backdrop { padding: 0; }
+  .config-modal { min-height: 100dvh; max-height: none; border-radius: 0; border-left: 0; border-right: 0; padding: 20px 16px; }
+  .config-title { font-size: 40px; }
+  .inline-form, .inline-form--stackable { align-items: stretch; flex-direction: column; }
+  .btn { width: 100%; }
+  .profile-actions .btn, .list-actions .btn { width: auto; }
+  .list-row { align-items: flex-start; flex-direction: column; }
+  .list-actions { justify-content: flex-start; }
 }
 </style>

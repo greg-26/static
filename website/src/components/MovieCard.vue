@@ -19,7 +19,7 @@
       </div>
 
       <!-- Maturity severity dots -->
-      <div class="card-maturity" v-if="movie.mat">
+      <div class="card-maturity" v-if="maturityFilterActive && movie.mat">
         <span
           v-for="cat in MATURITY_CATEGORIES"
           :key="cat.key"
@@ -38,13 +38,15 @@
 
 <script setup>
 import { ref, computed } from "vue";
-import { GENRES } from "@/stores/movies.js";
+import { GENRES, useMovieStore } from "@/stores/movies.js";
 import { MATURITY_CATEGORIES, SEVERITY_LABELS, getScore, scoreCssClass } from "@/maturity.js";
 
 const props = defineProps({ movie: { type: Object, required: true } });
 defineEmits(["select"]);
 
+const store = useMovieStore();
 const imgError = ref(false);
+const maturityFilterActive = computed(() => store.maxMaturityCat.some(v => v >= 0));
 
 const genreLabels = computed(() => {
   const labels = [];

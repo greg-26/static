@@ -29,7 +29,7 @@
             </div>
             <MovieRow
               :key="store.searchQuery"
-              :row="{ movies: store.filteredMovies, label: ''}"
+              :row="{ movies: store.filteredMovies, label: 'Search results' }"
               @selectMovie="openMovie"
             />
           </div>
@@ -126,7 +126,7 @@ const listRows = computed(() => {
     .filter(list => list.movies.length > 0)
     .map(list => ({
       id: "list-" + list.token,
-      label: "★ " + list.name,
+      label: "My list · " + list.name,
       movies: list.movies.map(id => movieById.value.get(id)).filter(Boolean),
     }))
     .filter(row => row.movies.length > 0);
@@ -363,12 +363,12 @@ onMounted(async () => {
 /* ── Catalog ── */
 .catalog {
   flex: 1;
-  padding-bottom: 60px;
+  padding-bottom: 52px;
 }
 
 /* ── Skeleton loader ── */
 .skeleton-row {
-  margin-bottom: 36px;
+  margin-bottom: 26px;
   padding: 0 48px;
 }
 
@@ -434,14 +434,14 @@ onMounted(async () => {
 
 /* ── Search results grid ── */
 .search-results-grid {
-  padding: 0 48px;
+  padding: 0;
 }
 
 .search-results-header {
   display: flex;
   align-items: baseline;
   gap: 14px;
-  margin-bottom: 20px;
+  margin: 0 48px 8px;
   flex-wrap: wrap;
 }
 
@@ -490,7 +490,7 @@ onMounted(async () => {
   top: 16px;
   right: 16px;
   z-index: 10;
-  background: var(--surface2);
+  background: rgba(22,22,31,0.78);
   border: 1px solid var(--border);
   border-radius: 50%;
   width: 38px;
@@ -511,7 +511,8 @@ onMounted(async () => {
 
 /* ── Mobile ── */
 @media (max-width: 640px) {
-  .search-results-grid { padding: 0 16px; }
+  .search-results-grid { padding: 0; }
+  .search-results-header { margin: 0 16px 8px; }
   .footer { padding: 24px 16px; }
 }
 </style>
