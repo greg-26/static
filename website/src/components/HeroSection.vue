@@ -1,41 +1,67 @@
 <template>
   <header class="hero">
-    <!-- Poster background (static pre-made list, no DB dependency) -->
     <div class="hero-poster-bg" aria-hidden="true">
-      <div
-        v-for="(col, ci) in HERO_POSTER_COLS"
-        :key="ci"
-        class="poster-col"
-      >
-        <img
-          v-for="(url, i) in col"
-          :key="i"
-          :src="url"
-          loading="lazy"
-          class="poster-bg-img"
-        />
+      <div v-for="(col, ci) in HERO_POSTER_COLS" :key="ci" class="poster-col">
+        <img v-for="(url, i) in col" :key="i" :src="url" loading="lazy" class="poster-bg-img" />
       </div>
     </div>
     <div class="hero-bg-overlay"></div>
 
     <div class="hero-content">
-      <!-- Wordmark -->
-      <div class="hero-brand">
-        <span class="hero-logo">Ohana TV</span>
-        <span class="hero-tagline">Healthy & family friendly movies.</span>
+      <div class="hero-topbar">
+        <div class="hero-brand">
+          <span class="hero-logo">Ohana TV</span>
+          <span class="hero-tagline">Find something good for the whole family.</span>
+        </div>
+        <button class="settings-link" type="button" @click="emit('open-settings')">Settings</button>
       </div>
 
-      <!-- Filters (hidden when searching) -->
-      <transition name="slide-filters">
-        <div class="filters" v-show="true || !store.searchQuery">
+      <div class="hero-search-row">
+        <div class="hero-search">
+          <svg class="search-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M13.5 13.5L17 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <input
+            v-model="localSearch"
+            type="search"
+            placeholder="Search movies…"
+            class="search-input"
+            spellcheck="false"
+          />
+          <button v-if="store.searchQuery" class="search-clear" type="button" @click="clearSearch" aria-label="Clear search">×</button>
+        </div>
+      </div>
 
-          <div v-if="activeMaturitySummary" class="filter-group filter-group--full family-summary">
-            <span class="family-summary-text">{{ activeMaturitySummary }}</span>
-            <button class="family-summary-edit" @click="emit('open-settings')">Edit in settings</button>
-          </div>
+      <div class="browse-toolbar" aria-label="Catalog controls">
+        <button
+          class="toolbar-chip toolbar-chip--primary"
+          type="button"
+          :class="{ active: filtersOpen || browsingFilterCount > 0 }"
+          :aria-expanded="filtersOpen"
+          @click="filtersOpen = !filtersOpen"
+        >
+          Filters<span v-if="browsingFilterCount"> · {{ browsingFilterCount }}</span>
+        </button>
 
-          <!-- Genres -->
-          <div class="filter-group filter-group--full">
+        <button
+          v-if="activeMaturitySummary"
+          class="toolbar-chip toolbar-chip--quiet"
+          type="button"
+          @click="emit('open-settings')"
+        >
+          {{ activeMaturitySummary }}
+        </button>
+
+        <span v-if="store.searchQuery" class="toolbar-count">{{ store.filteredMovies.length }} results</span>
+        <span v-else-if="hasFilters" class="toolbar-count">{{ store.filteredMovies.length }} of {{ store.allMovies.length }}</span>
+
+        <button v-if="hasFilters" class="toolbar-clear" type="button" @click="clearAllFilters">Clear</button>
+      </div>
+
+      <transition name="filter-panel">
+        <section v-if="filtersOpen && !store.searchQuery" class="filter-panel" aria-label="Filters">
+          <div class="filter-section">
             <p class="filter-label">Genre</p>
             <div class="filter-chips">
               <button
@@ -43,13 +69,13 @@
                 :key="genre"
                 class="chip"
                 :class="{ active: store.selectedGenres.has(genre) }"
+                type="button"
                 @click="store.toggleGenre(genre)"
               >{{ genre }}</button>
             </div>
           </div>
 
-          <!-- Providers -->
-          <div class="filter-group filter-group--full" v-if="store.availableProviders.length">
+          <div class="filter-section" v-if="store.availableProviders.length">
             <p class="filter-label">Streaming on</p>
             <div class="filter-chips">
               <button
@@ -57,77 +83,56 @@
                 :key="p.id"
                 class="chip chip--provider"
                 :class="{ active: store.selectedProviders & p.bit }"
+                type="button"
                 @click="store.toggleProvider(p.bit)"
               >{{ p.name }}</button>
             </div>
           </div>
 
-        </div>
-      </transition>
-
-      <!-- Search + IMDb rating row (always visible, at bottom) -->
-      <div class="hero-bottom-row">
-        <div class="hero-search">
-          <svg class="search-icon" viewBox="0 0 20 20" fill="none">
-            <circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M13.5 13.5L17 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-          <input
-            v-model="localSearch"
-            type="search"
-            placeholder="Search by title…"
-            class="search-input"
-            spellcheck="false"
-          />
-          <transition name="fade">
-            <span v-if="store.searchQuery" class="search-results-count">
-              {{ store.filteredMovies.length }} results
-            </span>
-          </transition>
-        </div>
-
-        <div class="filter-group filter-group--rating" style="width: 100%">
-          <p class="filter-label">Min IMDb rating</p>
-          <div class="rating-slider-wrap">
-            <input
-              type="range"
-              min="5" max="10" step="0.5"
-              v-model.number="store.minRating"
-              class="rating-slider"
-            />
-            <span class="rating-value">{{ store.minRating === 0 ? 'All' : `${store.minRating}+` }}</span>
+          <div class="filter-section filter-section--rating">
+            <p class="filter-label">Minimum IMDb rating</p>
+            <div class="rating-slider-wrap">
+              <input
+                type="range"
+                min="0" max="10" step="0.5"
+                v-model.number="store.minRating"
+                class="rating-slider"
+              />
+              <span class="rating-value">{{ store.minRating === 0 ? 'All' : `${store.minRating}+` }}</span>
+            </div>
           </div>
-        </div>
-      </div>
 
-      <!-- Active filter summary + clear -->
-      <div class="filter-summary" v-if="hasFilters">
-        <span class="filter-summary-text">
-          {{ store.filteredMovies.length }} of {{ store.allMovies.length }} titles
-        </span>
-        <button class="clear-btn" @click="store.clearFilters">Clear filters</button>
-      </div>
+          <div class="filter-section filter-section--preference">
+            <p class="preference-copy">
+              Family maturity limits are saved as a viewing preference.
+              <button type="button" @click="emit('open-settings')">Edit in settings</button>
+            </p>
+          </div>
+        </section>
+      </transition>
     </div>
   </header>
 </template>
 
 <script setup>
 import { computed, ref, watch } from "vue";
-import { useMovieStore, GENRE_LABELS, PROVIDERS } from "@/stores/movies.js";
+import { useMovieStore, GENRE_LABELS } from "@/stores/movies.js";
 import { MATURITY_CATEGORIES, SEVERITY_LABELS } from "@/maturity.js";
 
 const emit = defineEmits(["open-settings"]);
 const store = useMovieStore();
+const filtersOpen = ref(false);
 
-// Local value for instant input feel; debounce the store update by 150ms
 const localSearch = ref(store.searchQuery);
 let debounceTimer = null;
 watch(localSearch, val => {
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(() => { store.searchQuery = val; }, 150);
 });
-// Keep in sync if store is cleared externally (e.g. Clear filters)
-watch(() => store.searchQuery, val => { if (val !== localSearch.value) localSearch.value = val; });
+watch(() => store.searchQuery, val => {
+  if (val !== localSearch.value) localSearch.value = val;
+  if (val) filtersOpen.value = false;
+});
 
 const BASE = "https://image.tmdb.org/t/p/w342/";
 const HERO_POSTER_COLS = [
@@ -138,38 +143,48 @@ const HERO_POSTER_COLS = [
   ["iB64vpL3dIObOtMZgX3RqdVdQDc","fWVSwgjpT2D78VUh6X8UBd2rorW","cWsBscZzwu5brg9YjNkGewRUvJX","cRY25Q32kDNPFDkFkxAs6bgCq3L","ril8yx5SOmj0KjNlftsdfIp00fr","vqBmyAj0Xm9LnS1xe1MSlMAJyHq"],
 ].map(col => col.map(hash => BASE + hash + ".jpg"));
 
-
 const activeMaturitySummary = computed(() => {
   const active = store.maxMaturityCat
     .map((level, i) => ({ level, category: MATURITY_CATEGORIES[i] }))
     .filter(({ level }) => level >= 0);
   if (!active.length) return "";
-  return `Family limits: ${active.map(({ level, category }) => `${category.label} ≤ ${SEVERITY_LABELS[level]}`).join(" · ")}`;
+  if (active.length === MATURITY_CATEGORIES.length) return "Family limits on";
+  return `Family limits: ${active.length}`;
 });
+
+const browsingFilterCount = computed(() =>
+  store.selectedGenres.size +
+  store.availableProviders.filter(p => store.selectedProviders & p.bit).length +
+  (store.minRating > 0 ? 1 : 0)
+);
 
 const hasFilters = computed(() =>
   store.searchQuery ||
-  store.selectedGenres.size > 0 ||
-  store.selectedProviders !== 0 ||
-  store.minRating > 0 ||
+  browsingFilterCount.value > 0 ||
   store.maxMaturityCat.some(v => v >= 0)
 );
+
+function clearSearch() {
+  localSearch.value = "";
+  store.searchQuery = "";
+}
+
+function clearAllFilters() {
+  store.clearFilters();
+  localSearch.value = "";
+}
 </script>
 
 <style scoped>
 .hero {
   position: relative;
-  min-height: 85vh;
-  padding: 80px 48px 56px;
+  padding: 56px 48px 28px;
   overflow: hidden;
   border-bottom: 1px solid var(--border);
-  margin-bottom: 48px;
-  display: flex;
-  align-items: flex-start;
+  margin-bottom: 28px;
   contain: layout paint;
 }
 
-/* ── Poster background ── */
 .hero-poster-bg {
   position: absolute;
   inset: 0;
@@ -178,31 +193,19 @@ const hasFilters = computed(() =>
   padding: 0 4px;
   overflow: hidden;
   z-index: 0;
-  will-change: transform;
   transform: translateZ(0);
 }
 
-.poster-col {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex: 1;
-}
-
-.poster-col:nth-child(even) {
-  margin-top: -48px;
-}
-
-.poster-col:nth-child(odd) {
-  margin-top: 24px;
-}
+.poster-col { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.poster-col:nth-child(even) { margin-top: -48px; }
+.poster-col:nth-child(odd) { margin-top: 24px; }
 
 .poster-bg-img {
   width: 100%;
-  aspect-ratio: 2/3;
+  aspect-ratio: 2 / 3;
   object-fit: cover;
   border-radius: 4px;
-  opacity: 0.55;
+  opacity: 0.36;
   display: block;
   flex-shrink: 0;
 }
@@ -212,60 +215,63 @@ const hasFilters = computed(() =>
   inset: 0;
   z-index: 1;
   background:
-    linear-gradient(135deg, rgba(232,54,93,0.28) 0%, transparent 50%),
-    linear-gradient(225deg, rgba(45,212,191,0.15) 0%, transparent 45%),
-    radial-gradient(ellipse 110% 60% at 50% 0%, rgba(8,8,16,0.55) 0%, transparent 100%),
-    linear-gradient(to bottom, rgba(8,8,16,0.15) 0%, rgba(8,8,16,0.72) 55%, var(--black) 90%);
+    linear-gradient(135deg, rgba(232,54,93,0.24) 0%, transparent 46%),
+    linear-gradient(225deg, rgba(45,212,191,0.14) 0%, transparent 42%),
+    linear-gradient(to bottom, rgba(8,8,16,0.42) 0%, rgba(8,8,16,0.86) 64%, var(--black) 100%);
   pointer-events: none;
 }
 
-/* ── Content ── */
 .hero-content {
   position: relative;
   z-index: 2;
-  max-width: 1400px;
+  max-width: 1120px;
   margin: 0 auto;
   width: 100%;
 }
 
-.hero-brand {
+.hero-topbar {
   display: flex;
-  align-items: baseline;
-  gap: 18px;
-  margin-bottom: 36px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
 }
+
+.hero-brand { display: flex; flex-direction: column; gap: 4px; }
 
 .hero-logo {
   font-family: var(--font-display);
-  font-size: clamp(52px, 8vw, 96px);
+  font-size: clamp(46px, 8vw, 84px);
   letter-spacing: 0.1em;
-  line-height: 1;
+  line-height: 0.9;
   color: #2ecc5a;
-  text-shadow: 0 2px 40px rgba(52,211,153,0.55), 0 0 80px rgba(52,211,153,0.2);
+  text-shadow: 0 2px 40px rgba(52,211,153,0.45), 0 0 80px rgba(52,211,153,0.16);
 }
 
-.hero-tagline {
-  font-size: 15px;
+.hero-tagline { font-size: 15px; color: rgba(255,255,255,0.8); }
+
+.settings-link,
+.toolbar-chip,
+.toolbar-clear,
+.search-clear,
+.chip,
+.preference-copy button {
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+
+.settings-link {
+  padding: 8px 13px;
+  border: 1px solid rgba(255,255,255,0.22);
+  border-radius: 99px;
+  background: rgba(15,15,26,0.72);
   color: rgba(255,255,255,0.82);
-  font-style: italic;
+  font-size: 13px;
 }
+.settings-link:hover { border-color: var(--accent); color: var(--white); }
 
-/* ── Bottom row: search + IMDb rating ── */
-.hero-bottom-row {
-  display: flex;
-  align-items: flex-end;
-  gap: 24px;
-  margin-top: 32px;
-  flex-wrap: wrap;
-}
-
-.hero-search {
-  position: relative;
-  flex: 1 1 320px;
-  max-width: 560px;
-  display: flex;
-  align-items: center;
-}
+.hero-search-row { max-width: 720px; }
+.hero-search { position: relative; display: flex; align-items: center; }
 
 .search-icon {
   position: absolute;
@@ -278,56 +284,81 @@ const hasFilters = computed(() =>
 
 .search-input {
   width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  padding: 14px 16px 14px 48px;
+  padding: 15px 46px 15px 48px;
   background: rgba(18,18,28,0.96);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 14px;
   color: var(--white);
   font-family: var(--font-body);
-  font-size: 16px;
+  font-size: 17px;
   outline: none;
+  box-shadow: 0 18px 60px rgba(0,0,0,0.22);
   transition: border-color 0.15s, background 0.15s;
 }
-
 .search-input::placeholder { color: var(--muted); }
-.search-input:focus {
-  border-color: rgba(232,54,93,0.5);
-  background: rgba(22,22,31,0.95);
-}
+.search-input:focus { border-color: rgba(232,54,93,0.58); background: rgba(22,22,31,0.98); }
 .search-input::-webkit-search-cancel-button { display: none; }
 
-.search-results-count {
+.search-clear {
   position: absolute;
-  right: 16px;
-  font-size: 12px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
   color: var(--muted);
-  pointer-events: none;
+  font-size: 20px;
+  line-height: 1;
 }
 
-/* ── Filters ── */
-.filters {
+.browse-toolbar {
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
-  gap: 28px;
+  gap: 8px;
+  margin-top: 14px;
 }
 
-.filter-group { display: flex; flex-direction: column; gap: 10px; }
-.filter-group--rating { min-width: 200px; }
-.filter-group--full { width: 100%; min-width: 0; }
+.toolbar-chip,
+.toolbar-clear {
+  padding: 7px 12px;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 99px;
+  background: rgba(15,15,26,0.68);
+  color: rgba(255,255,255,0.82);
+  font-size: 13px;
+}
+.toolbar-chip.active,
+.toolbar-chip--primary:hover { border-color: var(--accent); color: var(--white); }
+.toolbar-chip--quiet { color: var(--teal); border-color: rgba(45,212,191,0.32); }
+.toolbar-count { font-size: 13px; color: var(--muted); }
+.toolbar-clear { color: var(--muted); background: transparent; }
+.toolbar-clear:hover { border-color: var(--accent); color: var(--accent); }
 
+.filter-panel {
+  margin-top: 14px;
+  padding: 16px;
+  background: rgba(15,15,26,0.78);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  display: grid;
+  gap: 16px;
+  max-width: 920px;
+}
+
+.filter-section { display: grid; gap: 9px; }
 .filter-label {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: rgba(255,255,255,0.72);
+  color: rgba(255,255,255,0.66);
 }
 
 .filter-chips {
   display: flex;
-  flex-wrap: nowrap;
-  gap: 6px;
+  gap: 7px;
   overflow-x: auto;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
@@ -336,165 +367,64 @@ const hasFilters = computed(() =>
 .filter-chips::-webkit-scrollbar { display: none; }
 
 .chip {
-  padding: 5px 12px;
-  background: rgba(30,30,42,0.92);
-  border: 1px solid rgba(255,255,255,0.22);
+  flex: 0 0 auto;
+  padding: 6px 12px;
+  background: rgba(30,30,42,0.94);
+  border: 1px solid rgba(255,255,255,0.18);
   border-radius: 99px;
   color: rgba(255,255,255,0.78);
-  font-family: var(--font-body);
   font-size: 12px;
-  cursor: pointer;
-  transition: border-color 0.15s, color 0.15s, background 0.15s;
   white-space: nowrap;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
 }
+.chip:hover { border-color: rgba(232,54,93,0.4); color: var(--white); }
+.chip.active { background: var(--accent); border-color: var(--accent); color: var(--white); }
+.chip--provider.active { background: rgba(45,212,191,0.15); border-color: var(--teal); color: var(--teal); }
 
-.chip:hover {
-  border-color: rgba(232,54,93,0.4);
-  color: var(--white);
-}
-
-.chip.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--white);
-}
-
-.chip--provider.active {
-  background: rgba(45,212,191,0.15);
-  border-color: var(--teal);
-  color: var(--teal);
-}
-
-/* Maturity severity chips */
-.chip--sev-0 { --sev-color: #4ade80; }
-.chip--sev-1 { --sev-color: #a3e635; }
-.chip--sev-2 { --sev-color: #facc15; }
-.chip--sev-3 { --sev-color: #fb923c; }
-.chip--sev-4 { --sev-color: #f87171; }
-.chip--sev-5 { --sev-color: #dc2626; }
-
-.chip--maturity:hover { border-color: var(--sev-color); color: var(--sev-color); }
-.chip--maturity.active {
-  background: rgba(255,255,255,0.05);
-  border-color: var(--sev-color);
-  color: var(--sev-color);
-}
-.chip--sev-0.active { background: rgba(74,222,128,0.15); }
-.chip--sev-1.active { background: rgba(163,230,53,0.15); }
-.chip--sev-2.active { background: rgba(250,204,21,0.15); }
-.chip--sev-3.active { background: rgba(251,146,60,0.15); }
-.chip--sev-4.active { background: rgba(248,113,113,0.15); }
-.chip--sev-5.active { background: rgba(220,38,38,0.15); }
-
-.chip--sm { padding: 3px 8px; font-size: 11px; }
-
-/* Compact family limits summary */
-.family-summary {
-  flex-direction: row;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px 12px;
-}
-
-.family-summary-text {
-  font-size: 13px;
-  color: rgba(255,255,255,0.82);
-}
-
-.family-summary-edit {
-  padding: 4px 10px;
-  border: 1px solid rgba(255,255,255,0.22);
-  border-radius: 99px;
-  background: rgba(30,30,42,0.72);
-  color: var(--muted);
-  font-family: var(--font-body);
-  font-size: 12px;
-  cursor: pointer;
-}
-.family-summary-edit:hover { border-color: var(--accent); color: var(--accent); }
-
-/* ── Rating slider ── */
-.rating-slider-wrap {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
+.rating-slider-wrap { display: flex; align-items: center; gap: 12px; }
 .rating-slider {
   -webkit-appearance: none;
-  width: 160px;
+  width: min(260px, 100%);
   height: 4px;
   background: var(--surface3);
   border-radius: 99px;
   outline: none;
   cursor: pointer;
 }
-
 .rating-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: var(--accent);
-  cursor: pointer;
+}
+.rating-value { font-size: 13px; font-weight: 600; color: var(--white); min-width: 34px; }
+
+.preference-copy { font-size: 13px; color: var(--muted); line-height: 1.45; }
+.preference-copy button { border: 0; background: none; color: var(--teal); padding: 0; font-size: inherit; }
+
+.filter-panel-enter-active,
+.filter-panel-leave-active { transition: opacity 0.18s ease, transform 0.18s ease; }
+.filter-panel-enter-from,
+.filter-panel-leave-to { opacity: 0; transform: translateY(-6px); }
+
+@media (min-width: 760px) {
+  .filter-panel { grid-template-columns: 1fr 1fr; }
+  .filter-section:first-child,
+  .filter-section--preference { grid-column: 1 / -1; }
 }
 
-.rating-value {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--white);
-  min-width: 30px;
-}
-
-/* ── Summary ── */
-.filter-summary {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-top: 24px;
-}
-
-.filter-summary-text { font-size: 13px; color: var(--muted); }
-
-.clear-btn {
-  padding: 4px 12px;
-  border: 1px solid var(--border);
-  border-radius: 99px;
-  background: transparent;
-  color: var(--muted);
-  font-family: var(--font-body);
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.clear-btn:hover { border-color: var(--accent); color: var(--accent); }
-
-/* ── Filter slide transition ── */
-.slide-filters-enter-active, .slide-filters-leave-active {
-  transition: opacity 0.2s, transform 0.2s;
-}
-.slide-filters-enter-from, .slide-filters-leave-to {
-  opacity: 0;
-  transform: translateY(-8px);
-}
-
-/* ── Fade transition ── */
-.fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
-
-/* ── Mobile ── */
 @media (max-width: 640px) {
   .hero {
-    padding: 48px 16px 40px;
-    min-height: 70vh;
+    padding: 42px 16px 22px;
+    margin-bottom: 22px;
   }
-
-  .hero-brand { flex-direction: column; gap: 4px; margin-bottom: 24px; }
-
-  .hero-bottom-row { gap: 16px; margin-top: 20px; }
-
-  .filters { gap: 20px; }
-
+  .hero-topbar { margin-bottom: 18px; }
+  .hero-logo { font-size: 48px; }
+  .hero-tagline { font-size: 14px; max-width: 260px; }
+  .settings-link { padding: 7px 11px; font-size: 12px; }
+  .search-input { font-size: 16px; border-radius: 12px; }
   .poster-col:nth-child(n+4) { display: none; }
+  .filter-panel { margin-left: -2px; margin-right: -2px; padding: 14px; }
 }
 </style>
