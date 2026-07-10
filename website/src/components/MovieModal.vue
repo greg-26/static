@@ -1,15 +1,16 @@
 <template>
   <Teleport to="body">
-    <div class="modal-backdrop" @click.self="emit('close')" v-if="movie">
-      <div
-        ref="dialogRef"
-        class="modal"
-        role="dialog"
-        aria-modal="true"
-        :aria-labelledby="titleId"
-        tabindex="-1"
-        @keydown="handleDialogKeydown"
-      >
+    <Transition name="modal-pop">
+      <div class="modal-backdrop" @click.self="emit('close')" v-if="movie">
+        <div
+          ref="dialogRef"
+          class="modal"
+          role="dialog"
+          aria-modal="true"
+          :aria-labelledby="titleId"
+          tabindex="-1"
+          @keydown="handleDialogKeydown"
+        >
         <!-- Desktop: button sits to the left of the poster, outside it -->
         <button class="modal-close modal-close--desktop" @click="emit('close')" aria-label="Close movie details">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -242,8 +243,9 @@
             </div>
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </Transition>
   </Teleport>
 </template>
 
@@ -508,7 +510,35 @@ onUnmounted(() => {
   overscroll-behavior: contain;
 }
 
-@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+.modal-pop-enter-active,
+.modal-pop-leave-active {
+  transition: opacity 0.24s ease;
+}
+
+.modal-pop-enter-active .modal,
+.modal-pop-leave-active .modal {
+  transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.24s ease;
+}
+
+.modal-pop-enter-from,
+.modal-pop-leave-to {
+  opacity: 0;
+}
+
+.modal-pop-enter-from .modal,
+.modal-pop-leave-to .modal {
+  opacity: 0.96;
+  transform: translateY(96px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-pop-enter-active,
+  .modal-pop-leave-active,
+  .modal-pop-enter-active .modal,
+  .modal-pop-leave-active .modal {
+    transition: none;
+  }
+}
 
 .modal {
   background: var(--background, #0b0b0e);
