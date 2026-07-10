@@ -32,6 +32,7 @@ Scope: this file is for the `website/` project only inside the Ohana static repo
 - Maturity limits are stored as `maxMaturityCat` array with one threshold per maturity category; `-1` means off.
 - Provider filter is currently a bitmask (`selectedProviders`) using the fixed `PROVIDERS` array in `movies.js`.
 - User profile data supports `filterPrefs`; current app saves maturity limits and selected provider bitmask there.
+- Current roadmap direction: browsing type defaults to `Both`; search can ignore browse filters for now; providers should be a compact optional filter chip (`Any provider`, one provider name, or `3 providers`) rather than forced onboarding; maturity should live in a `Safe` filter chip; genres should use one chip (`Genres`, one genre name, or `3 genres`) that opens the picker.
 
 ## Local development
 
@@ -56,5 +57,6 @@ curl -fL --compressed https://ohana.tv/movies.json -o public/movies.json
 - Ask sub-agents for concise findings, exact file references, and verification results instead of raw exploratory logs.
 - Keep roadmap ideas documented first; do not implement roadmap items unless Alex asks.
 - Prefer small UX changes with mobile verification because this app is being reviewed on a phone.
+- Once there are relevant, contained improvements, prepare a PR back to the original repo with a focused scope and clear verification notes.
 - Do not move profile/list persistence casually; `user.js` uses 3-way merge logic for KV data.
 - If adding real routing later, account for static hosting fallback behavior.
