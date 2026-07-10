@@ -44,6 +44,8 @@ npm run dev -- --host 0.0.0.0
 
 Tailscale/dev URL on this Pi has been `http://100.85.92.106:5173/` when Vite uses port 5173.
 
+Keep the Vite dev server running during active work/review so Alex can check the dev version from his phone over Tailscale. If it is stopped or stale, restart it with `npm run dev -- --host 0.0.0.0` and mention the reachable Tailscale URL.
+
 Real data should be downloaded/refreshed with:
 
 ```bash
