@@ -14,7 +14,7 @@ const SEX_TAGS = {
   undressing:        ["undresses", "undress", "undressing", "strips", "strip", "removes", "takes off", "exposes", "exposing"],
   sex:               ["having sex", "sex scenes", "had sex", "intercourse", "sexual activity", "explicit"],
   implied_sex:       ["implied sex", "implied", "implying"],
-  oral_sex:          ["oral sex", "oral","cunnilingus","fellatio"],
+  oral_sex:          ["oral sex","cunnilingus","fellatio"],
   rape:              ["rape", "raped", "forced"],
   harassment:        ["abuse","harassment"],
   masturbation:      ["masturbation", "masturbating", "masturbates"],
