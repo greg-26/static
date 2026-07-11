@@ -6,8 +6,8 @@ Family-friendly movie browser with fuzzy search, genre/provider filters, and bit
 
 Production is deployed on Netlify:
 
-- **URL:** https://ohana-static.netlify.app
-- **Netlify project:** `ohana-static`
+- **URL:** https://ohana-tv.netlify.app
+- **Netlify project:** `ohana-tv`
 - **Branch:** `include-new-unrated-titles`
 
 Deploys are configured through Netlify CI/CD using the repo-root `netlify.toml`.
