@@ -54,7 +54,11 @@ npm run build
 1. Run the scraper to generate `public/movies.json`
 2. `npm run dev` — the app loads it automatically
 
-Without `movies.json`, the app uses 500 mock movies for development.
+Data loading order:
+
+1. `movies.json` from the current site root — local/generated data
+2. `https://ohana.tv/movies.json` — production fallback used by Netlify when the file is not deployed with this static site
+3. 500 mock movies — development fallback if both real-data sources fail
 
 ## Architecture
 

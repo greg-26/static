@@ -82,17 +82,33 @@ export const useMovieStore = defineStore("movies", () => {
 
   let fuse = null;
 
+  const MOVIES_JSON_URLS = ["movies.json", "https://ohana.tv/movies.json"];
+
+  async function fetchMoviesJson() {
+    const errors = [];
+
+    for (const url of MOVIES_JSON_URLS) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
+      } catch (e) {
+        errors.push(`${url}: ${e.message}`);
+      }
+    }
+
+    throw new Error(errors.join("; "));
+  }
+
   // ── Load data ─────────────────────────────────────────────
   async function loadMovies() {
     loading.value = true;
     error.value = null;
     try {
-      const res = await fetch("movies.json");
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
+      const data = await fetchMoviesJson();
       allMovies.value = data.movies || generateMockMovies();
     } catch (e) {
-      console.warn("Could not load movies.json, using mock data:", e.message);
+      console.warn("Could not load movies.json from local or ohana.tv, using mock data:", e.message);
       allMovies.value = generateMockMovies();
     } finally {
       loading.value = false;
