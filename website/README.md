@@ -1,6 +1,16 @@
-# CineVault — Movie Discovery Website
+# Ohana TV — Movie Discovery Website
 
-Netflix-style movie browser with fuzzy search, genre/provider filters, and bitmask-encoded data.
+Family-friendly movie browser with fuzzy search, genre/provider filters, and bitmask-encoded data.
+
+## Live site
+
+Production is deployed on Netlify:
+
+- **URL:** https://ohana-static.netlify.app
+- **Netlify project:** `ohana-static`
+- **Branch:** `include-new-unrated-titles`
+
+Deploys are configured through Netlify CI/CD using the repo-root `netlify.toml`.
 
 ## Stack
 
@@ -15,6 +25,28 @@ Netflix-style movie browser with fuzzy search, genre/provider filters, and bitma
 cd website
 npm install
 npm run dev
+```
+
+## Build
+
+From the repo root, Netlify runs:
+
+```bash
+cd website && npm ci && npm run build
+```
+
+The static output is published from:
+
+```text
+website/dist
+```
+
+For a local production build:
+
+```bash
+cd website
+npm ci
+npm run build
 ```
 
 ## With real data
