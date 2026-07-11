@@ -1,5 +1,5 @@
 <template>
-  <div class="card" @click="$emit('select', movie)" :title="movie.t">
+  <button type="button" class="card" @click="$emit('select', movie)" :title="movie.t">
     <div class="card-poster" :style="posterStyle">
       <img
         v-if="movie.p && !imgError"
@@ -19,7 +19,7 @@
       </div>
 
       <!-- Maturity severity dots -->
-      <div class="card-maturity" v-if="movie.mat">
+      <div class="card-maturity" v-if="maturityFilterActive && movie.mat">
         <span
           v-for="cat in MATURITY_CATEGORIES"
           :key="cat.key"
@@ -33,18 +33,20 @@
       <p class="card-title">{{ movie.t }}</p>
       <p class="card-genres">{{ genreLabels }}</p>
     </div>
-  </div>
+  </button>
 </template>
 
 <script setup>
 import { ref, computed } from "vue";
-import { GENRES } from "@/stores/movies.js";
+import { GENRES, useMovieStore } from "@/stores/movies.js";
 import { MATURITY_CATEGORIES, SEVERITY_LABELS, getScore, scoreCssClass } from "@/maturity.js";
 
 const props = defineProps({ movie: { type: Object, required: true } });
 defineEmits(["select"]);
 
+const store = useMovieStore();
 const imgError = ref(false);
+const maturityFilterActive = computed(() => store.maxMaturityCat.some(v => v >= 0));
 
 const genreLabels = computed(() => {
   const labels = [];
@@ -68,15 +70,33 @@ const posterStyle = computed(() => ({
 .card {
   width: var(--card-w);
   flex-shrink: 0;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
   cursor: pointer;
   transition: transform 0.2s ease;
   position: relative;
   z-index: 0;
 }
 
-.card:hover {
+.card:hover,
+.card:focus-visible {
   transform: scale(1.08);
   z-index: 10;
+}
+
+.card:active {
+  transform: scale(0.98);
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: var(--radius);
 }
 
 .card-poster {

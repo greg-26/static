@@ -146,19 +146,19 @@ onUnmounted(() => {
 
 <style scoped>
 .row {
-  margin-bottom: 36px;
+  margin-bottom: 26px;
 }
 
 .row-header {
   display: flex;
   align-items: baseline;
   padding: 0 48px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .row-label {
   font-family: var(--font-display);
-  font-size: 22px;
+  font-size: 21px;
   letter-spacing: 0.06em;
   color: var(--white);
 }
@@ -171,7 +171,7 @@ onUnmounted(() => {
   display: flex;
   gap: var(--gap);
   overflow-x: auto;
-  padding: 8px 48px 16px;
+  padding: 6px 48px 14px;
   scrollbar-width: none;
   -ms-overflow-style: none;
   /* No scroll-snap: it caused snapping to the sentinel/skeleton elements */

@@ -1,6 +1,6 @@
 <template>
   <div class="app">
-    <HeroSection />
+    <HeroSection @open-settings="showConfig = true" />
 
     <main class="catalog">
       <!-- Still loading: show skeleton rows -->
@@ -29,8 +29,8 @@
             </div>
             <MovieRow
               :key="store.searchQuery"
-              :row="{ movies: store.filteredMovies, label: ''}"
-              @selectMovie="selectedMovie = $event"
+              :row="{ movies: store.filteredMovies, label: 'Search results' }"
+              @selectMovie="openMovie"
             />
           </div>
 
@@ -41,21 +41,21 @@
               v-for="row in listRows"
               :key="row.id"
               :row="row"
-              @selectMovie="selectedMovie = $event"
+              @selectMovie="openMovie"
             />
             <!-- Regular store rows -->
             <MovieRow
               v-for="row in filteredMovieRows"
               :key="row.id"
               :row="row"
-              @selectMovie="selectedMovie = $event"
+              @selectMovie="openMovie"
             />
             <!-- Watched row (always last) -->
             <MovieRow
               v-if="watchedRow"
               :key="watchedRow.id"
               :row="watchedRow"
-              @selectMovie="selectedMovie = $event"
+              @selectMovie="openMovie"
             />
           </template>
         </template>
@@ -66,9 +66,22 @@
       <p>Data from <a href="https://www.imdb.com" target="_blank" rel="noopener">IMDb</a> &amp; <a href="https://www.themoviedb.org" target="_blank" rel="noopener">TMDB</a>. Not affiliated with either.</p>
     </footer>
 
+    <div
+      v-if="pendingMovieId && !selectedMovie"
+      class="movie-loading-backdrop"
+      role="status"
+      aria-live="polite"
+      aria-label="Loading movie details"
+    >
+      <div class="movie-loading-card">
+        <div class="movie-loading-spinner" aria-hidden="true"></div>
+        <p class="movie-loading-title">Loading movie details…</p>
+      </div>
+    </div>
+
     <MovieModal
       :movie="selectedMovie"
-      @close="selectedMovie = null"
+      @close="closeMovie"
     />
 
     <!-- Gear button -->
@@ -89,13 +102,13 @@ import { useMovieStore } from "@/stores/movies.js";
 import { useUserStore } from "@/stores/user.js";
 import HeroSection from "@/components/HeroSection.vue";
 import MovieRow from "@/components/MovieRow.vue";
-import MovieCard from "@/components/MovieCard.vue";
 import MovieModal from "@/components/MovieModal.vue";
 import ConfigModal from "@/components/ConfigModal.vue";
 
 const store = useMovieStore();
 const userStore = useUserStore();
 const selectedMovie = ref(null);
+const pendingMovieId = ref(null);
 const showConfig = ref(false);
 const pendingListToken = ref(null);
 
@@ -113,7 +126,7 @@ const listRows = computed(() => {
     .filter(list => list.movies.length > 0)
     .map(list => ({
       id: "list-" + list.token,
-      label: "★ " + list.name,
+      label: "My list · " + list.name,
       movies: list.movies.map(id => movieById.value.get(id)).filter(Boolean),
     }))
     .filter(row => row.movies.length > 0);
@@ -142,28 +155,59 @@ const watchedRow = computed(() => {
 
 // ── URL routing ──────────────────────────────────────────────────────────────
 function movieToUrl(movie) {
-  return `?movie=${movie.id}`;
+  const url = new URL(window.location.href);
+  url.searchParams.set("movie", movie.id);
+  return `${url.pathname}${url.search}${url.hash}`;
+}
+
+function urlWithoutMovie() {
+  const url = new URL(window.location.href);
+  url.searchParams.delete("movie");
+  const qs = url.searchParams.toString();
+  return `${url.pathname}${qs ? `?${qs}` : ""}${url.hash}`;
+}
+
+function openMovie(movie) {
+  if (!movie) return;
+  pendingMovieId.value = movie.id;
+  selectedMovie.value = movie;
+}
+
+function closeMovie() {
+  selectedMovie.value = null;
+  pendingMovieId.value = null;
 }
 
 function openMovieById(imdbId) {
   if (!imdbId) return;
+  pendingMovieId.value = imdbId;
   const movie = movieById.value.get(imdbId);
   if (movie) selectedMovie.value = movie;
+  else pendingMovieId.value = null;
 }
 
-// Push URL when modal opens/closes
+let syncingFromHistory = false;
+
+// Push URL when the modal opens. Closing replaces the current entry so
+// backdrop/close-button clicks don't create a Back button loop that reopens it.
 watch(selectedMovie, (movie) => {
+  if (syncingFromHistory) return;
   if (movie) {
-    history.pushState({ imdbId: movie.id }, "", movieToUrl(movie));
+    const currentId = new URLSearchParams(window.location.search).get("movie");
+    if (currentId !== movie.id) history.pushState({ imdbId: movie.id }, "", movieToUrl(movie));
   } else {
-    history.pushState(null, "", window.location.pathname);
+    if (new URLSearchParams(window.location.search).has("movie")) {
+      history.replaceState(null, "", urlWithoutMovie());
+    }
   }
-});
+}, { flush: "sync" });
 
 function onPopState() {
   const id = new URLSearchParams(window.location.search).get("movie");
+  syncingFromHistory = true;
   if (id) openMovieById(id);
-  else selectedMovie.value = null;
+  else closeMovie();
+  syncingFromHistory = false;
 }
 
 // ── Filter persistence ────────────────────────────────────────────────────────
@@ -173,7 +217,7 @@ watch(() => userStore.isLoggedIn, (loggedIn) => {
   const prefs = userStore.userData?.filterPrefs;
   if (!prefs) return;
   if (Array.isArray(prefs.maxMaturityCat)) {
-    prefs.maxMaturityCat.forEach((v, i) => store.setMaxMaturityCat(i, v));
+    store.setMaxMaturityCats(prefs.maxMaturityCat);
   }
   if (prefs.selectedProviders !== undefined) {
     store.selectedProviders = prefs.selectedProviders;
@@ -196,13 +240,15 @@ watch([() => [...store.maxMaturityCat], () => store.selectedProviders], () => {
 onMounted(async () => {
   window.addEventListener("popstate", onPopState);
 
+  const params = new URLSearchParams(window.location.search);
+  const addToken = params.get("add");
+  const movieId  = params.get("movie");
+  if (movieId) pendingMovieId.value = movieId;
+
   await store.loadMovies();
   await userStore.init();
 
   // Handle ?add= URL param
-  const params = new URLSearchParams(window.location.search);
-  const addToken = params.get("add");
-  const movieId  = params.get("movie");
 
   if (addToken) {
     if (userStore.isLoggedIn) {
@@ -274,15 +320,55 @@ onMounted(async () => {
   color: var(--muted);
 }
 
+.movie-loading-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(8, 8, 16, 0.72);
+  backdrop-filter: blur(6px);
+}
+
+.movie-loading-card {
+  width: min(260px, 100%);
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+}
+
+.movie-loading-spinner {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid var(--surface3);
+  border-top-color: var(--accent);
+  animation: spin 0.8s linear infinite;
+}
+
+.movie-loading-title {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
 /* ── Catalog ── */
 .catalog {
   flex: 1;
-  padding-bottom: 60px;
+  padding-bottom: 52px;
 }
 
 /* ── Skeleton loader ── */
 .skeleton-row {
-  margin-bottom: 36px;
+  margin-bottom: 26px;
   padding: 0 48px;
 }
 
@@ -348,14 +434,14 @@ onMounted(async () => {
 
 /* ── Search results grid ── */
 .search-results-grid {
-  padding: 0 48px;
+  padding: 0;
 }
 
 .search-results-header {
   display: flex;
   align-items: baseline;
   gap: 14px;
-  margin-bottom: 20px;
+  margin: 0 48px 8px;
   flex-wrap: wrap;
 }
 
@@ -404,7 +490,7 @@ onMounted(async () => {
   top: 16px;
   right: 16px;
   z-index: 10;
-  background: var(--surface2);
+  background: rgba(22,22,31,0.78);
   border: 1px solid var(--border);
   border-radius: 50%;
   width: 38px;
@@ -425,7 +511,8 @@ onMounted(async () => {
 
 /* ── Mobile ── */
 @media (max-width: 640px) {
-  .search-results-grid { padding: 0 16px; }
+  .search-results-grid { padding: 0; }
+  .search-results-header { margin: 0 16px 8px; }
   .footer { padding: 24px 16px; }
 }
 </style>

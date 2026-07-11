@@ -1,6 +1,6 @@
 # Ohana TV — Movie Discovery Website
 
-Family-friendly movie browser with fuzzy search, genre/provider filters, and bitmask-encoded data.
+Family-friendly, Netflix-style movie browser with fuzzy search, compact browse filters, genre/provider filters, and bitmask-encoded data.
 
 ## Live site
 
@@ -11,6 +11,12 @@ Production is deployed on Netlify:
 - **Branch:** `include-new-unrated-titles`
 
 Deploys are configured through Netlify CI/CD using the repo-root `netlify.toml`.
+
+## Project notes
+
+- [ROADMAP.md](./ROADMAP.md) tracks product/UX ideas. It is also visible in the app at `/roadmap`.
+- [AGENTS.md](./AGENTS.md) captures project-specific implementation notes for future agent work.
+- Current roadmap direction: keep search and posters most prominent; move browse controls toward compact chips with rich menus/bottom sheets.
 
 ## Stack
 
@@ -66,22 +72,23 @@ Data loading order:
 src/
   stores/movies.js      ← Pinia store, filtering logic, Fuse.js
   components/
-    HeroSection.vue     ← Search, genre chips, provider chips, rating slider
+    HeroSection.vue     ← Search and browse filters/chips
     MovieRow.vue        ← Horizontal scrollable row with arrows
     MovieCard.vue       ← Poster card with hover overlay
     MovieModal.vue      ← Detail popup
   App.vue               ← Layout: loading → hero → rows/grid → modal
+  components/RoadmapPage.vue ← Simple `/roadmap` page rendering ROADMAP.md
   assets/global.css     ← CSS variables, reset
 ```
 
 ## Filter logic
 
-All filtering is computed in the Pinia store:
+All filtering is computed in the Pinia store. Current roadmap direction keeps search broad for now: once title search is active, it may ignore browse filters like the existing behavior.
 
 ```
 allMovies (20k)
   → genre bitmask filter     O(n), ~0.2ms
-  → provider array.some()    O(n), ~1ms
+  → provider bitmask filter  O(n), ~1ms
   → rating range             O(n), ~0.1ms
   → Fuse.js title search     O(k), ~5ms on subset
   = filteredMovies
@@ -93,7 +100,8 @@ allMovies (20k)
 ```json
 {
   "movies": [{ "id": "tt...", "t": "Title", "y": 1994, "r": 9.3,
-               "g": 4, "pop": 85.4, "p": "https://...poster.jpg", "prov": [8,15] }],
+               "g": 4, "pop": 85.4, "p": "https://...poster.jpg", "prov": 18,
+               "s": 1 }],
   "providers": { "8": "Netflix", "15": "Hulu" },
   "genres": { "Action": 1, "Comedy": 2, ... }
 }
