@@ -82,9 +82,6 @@
       @close="closeMovie"
     />
 
-    <!-- Gear button -->
-    <button class="gear-btn" @click="setActiveTab('settings')" title="Settings">⚙</button>
-
     <!-- Config modal -->
     <ConfigModal
       v-if="showConfig"
@@ -291,6 +288,7 @@ onMounted(async () => {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  padding-bottom: calc(76px + env(safe-area-inset-bottom));
 }
 
 /* ── Loading ── */
@@ -499,31 +497,6 @@ onMounted(async () => {
   transition: color 0.15s;
 }
 .footer a:hover { color: var(--white); }
-
-/* ── Gear button ── */
-.gear-btn {
-  position: fixed;
-  top: 16px;
-  right: 16px;
-  z-index: 10;
-  background: rgba(22,22,31,0.78);
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  width: 38px;
-  height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  cursor: pointer;
-  color: var(--muted);
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
-}
-.gear-btn:hover {
-  color: var(--white);
-  border-color: rgba(255, 255, 255, 0.2);
-  background: var(--surface3);
-}
 
 /* ── Mobile ── */
 @media (max-width: 640px) {

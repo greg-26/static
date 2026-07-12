@@ -42,6 +42,42 @@
         </div>
 
         <div ref="chipRowEl" class="chip-row" role="toolbar" aria-label="Discovery controls">
+          <FilterMenu
+            :open="activePanel === 'availability'"
+            :active="Boolean(selectedProviderCount)"
+            :label="availabilityChipLabel"
+            menu-class="filter-menu--picker"
+            @toggle="togglePanel('availability')"
+          >
+            <div class="filter-heading">
+              <p class="filter-label">Availability</p>
+              <span>Configure services in Settings</span>
+            </div>
+            <div class="menu-options menu-options--single">
+              <button class="menu-option active" type="button" role="menuitemradio" aria-checked="true">
+                Included with my services
+              </button>
+              <button class="menu-option" type="button" role="menuitemradio" aria-checked="false" disabled>
+                Free with ads · later
+              </button>
+              <button class="menu-option" type="button" role="menuitemradio" aria-checked="false" disabled>
+                Rent · later
+              </button>
+              <button class="menu-option" type="button" role="menuitemradio" aria-checked="false" disabled>
+                Buy · later
+              </button>
+            </div>
+          </FilterMenu>
+
+          <button
+            class="control-chip control-chip--safe"
+            type="button"
+            :class="{ active: maturityActive }"
+            @click="emit('open-settings')"
+          >
+            {{ maturityProfileLabel }}
+          </button>
+
           <button
             class="control-chip control-chip--primary"
             type="button"
@@ -88,37 +124,11 @@
                 class="menu-option"
                 :class="{ active: store.selectedGenres.has(genre) }"
                 type="button"
-                role="menuitemcheckbox"
+                role="menuitemradio"
                 :aria-checked="store.selectedGenres.has(genre)"
-                @click="store.toggleGenre(genre)"
+                @click="selectGenre(genre)"
               >{{ genre }}</button>
             </div>
-          </FilterMenu>
-
-          <FilterMenu
-            v-if="store.availableProviders.length"
-            :open="activePanel === 'providers'"
-            :active="Boolean(selectedProviderCount)"
-            :label="providerChipLabel"
-            menu-class="filter-menu--picker"
-            @toggle="togglePanel('providers')"
-          >
-              <div class="filter-heading">
-                <p class="filter-label">Streaming on</p>
-                <span>{{ selectedProviderNames || 'Any service' }}</span>
-              </div>
-              <div class="menu-options menu-options--grid">
-                <button
-                  v-for="p in store.availableProviders"
-                  :key="p.id"
-                  class="menu-option menu-option--provider"
-                  :class="{ active: store.selectedProviders & p.bit }"
-                  type="button"
-                  role="menuitemcheckbox"
-                  :aria-checked="Boolean(store.selectedProviders & p.bit)"
-                  @click="store.toggleProvider(p.bit)"
-                >{{ p.name }}</button>
-              </div>
           </FilterMenu>
 
           <FilterMenu
@@ -132,36 +142,23 @@
                 <p class="filter-label">Min rating</p>
               </div>
               <div class="rating-slider-wrap">
-                <div class="rating-scale" aria-hidden="true">
-                  <span>10</span>
-                  <span>5</span>
-                  <span>0</span>
-                </div>
                 <input
                   v-model.number="store.minRating"
                   type="range"
                   min="0"
-                  max="10"
-                  step="0.5"
+                  max="9"
+                  step="1"
                   class="rating-slider"
-                  orient="vertical"
-                  aria-orientation="vertical"
                   :aria-valuetext="store.minRating ? `${store.minRating}+` : 'Any rating'"
                   aria-label="Minimum rating"
                 />
                 <span class="rating-value">{{ store.minRating ? `${store.minRating}+` : 'All' }}</span>
+                <div class="rating-presets" aria-label="Rating presets">
+                  <button type="button" :class="{ active: store.minRating === 0 }" @click="store.minRating = 0">Any</button>
+                  <button v-for="rating in [6,7,8,9]" :key="rating" type="button" :class="{ active: store.minRating === rating }" @click="store.minRating = rating">{{ rating }}+</button>
+                </div>
               </div>
           </FilterMenu>
-
-          <button
-            class="control-chip control-chip--safe"
-            type="button"
-            :class="{ active: store.safeBrowsingEnabled }"
-            :aria-pressed="store.safeBrowsingEnabled"
-            @click="store.safeBrowsingEnabled = !store.safeBrowsingEnabled"
-          >
-            Safe {{ store.safeBrowsingEnabled ? 'on' : 'off' }}
-          </button>
 
           <button v-if="hasFilters" class="clear-btn" type="button" @click="store.clearFilters">Clear</button>
         </div>
@@ -234,19 +231,26 @@ const selectedGenreSummary = computed(() => {
   return `${count} ${count === 1 ? "seleccionada" : "seleccionadas"}`;
 });
 
-const providerChipLabel = computed(() => {
+const availabilityChipLabel = computed(() => {
+  if (!selectedProviderCount.value) return "Included with my services";
   const names = selectedProviderNames.value.split(", ").filter(Boolean);
-  if (names.length === 0) return "Any provider";
-  if (names.length === 1) return names[0];
-  return `${names.length} providers`;
+  if (names.length === 1) return `On ${names[0]}`;
+  return `On ${names.length} services`;
 });
 
+const maturityActive = computed(() => store.maxMaturityCat.some(v => v >= 0));
+const maturityProfileLabel = computed(() => maturityActive.value ? "Active profile" : "Maturity profile");
 const ratingChipLabel = computed(() => store.minRating ? `Rating ${store.minRating}+` : "Rating");
 
 function toggleTitleType(value, event) {
   store.titleType = store.titleType === value ? "both" : value;
   activePanel.value = null;
   event?.currentTarget?.blur();
+}
+
+function selectGenre(genre) {
+  store.selectedGenres = store.selectedGenres.has(genre) ? new Set() : new Set([genre]);
+  activePanel.value = null;
 }
 
 function togglePanel(panel) {
@@ -277,7 +281,7 @@ onUnmounted(() => document.removeEventListener("pointerdown", onDocumentPointerD
 const hasFilters = computed(() =>
   store.searchQuery ||
   browseFilterCount.value > 0 ||
-  store.maxMaturityCat.some(v => v >= 0) ||
+  maturityActive.value ||
   !store.safeBrowsingEnabled
 );
 </script>
@@ -373,16 +377,19 @@ const hasFilters = computed(() =>
 .menu-option { display: flex; align-items: center; width: 100%; min-width: 112px; min-height: 40px; max-width: 180px; padding: 9px 11px; background: rgba(30,30,42,0.86); border: 1px solid rgba(255,255,255,0.16); border-radius: 11px; color: rgba(255,255,255,0.78); font: inherit; font-size: 12px; line-height: 1.2; text-align: left; white-space: normal; overflow-wrap: anywhere; cursor: pointer; transition: border-color 0.15s, color 0.15s, background 0.15s; }
 .menu-option:hover { border-color: rgba(232,54,93,0.42); color: var(--white); }
 .menu-option.active { background: var(--accent); border-color: var(--accent); color: var(--white); }
+.menu-option:disabled { opacity: 0.45; cursor: not-allowed; }
 .menu-option--provider.active { background: rgba(45,212,191,0.15); border-color: var(--teal); color: var(--teal); }
 
-.rating-slider-wrap { display: grid; grid-template-columns: auto 48px auto; align-items: center; justify-items: center; gap: 10px; padding: 2px 1px 4px; }
-.rating-scale { height: 178px; display: flex; flex-direction: column; justify-content: space-between; color: var(--muted); font-size: 11px; line-height: 1; }
-.rating-slider { -webkit-appearance: slider-vertical; appearance: slider-vertical; writing-mode: vertical-lr; direction: rtl; width: 48px; height: 184px; min-height: 184px; margin: 0; padding: 0 14px; background: transparent; outline: none; cursor: pointer; accent-color: var(--accent); touch-action: none; }
-.rating-slider::-webkit-slider-runnable-track { width: 8px; border-radius: 99px; background: var(--surface3); }
-.rating-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); cursor: pointer; box-shadow: 0 0 0 7px rgba(232,54,93,0.18); }
-.rating-slider::-moz-range-track { width: 8px; background: var(--surface3); border-radius: 99px; }
-.rating-slider::-moz-range-thumb { width: 28px; height: 28px; border: 0; border-radius: 50%; background: var(--accent); cursor: pointer; box-shadow: 0 0 0 7px rgba(232,54,93,0.18); }
+.rating-slider-wrap { width: min(300px, calc(100vw - 72px)); display: grid; grid-template-columns: minmax(150px, 1fr) auto; align-items: center; gap: 12px; padding: 4px 1px; }
+.rating-slider { width: 100%; margin: 0; background: transparent; outline: none; cursor: pointer; accent-color: var(--accent); touch-action: pan-x; }
+.rating-slider::-webkit-slider-runnable-track { height: 8px; border-radius: 99px; background: var(--surface3); }
+.rating-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 26px; height: 26px; margin-top: -9px; border-radius: 50%; background: var(--accent); cursor: pointer; box-shadow: 0 0 0 7px rgba(232,54,93,0.18); }
+.rating-slider::-moz-range-track { height: 8px; background: var(--surface3); border-radius: 99px; }
+.rating-slider::-moz-range-thumb { width: 26px; height: 26px; border: 0; border-radius: 50%; background: var(--accent); cursor: pointer; box-shadow: 0 0 0 7px rgba(232,54,93,0.18); }
 .rating-value { font-size: 13px; font-weight: 700; color: var(--white); min-width: 36px; text-align: center; }
+.rating-presets { grid-column: 1 / -1; display: flex; gap: 6px; }
+.rating-presets button { min-height: 32px; padding: 0 10px; border: 1px solid rgba(255,255,255,0.14); border-radius: 999px; background: rgba(255,255,255,0.04); color: var(--muted); font: inherit; font-size: 12px; cursor: pointer; }
+.rating-presets button.active { border-color: var(--accent); background: rgba(232,54,93,0.14); color: var(--white); }
 .filter-summary { margin-top: 12px; font-size: 13px; color: var(--muted); }
 
 @media (max-width: 640px) {

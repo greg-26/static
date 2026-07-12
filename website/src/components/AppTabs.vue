@@ -9,8 +9,8 @@
       :aria-current="activeTab === tab.id ? 'page' : undefined"
       @click="$emit('select', tab.id)"
     >
+      <span class="app-tab-icon" aria-hidden="true">{{ tab.icon }}</span>
       <span class="app-tab-label">{{ tab.label }}</span>
-      <span class="app-tab-helper">{{ tab.helper }}</span>
     </button>
   </nav>
 </template>
@@ -20,62 +20,100 @@ defineProps({ activeTab: { type: String, required: true } });
 defineEmits(["select"]);
 
 const tabs = [
-  { id: "discover", label: "Discover", helper: "Choose tonight" },
-  { id: "search", label: "Search", helper: "Find a title" },
-  { id: "settings", label: "Settings", helper: "Configure once" },
+  { id: "discover", label: "Discover", icon: "⌂" },
+  { id: "search", label: "Search", icon: "⌕" },
+  { id: "settings", label: "Settings", icon: "⚙" },
 ];
 </script>
 
 <style scoped>
 .app-tabs {
-  position: sticky;
-  top: 0;
-  z-index: 60;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 70;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  padding: 10px 48px;
-  background: rgba(8, 8, 16, 0.86);
-  border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(16px);
+  padding: 7px max(12px, env(safe-area-inset-left)) calc(7px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-right));
+  background: rgba(8, 8, 16, 0.82);
+  border-top: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 -18px 50px rgba(0,0,0,0.34);
+  backdrop-filter: blur(20px) saturate(1.25);
+  -webkit-backdrop-filter: blur(20px) saturate(1.25);
 }
 
 .app-tab {
   appearance: none;
-  border: 1px solid rgba(255,255,255,0.1);
+  min-width: 0;
+  min-height: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border: 0;
   border-radius: 14px;
-  background: rgba(255,255,255,0.035);
-  color: var(--muted);
-  padding: 9px 12px;
+  background: transparent;
+  color: rgba(240,238,232,0.52);
   font: inherit;
-  text-align: left;
+  text-align: center;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s, color 0.15s, transform 0.15s;
 }
 
 .app-tab:hover,
+.app-tab:focus-visible {
+  background: rgba(255,255,255,0.05);
+  color: rgba(240,238,232,0.78);
+  outline: none;
+}
+
 .app-tab.active {
-  border-color: rgba(232,54,93,0.5);
-  background: rgba(232,54,93,0.13);
-  color: var(--white);
+  color: var(--accent);
+}
+
+.app-tab.active .app-tab-icon {
+  background: rgba(232,54,93,0.14);
+  box-shadow: inset 0 0 0 1px rgba(232,54,93,0.24);
+}
+
+.app-tab:active {
+  transform: scale(0.96);
+}
+
+.app-tab-icon {
+  width: 30px;
+  height: 24px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  font-size: 20px;
+  line-height: 1;
 }
 
 .app-tab-label {
   display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-weight: 800;
-  font-size: 14px;
-}
-
-.app-tab-helper {
-  display: block;
-  margin-top: 1px;
   font-size: 11px;
-  color: rgba(240,238,232,0.54);
+  line-height: 1.15;
 }
 
-@media (max-width: 640px) {
-  .app-tabs { padding: 8px 12px; gap: 6px; }
-  .app-tab { padding: 8px 9px; border-radius: 12px; text-align: center; }
-  .app-tab-helper { display: none; }
+@media (min-width: 800px) {
+  .app-tabs {
+    left: 50%;
+    right: auto;
+    bottom: 18px;
+    width: min(420px, calc(100vw - 32px));
+    transform: translateX(-50%);
+    padding: 8px;
+    border: 1px solid rgba(255,255,255,0.11);
+    border-radius: 24px;
+  }
 }
 </style>

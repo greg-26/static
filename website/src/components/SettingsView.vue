@@ -16,11 +16,21 @@
         <button type="button" @click="$emit('openConfig')">{{ userStore.isLoggedIn ? 'Manage profile' : 'Create / restore' }}</button>
       </article>
 
-      <article class="settings-card">
+      <article class="settings-card settings-card--wide">
         <p class="section-label">Streaming services</p>
         <h2>{{ selectedProviderSummary }}</h2>
-        <p>These should become permanent service subscriptions; today they still use the existing provider filter model.</p>
-        <button type="button" @click="$emit('openConfig')">Configure services</button>
+        <p>Pick the services you normally have. Discover uses these as “Included with my services”.</p>
+        <div class="provider-grid" aria-label="Streaming services">
+          <button
+            v-for="provider in movieStore.availableProviders"
+            :key="provider.id"
+            type="button"
+            class="provider-toggle"
+            :class="{ active: movieStore.selectedProviders & provider.bit }"
+            :aria-pressed="Boolean(movieStore.selectedProviders & provider.bit)"
+            @click="movieStore.toggleProvider(provider.bit)"
+          >{{ provider.name }}</button>
+        </div>
       </article>
 
       <article class="settings-card">
@@ -82,11 +92,16 @@ h1 { margin-top: 4px; font-family: var(--font-display); font-size: clamp(40px, 7
 .settings-head > p:not(.eyebrow) { max-width: 640px; margin-top: 8px; color: rgba(240,238,232,0.68); }
 .settings-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .settings-card { min-height: 190px; display: flex; flex-direction: column; justify-content: space-between; gap: 18px; padding: 20px; border: 1px solid rgba(255,255,255,0.09); border-radius: 20px; background: rgba(15,15,26,0.82); }
-.settings-card--primary { grid-column: 1 / -1; background: radial-gradient(circle at 15% 0%, rgba(232,54,93,0.2), transparent 36%), rgba(15,15,26,0.86); }
+.settings-card--primary,
+.settings-card--wide { grid-column: 1 / -1; }
+.settings-card--primary { background: radial-gradient(circle at 15% 0%, rgba(232,54,93,0.2), transparent 36%), rgba(15,15,26,0.86); }
 .settings-card--muted { opacity: 0.82; }
 h2 { margin-top: 5px; color: var(--white); font-size: 22px; }
 .settings-card p:not(.section-label) { color: rgba(240,238,232,0.66); }
 button { align-self: flex-start; min-height: 38px; border: 1px solid rgba(255,255,255,0.14); border-radius: 999px; background: rgba(255,255,255,0.05); color: var(--white); font: inherit; font-size: 13px; padding: 0 14px; cursor: pointer; }
 button:hover { border-color: rgba(232,54,93,0.54); color: var(--accent); }
-@media (max-width: 720px) { .settings-view { padding: 20px 14px 48px; } .settings-grid { grid-template-columns: 1fr; } .settings-card--primary { grid-column: auto; } }
+.provider-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.provider-toggle { align-self: auto; color: rgba(240,238,232,0.66); }
+.provider-toggle.active { border-color: rgba(45,212,191,0.42); background: rgba(45,212,191,0.12); color: var(--teal); }
+@media (max-width: 720px) { .settings-view { padding: 20px 14px 48px; } .settings-grid { grid-template-columns: 1fr; } .settings-card--primary, .settings-card--wide { grid-column: auto; } }
 </style>

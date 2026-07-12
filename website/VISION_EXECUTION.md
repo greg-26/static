@@ -31,6 +31,10 @@ Deliver the new `VISION.md` direction incrementally: Discover/Search/Settings IA
 - [x] Slice 5: compatibility badges on cards and compatibility summary in movie details.
 - [x] Fixed `/roadmap` page to render `VISION.md` because `ROADMAP.md` is gone.
 - [x] Verification: `npm run build` passed (Vite/PWA, 58 modules, 181.95 kB JS gzip 67.13 kB).
+- [x] Slice 6: changed primary navigation to iOS-style fixed bottom tabs and removed redundant floating gear.
+- [x] Slice 7: brought Discover controls closer to vision: availability dropdown, maturity-profile entry, single-select genre, horizontal stepped rating.
+- [x] Slice 8: moved streaming service provider selection into Settings so Discover can treat it as “Included with my services”.
+- [x] Verification: `npm run build` passed (Vite/PWA, 58 modules, 182.43 kB JS gzip 67.25 kB).
 
 ## Notes / assumptions
 - Keep implementation local and reviewable; no external deploy until asked.
@@ -38,4 +42,5 @@ Deliver the new `VISION.md` direction incrementally: Discover/Search/Settings IA
 - Use existing data fields; do not invent backend support for availability categories or multi-profile maturity yet.
 - Search is now first-class visually, but collection/person structured results remain future/backend work.
 - Settings is now first-class as an index, but detailed edit screens still reuse the existing config modal to avoid risky persistence rewrites.
-- Provider subscriptions and named maturity profiles are represented by current provider filters / maturity limits for now; a real data migration should be a separate slice.
+- Provider subscriptions now live visually in Settings, but still reuse the existing `selectedProviders` persistence path for compatibility.
+- Named maturity profiles are still represented by current maturity limits for now; a real multi-profile data migration should be a separate slice.
