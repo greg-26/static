@@ -1,224 +1,118 @@
 <template>
-  <RoadmapPage v-if="isRoadmapRoute" />
+  <RouterView
+    v-slot="{ Component }"
+    @selectMovie="openMovie"
+    @openSettings="openSettings"
+    @openConfig="showConfig = true"
+  >
+    <div class="app" :class="{ 'app--with-tabs': activeTab }">
+      <component
+        :is="Component"
+        @selectMovie="openMovie"
+        @openSettings="openSettings"
+        @openConfig="showConfig = true"
+      />
 
-  <div v-else class="app">
-    <AppTabs :active-tab="activeTab" @select="setActiveTab" />
+      <footer class="footer" v-if="activeTab && !store.loading">
+        <p><RouterLink to="/roadmap">Vision</RouterLink> · Data from <a href="https://www.imdb.com" target="_blank" rel="noopener">IMDb</a> &amp; <a href="https://www.themoviedb.org" target="_blank" rel="noopener">TMDB</a>. Not affiliated with either.</p>
+      </footer>
 
-    <template v-if="activeTab === 'discover'">
-      <HeroSection :show-search="false" @open-settings="setActiveTab('settings')" />
+      <AppTabs v-if="activeTab" :active-tab="activeTab" @select="goToTab" />
 
-      <main class="catalog">
-        <!-- Still loading: show skeleton rows -->
-        <template v-if="store.loading">
-          <div class="skeleton-row" v-for="n in 3" :key="n">
-            <div class="skeleton-label"></div>
-            <div class="skeleton-cards">
-              <div class="skeleton-card" v-for="c in 8" :key="c"></div>
-            </div>
-          </div>
-        </template>
-
-        <template v-else>
-          <div v-if="store.filteredMovies.length === 0" class="empty-state">
-            <p class="empty-icon">◌</p>
-            <p class="empty-title">No movies match your filters</p>
-            <button class="clear-btn" @click="store.clearFilters">Clear all filters</button>
-          </div>
-
-          <template v-else>
-            <FromYourLists
-              :rows="listRows"
-              @selectMovie="openMovie"
-              @manage="setActiveTab('settings')"
-            />
-
-            <MovieRow
-              v-for="row in filteredMovieRows"
-              :key="row.id"
-              :row="row"
-              @selectMovie="openMovie"
-            />
-            <!-- Watched row (always last) -->
-            <MovieRow
-              v-if="watchedRow"
-              :key="watchedRow.id"
-              :row="watchedRow"
-              @selectMovie="openMovie"
-            />
-          </template>
-        </template>
-      </main>
-    </template>
-
-    <SearchView
-      v-else-if="activeTab === 'search'"
-      @selectMovie="openMovie"
-    />
-
-    <SettingsView
-      v-else
-      @openConfig="showConfig = true"
-    />
-
-    <footer class="footer" v-if="!store.loading">
-      <p><a href="/roadmap">Roadmap</a> · Data from <a href="https://www.imdb.com" target="_blank" rel="noopener">IMDb</a> &amp; <a href="https://www.themoviedb.org" target="_blank" rel="noopener">TMDB</a>. Not affiliated with either.</p>
-    </footer>
-
-    <div
-      v-if="pendingMovieId && !selectedMovie"
-      class="movie-loading-backdrop"
-      role="status"
-      aria-live="polite"
-      aria-label="Loading movie details"
-    >
-      <div class="movie-loading-card">
-        <div class="movie-loading-spinner" aria-hidden="true"></div>
-        <p class="movie-loading-title">Loading movie details…</p>
+      <div
+        v-if="pendingMovieId && !selectedMovie"
+        class="movie-loading-backdrop"
+        role="status"
+        aria-live="polite"
+        aria-label="Loading movie details"
+      >
+        <div class="movie-loading-card">
+          <div class="movie-loading-spinner" aria-hidden="true"></div>
+          <p class="movie-loading-title">Loading movie details…</p>
+        </div>
       </div>
+
+      <MovieModal
+        :movie="selectedMovie"
+        @close="closeMovie"
+      />
+
+      <ConfigModal
+        v-if="showConfig"
+        :pending-list-token="pendingListToken"
+        @close="showConfig = false"
+      />
     </div>
-
-    <MovieModal
-      :movie="selectedMovie"
-      @close="closeMovie"
-    />
-
-    <!-- Config modal -->
-    <ConfigModal
-      v-if="showConfig"
-      :pending-list-token="pendingListToken"
-      @close="showConfig = false"
-    />
-  </div>
+  </RouterView>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { useMovieStore } from "@/stores/movies.js";
 import { useUserStore } from "@/stores/user.js";
 import AppTabs from "@/components/AppTabs.vue";
-import HeroSection from "@/components/HeroSection.vue";
-import FromYourLists from "@/components/FromYourLists.vue";
-import SearchView from "@/components/SearchView.vue";
-import SettingsView from "@/components/SettingsView.vue";
-import MovieRow from "@/components/MovieRow.vue";
 import MovieModal from "@/components/MovieModal.vue";
 import ConfigModal from "@/components/ConfigModal.vue";
-import RoadmapPage from "@/components/RoadmapPage.vue";
 
+const router = useRouter();
+const route = useRoute();
 const store = useMovieStore();
 const userStore = useUserStore();
-const isRoadmapRoute = window.location.pathname.replace(/\/$/, "") === "/roadmap";
-const activeTab = ref("discover");
+
 const selectedMovie = ref(null);
 const pendingMovieId = ref(null);
 const showConfig = ref(false);
 const pendingListToken = ref(null);
 
-function setActiveTab(tab) {
-  activeTab.value = tab;
-  if (tab !== "search") store.searchQuery = "";
-}
+const activeTab = computed(() => route.meta?.tab || null);
 
-// Map of imdb id -> movie object for list rows
 const movieById = computed(() => {
   const map = new Map();
-  for (const m of store.allMovies) map.set(m.id, m);
+  for (const movie of store.allMovies) map.set(movie.id, movie);
   return map;
 });
 
-// List rows derived from user lists
-const listRows = computed(() => {
-  if (!userStore.isLoggedIn) return [];
-  return userStore.lists
-    .filter(list => list.movies.length > 0)
-    .map(list => ({
-      id: "list-" + list.token,
-      label: "My list · " + list.name,
-      movies: list.movies.map(id => movieById.value.get(id)).filter(Boolean),
-    }))
-    .filter(row => row.movies.length > 0);
-});
-
-// Store rows with watched movies filtered out (only when logged in)
-const filteredMovieRows = computed(() => {
-  const watched = userStore.watchedSet;
-  if (!userStore.isLoggedIn || watched.size === 0) return store.movieRows;
-  return store.movieRows.map(row => ({
-    ...row,
-    movies: row.movies.filter(m => !watched.has(m.id)),
-  })).filter(row => row.movies.length >= 4);
-});
-
-// Watched row — shown last when the user has watched at least one movie
-const watchedRow = computed(() => {
-  if (!userStore.isLoggedIn || userStore.watchedSet.size === 0) return null;
-  const movies = [...userStore.watchedSet]
-    .map(id => movieById.value.get(id))
-    .filter(Boolean)
-    .reverse(); // most recently marked first
-  if (movies.length === 0) return null;
-  return { id: "watched", label: "Watch again", movies };
-});
-
-// ── URL routing ──────────────────────────────────────────────────────────────
-function movieToUrl(movie) {
-  const url = new URL(window.location.href);
-  url.searchParams.set("movie", movie.id);
-  return `${url.pathname}${url.search}${url.hash}`;
+function goToTab(tab) {
+  if (route.name !== tab) router.push({ name: tab });
 }
 
-function urlWithoutMovie() {
-  const url = new URL(window.location.href);
-  url.searchParams.delete("movie");
-  const qs = url.searchParams.toString();
-  return `${url.pathname}${qs ? `?${qs}` : ""}${url.hash}`;
+function openSettings() {
+  router.push({ name: "settings" });
 }
 
 function openMovie(movie) {
   if (!movie) return;
   pendingMovieId.value = movie.id;
   selectedMovie.value = movie;
+  router.push({ query: { ...route.query, movie: movie.id } });
 }
 
 function closeMovie() {
+  const { movie, ...query } = route.query;
   selectedMovie.value = null;
   pendingMovieId.value = null;
+  if (movie) router.replace({ query });
 }
 
-function openMovieById(imdbId) {
-  if (!imdbId) return;
-  pendingMovieId.value = imdbId;
-  const movie = movieById.value.get(imdbId);
-  if (movie) selectedMovie.value = movie;
-  else pendingMovieId.value = null;
-}
+watch(() => route.name, (name) => {
+  if (name !== "search") store.searchQuery = "";
+});
 
-let syncingFromHistory = false;
-
-// Push URL when the modal opens. Closing replaces the current entry so
-// backdrop/close-button clicks don't create a Back button loop that reopens it.
-watch(selectedMovie, (movie) => {
-  if (syncingFromHistory) return;
-  if (movie) {
-    const currentId = new URLSearchParams(window.location.search).get("movie");
-    if (currentId !== movie.id) history.pushState({ imdbId: movie.id }, "", movieToUrl(movie));
-  } else {
-    if (new URLSearchParams(window.location.search).has("movie")) {
-      history.replaceState(null, "", urlWithoutMovie());
-    }
+watch([() => route.query.movie, movieById], ([movieId]) => {
+  if (!movieId) {
+    selectedMovie.value = null;
+    pendingMovieId.value = null;
+    return;
   }
-}, { flush: "sync" });
 
-function onPopState() {
-  const id = new URLSearchParams(window.location.search).get("movie");
-  syncingFromHistory = true;
-  if (id) openMovieById(id);
-  else closeMovie();
-  syncingFromHistory = false;
-}
+  const id = Array.isArray(movieId) ? movieId[0] : movieId;
+  pendingMovieId.value = id;
+  const movie = movieById.value.get(id);
+  if (movie) selectedMovie.value = movie;
+}, { immediate: true });
 
 // ── Filter persistence ────────────────────────────────────────────────────────
-// Sync maturity + provider filters from user data after login
 watch(() => userStore.isLoggedIn, (loggedIn) => {
   if (!loggedIn) return;
   const prefs = userStore.userData?.filterPrefs;
@@ -234,7 +128,6 @@ watch(() => userStore.isLoggedIn, (loggedIn) => {
   }
 }, { immediate: true });
 
-// Debounced save of filter prefs to user data
 let filterSaveTimer = null;
 watch([() => [...store.maxMaturityCat], () => store.selectedProviders, () => store.titleType], () => {
   if (!userStore.isLoggedIn) return;
@@ -249,37 +142,24 @@ watch([() => [...store.maxMaturityCat], () => store.selectedProviders, () => sto
 }, { deep: true });
 
 onMounted(async () => {
-  if (isRoadmapRoute) return;
-
-  window.addEventListener("popstate", onPopState);
-
-  const params = new URLSearchParams(window.location.search);
-  const addToken = params.get("add");
-  const movieId  = params.get("movie");
-  if (movieId) pendingMovieId.value = movieId;
+  const addToken = route.query.add;
 
   await store.loadMovies();
   await userStore.init();
 
-  // Handle ?add= URL param
-
   if (addToken) {
+    const token = Array.isArray(addToken) ? addToken[0] : addToken;
     if (userStore.isLoggedIn) {
-      try { await userStore.addListByToken(addToken); }
+      try { await userStore.addListByToken(token); }
       catch (e) { console.warn("Could not add shared list:", e.message); }
     } else {
-      pendingListToken.value = addToken;
+      pendingListToken.value = token;
       showConfig.value = true;
     }
-    // Remove ?add= but preserve ?movie= if present
-    const clean = new URLSearchParams();
-    if (movieId) clean.set("movie", movieId);
-    const qs = clean.toString();
-    history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname);
-  }
 
-  // Handle direct ?movie=tt1234567 URL
-  if (movieId) openMovieById(movieId);
+    const { add, ...query } = route.query;
+    router.replace({ query });
+  }
 });
 </script>
 
@@ -288,50 +168,10 @@ onMounted(async () => {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+.app--with-tabs {
   padding-bottom: calc(76px + env(safe-area-inset-bottom));
-}
-
-/* ── Loading ── */
-.loading-screen {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-}
-
-.loading-logo {
-  font-family: var(--font-display);
-  font-size: clamp(36px, 8vw, 64px);
-  letter-spacing: 0.12em;
-  color: var(--white);
-}
-
-.loading-bar {
-  width: 200px;
-  height: 3px;
-  background: var(--surface3);
-  border-radius: 99px;
-  overflow: hidden;
-}
-
-.loading-bar-fill {
-  height: 100%;
-  background: var(--accent);
-  border-radius: 99px;
-  animation: loadProgress 1.5s ease-in-out infinite;
-}
-
-@keyframes loadProgress {
-  0% { width: 0%; margin-left: 0; }
-  50% { width: 60%; }
-  100% { width: 0%; margin-left: 100%; }
-}
-
-.loading-text {
-  font-size: 13px;
-  color: var(--muted);
 }
 
 .movie-loading-backdrop {
@@ -374,114 +214,6 @@ onMounted(async () => {
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── Catalog ── */
-.catalog {
-  flex: 1;
-  padding-bottom: 52px;
-}
-
-/* ── Skeleton loader ── */
-.skeleton-row {
-  margin-bottom: 26px;
-  padding: 0 48px;
-}
-
-.skeleton-label {
-  width: 160px;
-  height: 22px;
-  background: var(--surface2);
-  border-radius: 4px;
-  margin-bottom: 14px;
-  animation: pulse 1.8s ease-in-out infinite;
-}
-
-.skeleton-cards {
-  display: flex;
-  gap: var(--gap);
-}
-
-.skeleton-card {
-  width: var(--card-w);
-  height: var(--card-h);
-  flex-shrink: 0;
-  background: var(--surface2);
-  border-radius: var(--radius);
-  animation: pulse 1.8s ease-in-out infinite;
-}
-
-.skeleton-card:nth-child(2) { animation-delay: 0.1s; }
-.skeleton-card:nth-child(3) { animation-delay: 0.2s; }
-.skeleton-card:nth-child(4) { animation-delay: 0.3s; }
-.skeleton-card:nth-child(5) { animation-delay: 0.4s; }
-
-@keyframes pulse {
-  0%, 100% { opacity: 0.35; }
-  50% { opacity: 0.6; }
-}
-
-/* ── Empty state ── */
-.empty-state {
-  text-align: center;
-  padding: 80px 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-}
-
-.empty-icon { font-size: 48px; color: var(--muted); }
-.empty-title { font-size: 18px; color: var(--muted); }
-
-.clear-btn {
-  margin-top: 8px;
-  padding: 8px 20px;
-  background: var(--accent);
-  border: none;
-  border-radius: 99px;
-  color: var(--white);
-  font-family: var(--font-body);
-  font-size: 13px;
-  cursor: pointer;
-  transition: opacity 0.15s;
-}
-.clear-btn:hover { opacity: 0.85; }
-
-/* ── Search results grid ── */
-.search-results-grid {
-  padding: 0;
-}
-
-.search-results-header {
-  display: flex;
-  align-items: baseline;
-  gap: 14px;
-  margin: 0 48px 8px;
-  flex-wrap: wrap;
-}
-
-.search-results-header h2 {
-  font-family: var(--font-display);
-  font-size: 22px;
-  letter-spacing: 0.04em;
-}
-
-.search-results-header h2 em {
-  font-style: italic;
-  color: var(--accent);
-}
-
-.search-results-header span {
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--gap);
-}
-
-/* ── Footer ── */
 .footer {
   padding: 24px 48px;
   border-top: 1px solid var(--border);
@@ -498,10 +230,7 @@ onMounted(async () => {
 }
 .footer a:hover { color: var(--white); }
 
-/* ── Mobile ── */
 @media (max-width: 640px) {
-  .search-results-grid { padding: 0; }
-  .search-results-header { margin: 0 16px 8px; }
   .footer { padding: 24px 16px; }
 }
 </style>

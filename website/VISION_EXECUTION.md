@@ -35,6 +35,8 @@ Deliver the new `VISION.md` direction incrementally: Discover/Search/Settings IA
 - [x] Slice 7: brought Discover controls closer to vision: availability dropdown, maturity-profile entry, single-select genre, horizontal stepped rating.
 - [x] Slice 8: moved streaming service provider selection into Settings so Discover can treat it as “Included with my services”.
 - [x] Verification: `npm run build` passed (Vite/PWA, 58 modules, 182.43 kB JS gzip 67.25 kB).
+- [x] Slice 9: added `vue-router`, real routes (`/discover`, `/search`, `/settings`, `/roadmap`), route-level `DiscoverView`, and simplified `App.vue` into shell/modal/bootstrap responsibilities.
+- [x] Verification: `npm run build` passed (Vite/PWA, 63 modules, 208.94 kB JS gzip 76.67 kB) and local dev routes `/`, `/discover`, `/search`, `/settings`, `/roadmap` returned HTTP 200.
 
 ## Notes / assumptions
 - Keep implementation local and reviewable; no external deploy until asked.
