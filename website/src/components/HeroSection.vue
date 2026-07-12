@@ -42,53 +42,57 @@
         </div>
 
         <div ref="chipRowEl" class="chip-row" role="toolbar" aria-label="Browse controls">
-          <FilterMenu
-            :open="activePanel === 'titleType'"
-            :active="store.titleType !== 'both'"
-            :label="titleTypeLabel"
-            menu-class="filter-menu--title-type"
-            @toggle="togglePanel('titleType')"
+          <button
+            class="control-chip control-chip--primary"
+            type="button"
+            :class="{ active: store.titleType === 'tv' }"
+            :aria-pressed="store.titleType === 'tv'"
+            @click="toggleTitleType('tv', $event)"
           >
-              <div class="filter-heading">
-                <p class="filter-label">Title type</p>
-              </div>
-              <div class="menu-options menu-options--single">
-                <button
-                  v-for="option in titleTypeOptions"
-                  :key="option.value"
-                  class="menu-option"
-                  :class="{ active: store.titleType === option.value }"
-                  type="button"
-                  role="menuitemradio"
-                  :aria-checked="store.titleType === option.value"
-                  @click="selectTitleType(option.value)"
-                >{{ option.label }}</button>
-              </div>
-          </FilterMenu>
+            <span>Series</span>
+            <span v-if="store.titleType === 'tv'" class="chip-remove" aria-hidden="true">×</span>
+          </button>
+
+          <button
+            class="control-chip control-chip--primary"
+            type="button"
+            :class="{ active: store.titleType === 'movies' }"
+            :aria-pressed="store.titleType === 'movies'"
+            @click="toggleTitleType('movies', $event)"
+          >
+            <span>Películas</span>
+            <span v-if="store.titleType === 'movies'" class="chip-remove" aria-hidden="true">×</span>
+          </button>
 
           <FilterMenu
             :open="activePanel === 'genres'"
             :active="Boolean(store.selectedGenres.size)"
-            :label="genreChipLabel"
             menu-class="filter-menu--picker"
+            button-class="control-chip--dropdown"
             @toggle="togglePanel('genres')"
           >
-              <div class="filter-heading">
-                <p class="filter-label">Genres</p>
-                <span>{{ store.selectedGenres.size || 'Any' }}</span>
-              </div>
-              <div class="menu-options menu-options--grid">
-                <button
-                  v-for="genre in GENRE_LABELS"
-                  :key="genre"
-                  class="menu-option"
-                  :class="{ active: store.selectedGenres.has(genre) }"
-                  type="button"
-                  role="menuitemcheckbox"
-                  :aria-checked="store.selectedGenres.has(genre)"
-                  @click="store.toggleGenre(genre)"
-                >{{ genre }}</button>
-              </div>
+            <template #label>
+              <span class="chip-label-with-icon">
+                <span>{{ genreChipLabel }}</span>
+                <span class="chip-chevron" aria-hidden="true">⌄</span>
+              </span>
+            </template>
+            <div class="filter-heading">
+              <p class="filter-label">Categorías</p>
+              <span>{{ selectedGenreSummary }}</span>
+            </div>
+            <div class="menu-options menu-options--grid">
+              <button
+                v-for="genre in GENRE_LABELS"
+                :key="genre"
+                class="menu-option"
+                :class="{ active: store.selectedGenres.has(genre) }"
+                type="button"
+                role="menuitemcheckbox"
+                :aria-checked="store.selectedGenres.has(genre)"
+                @click="store.toggleGenre(genre)"
+              >{{ genre }}</button>
+            </div>
           </FilterMenu>
 
           <FilterMenu
@@ -181,12 +185,6 @@ const activePanel = ref(null);
 const chipRowEl = ref(null);
 const searchInputEl = ref(null);
 
-const titleTypeOptions = [
-  { value: "both", label: "Both" },
-  { value: "movies", label: "Movies" },
-  { value: "tv", label: "TV Shows" },
-];
-
 const localSearch = ref(store.searchQuery);
 let debounceTimer = null;
 watch(localSearch, val => {
@@ -224,9 +222,15 @@ const selectedProviderNames = computed(() =>
 
 const genreChipLabel = computed(() => {
   const count = store.selectedGenres.size;
-  if (count === 0) return "Genres";
+  if (count === 0) return "Categorías";
   if (count === 1) return [...store.selectedGenres][0];
-  return `${count} genres`;
+  return `${count} categorías`;
+});
+
+const selectedGenreSummary = computed(() => {
+  const count = store.selectedGenres.size;
+  if (count === 0) return "Cualquiera";
+  return `${count} ${count === 1 ? "seleccionada" : "seleccionadas"}`;
 });
 
 const providerChipLabel = computed(() => {
@@ -237,11 +241,11 @@ const providerChipLabel = computed(() => {
 });
 
 const ratingChipLabel = computed(() => store.minRating ? `Rating ${store.minRating}+` : "Rating");
-const titleTypeLabel = computed(() => titleTypeOptions.find(option => option.value === store.titleType)?.label ?? "Both");
 
-function selectTitleType(value) {
-  store.titleType = value;
+function toggleTitleType(value, event) {
+  store.titleType = store.titleType === value ? "both" : value;
   activePanel.value = null;
+  event?.currentTarget?.blur();
 }
 
 function togglePanel(panel) {
@@ -345,8 +349,14 @@ const hasFilters = computed(() =>
 
 .chip-row { position: relative; z-index: 30; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
 .control-chip, .clear-btn { padding: 7px 12px; border: 1px solid rgba(255,255,255,0.13); border-radius: 99px; background: rgba(255,255,255,0.04); color: var(--muted); font-size: 13px; }
+.control-chip--primary { display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px; font-weight: 700; color: rgba(255,255,255,0.78); }
 .control-chip:hover, .clear-btn:hover, .control-chip.active { border-color: var(--accent); color: var(--white); background: rgba(232,54,93,0.14); }
+.control-chip--primary:hover { border-color: rgba(255,255,255,0.26); background: rgba(255,255,255,0.06); color: var(--white); }
+.control-chip--primary.active { border-color: rgba(255,255,255,0.42); background: rgba(255,255,255,0.16); color: var(--white); }
+.chip-remove { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; background: rgba(255,255,255,0.18); color: rgba(255,255,255,0.9); font-size: 14px; line-height: 1; }
 .control-chip--safe.active { border-color: rgba(45,212,191,0.42); background: rgba(45,212,191,0.12); color: var(--teal); }
+.chip-label-with-icon { display: inline-flex; align-items: center; gap: 8px; }
+.chip-chevron { font-size: 17px; line-height: 0.8; transform: translateY(-1px); }
 .clear-btn { margin-left: auto; }
 
 .family-pill { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; padding: 6px 8px 6px 12px; border: 1px solid rgba(45,212,191,0.32); border-radius: 99px; background: rgba(45,212,191,0.1); color: rgba(255,255,255,0.84); font-size: 12px; }

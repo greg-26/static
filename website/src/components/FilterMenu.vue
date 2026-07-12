@@ -96,6 +96,17 @@ onBeforeUnmount(() => window.removeEventListener("resize", fitMenuToViewport));
   color: var(--white);
   background: rgba(232,54,93,0.14);
 }
+.control-chip--dropdown {
+  padding: 8px 16px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.78);
+}
+.control-chip--dropdown:hover,
+.control-chip--dropdown.active {
+  border-color: rgba(255,255,255,0.34);
+  background: rgba(255,255,255,0.1);
+  color: var(--white);
+}
 .control-chip--safe.active {
   border-color: rgba(45,212,191,0.42);
   background: rgba(45,212,191,0.12);
