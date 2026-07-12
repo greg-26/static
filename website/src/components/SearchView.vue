@@ -17,17 +17,9 @@
         />
         <button v-if="localSearch" type="button" aria-label="Clear search" @click="clearSearch">×</button>
       </div>
-      <p class="eyebrow">Search</p>
-      <h1>Find a specific title.</h1>
-      <p>Search ignores Discover filters, then annotates each result with suitability and list status.</p>
     </div>
 
     <div v-if="!queryActive" class="search-empty">
-      <div class="empty-copy">
-        <h2>What do you have in mind?</h2>
-        <p>Try a title, alternate Spanish title, collection name, actor, or director. Collections and people are still future work; title retrieval is ready now.</p>
-      </div>
-
       <section v-if="recentSearches.length" class="recent-section">
         <SectionHeader title="Recent searches" compact level="h3">
           <template #actions>
@@ -154,24 +146,20 @@ onUnmounted(() => window.removeEventListener("ohana:recent-activity", refreshRec
 <style scoped>
 .search-view { padding: 18px 48px 64px; max-width: 1060px; margin: 0 auto; width: 100%; }
 .search-hero { display: grid; gap: 10px; }
-.eyebrow { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); font-weight: 800; }
-h1 { margin-top: 4px; font-family: var(--font-display); font-size: clamp(40px, 7vw, 70px); line-height: 0.96; letter-spacing: 0.04em; }
-.search-hero p:not(.eyebrow) { max-width: 650px; margin-top: 8px; color: rgba(240,238,232,0.68); }
 .search-box { position: relative; display: flex; align-items: center; }
 .search-icon { position: absolute; left: 18px; width: 20px; height: 20px; color: var(--muted); pointer-events: none; }
 .search-box input { width: 100%; min-width: 0; padding: 17px 56px 17px 52px; border: 1px solid rgba(255,255,255,0.14); border-radius: 15px; background: rgba(8,8,16,0.94); color: var(--white); font: inherit; font-size: 17px; outline: none; }
 .search-box input:focus { border-color: rgba(232,54,93,0.72); }
 .search-box button { position: absolute; right: 12px; width: 32px; height: 32px; border: 1px solid rgba(255,255,255,0.14); border-radius: 50%; background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.74); font-size: 22px; cursor: pointer; }
-.search-empty { margin-top: 22px; display: grid; gap: 18px; }
-.empty-copy, .recent-section { padding: 16px 0; color: var(--muted); }
-.empty-copy h2 { color: var(--white); font-size: 20px; }
+.search-empty { margin-top: 16px; display: grid; gap: 18px; }
+.recent-section { padding: 16px 0; color: var(--muted); }
 .recent-section { border-top: 1px solid rgba(255,255,255,0.08); }
 .recent-section h3 { color: var(--white); font-size: 16px; }
 .recent-section button, .recent-chips button { border: 1px solid rgba(255,255,255,0.12); border-radius: 999px; background: rgba(255,255,255,0.05); color: rgba(240,238,232,0.72); font: inherit; font-size: 12px; min-height: 32px; padding: 0 12px; cursor: pointer; }
 .recent-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .recent-chips button:hover, .recent-section button:hover { border-color: rgba(45,212,191,0.42); color: var(--teal); }
 .recent-viewed-list { display: grid; gap: 10px; }
-.results-wrap { margin-top: 26px; }
+.results-wrap { margin-top: 16px; }
 .result-count { color: var(--muted); font-size: 13px; }
 .results-list { display: grid; gap: 10px; }
 @media (max-width: 640px) { .search-view { padding: 10px 14px 48px; } }
