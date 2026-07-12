@@ -6,6 +6,13 @@
     @openConfig="showConfig = true"
   >
     <div class="app" :class="{ 'app--with-tabs': activeTab }">
+      <header v-if="activeTab && !store.loading" class="app-header" aria-label="Ohana TV">
+        <RouterLink class="app-brand" to="/discover" aria-label="Ohana TV home">
+          <img src="/logo.png" alt="" />
+          <span>Ohana TV</span>
+        </RouterLink>
+      </header>
+
       <component
         :is="Component"
         @selectMovie="openMovie"
@@ -123,8 +130,11 @@ watch(() => userStore.isLoggedIn, (loggedIn) => {
   if (!loggedIn) return;
   const prefs = userStore.userData?.filterPrefs;
   if (!prefs) return;
-  if (Array.isArray(prefs.maxMaturityCat)) {
-    store.setMaxMaturityCats(prefs.maxMaturityCat);
+  store.setMaturityProfiles(prefs.maturityProfiles, prefs.maxMaturityCat);
+  if (prefs.activeMaturityProfileId) {
+    store.selectMaturityProfile(prefs.activeMaturityProfileId);
+  } else if (Array.isArray(prefs.maxMaturityCat)) {
+    store.setMaxMaturityCats(prefs.maxMaturityCat, "me");
   }
   if (prefs.selectedProviders !== undefined) {
     store.selectedProviders = prefs.selectedProviders;
@@ -135,12 +145,26 @@ watch(() => userStore.isLoggedIn, (loggedIn) => {
 }, { immediate: true });
 
 let filterSaveTimer = null;
-watch([() => [...store.maxMaturityCat], () => store.selectedProviders, () => store.titleType], () => {
+watch([
+  () => store.activeMaturityProfileId,
+  () => store.maturityProfiles.map(profile => `${profile.id}:${profile.label}:${profile.values.join(',')}`).join('|'),
+  () => [...store.maxMaturityCat],
+  () => store.selectedProviders,
+  () => store.titleType,
+], () => {
   if (!userStore.isLoggedIn) return;
   clearTimeout(filterSaveTimer);
   filterSaveTimer = setTimeout(() => {
     userStore.saveFilterPrefs({
       maxMaturityCat: [...store.maxMaturityCat],
+      activeMaturityProfileId: store.activeMaturityProfileId,
+      maturityProfiles: store.maturityProfiles.map(profile => ({
+        id: profile.id,
+        label: profile.label,
+        description: profile.description,
+        values: [...profile.values],
+        builtIn: profile.builtIn,
+      })),
       selectedProviders: store.selectedProviders,
       titleType: store.titleType,
     });
@@ -178,6 +202,35 @@ onMounted(async () => {
 
 .app--with-tabs {
   padding-bottom: calc(76px + env(safe-area-inset-bottom));
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  min-height: 56px;
+  padding: 10px 48px;
+  background: linear-gradient(rgba(8,8,16,0.92), rgba(8,8,16,0.68));
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+}
+
+.app-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--white);
+  text-decoration: none;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.app-brand img {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
 }
 
 .movie-loading-backdrop {
@@ -237,6 +290,7 @@ onMounted(async () => {
 .footer a:hover { color: var(--white); }
 
 @media (max-width: 640px) {
+  .app-header { min-height: 50px; padding: 8px 14px; }
   .footer { padding: 24px 16px; }
 }
 </style>

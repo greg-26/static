@@ -48,17 +48,40 @@ Deliver the new `VISION.md` direction incrementally: Discover/Search/Settings IA
 - [x] Slice 16: reworked discovery row labels toward vision language: Recommended for this profile, Popular now, Hidden gems, Included with your services.
 - [x] Verification: `npm run build` passed (Vite/PWA, 65 modules, 219.64 kB JS gzip 79.62 kB); dev routes `/`, `/discover`, `/search`, `/settings`, `/settings/streaming`, `/settings/maturity`, `/settings/lists`, `/roadmap` returned HTTP 200 on port 5174.
 - [x] Slice 17: added list rename support and clarified list removal as “Remove from profile” until ownership/delete semantics exist.
+- [x] Slice 18: re-audited CX vs `VISION.md` with focused subagents; prioritized mobile Discover hierarchy, list integration, card availability/compatibility clarity, Settings copy, and maturity profile persistence.
+- [x] Slice 19: compacted mobile Discover hero/controls so recommendations appear sooner and controls scroll horizontally instead of wrapping into chip soup.
+- [x] Slice 20: made “All lists” in Discover a single deduped combined row (max 24 titles) so lists support discovery instead of pushing recommendation rows away.
+- [x] Slice 21: clarified movie/search cards with profile-aware compatibility labels (`Fits Family`, `Review for With kids`) and separate primary provider badges instead of provider-or-genre ambiguity.
+- [x] Slice 22: introduced persisted maturity profile state (`activeMaturityProfileId`, `maturityProfiles`) while preserving legacy `maxMaturityCat` migration into “Me”.
+- [x] Slice 23: removed provisional implementation language from Settings maturity UX.
+- [x] Verification: `npm run build` passed (Vite/PWA, 65 modules, 222.08 kB JS gzip 80.29 kB); dev routes `/`, `/discover`, `/search`, `/settings`, `/settings/profile`, `/settings/streaming`, `/settings/maturity`, `/settings/lists`, `/roadmap` returned HTTP 200 on port 5174.
+- [x] Slice 24: extracted profile create/restore/name/token/logout flows into `/settings/profile`, removing the legacy settings modal dependency for core profile actions.
+- [x] Slice 25: extracted list create/import/share/rename/remove-from-profile flows into `/settings/lists`, keeping ownership/delete semantics out of scope.
+- [x] Verification: `npm run build` passed (Vite/PWA, 65 modules, 226.11 kB JS gzip 81.38 kB); same dev route smoke set returned HTTP 200 on port 5174.
+- [x] Slice 26: collapsed the legacy “Healthiness” block into secondary “Parental-guide details” so the movie detail decision hierarchy leads with suitability/availability/list state.
+- [x] Verification: `npm run build` passed (Vite/PWA, 65 modules, 226.13 kB JS gzip 81.38 kB); same dev route smoke set returned HTTP 200 on port 5174.
+- [x] Slice 27: moved detailed maturity category limits into `/settings/maturity`, so the primary Settings route no longer depends on the legacy modal for this core flow.
+- [x] Verification: `npm run build` passed (Vite/PWA, 65 modules, 226.72 kB JS gzip 81.52 kB); same dev route smoke set returned HTTP 200 on port 5174.
+- [x] Slice 28: re-read the expanded `AGENTS.md` design guidance and re-audited CX against it. Main gaps added to plan: Discover chrome/list weight, metadata-heavy cards, disabled future controls, stale legacy modal surface, and custom maturity profile management.
+- [x] Slice 29: added custom maturity profile create/duplicate/rename/delete in `/settings/maturity` while preserving built-in presets and existing persisted `filterPrefs.maturityProfiles` storage.
+- [x] Slice 30: removed disabled future availability choices from Discover and deleted stale `family-pill` CSS noise from `HeroSection.vue`.
+- [x] Captured Alex review feedback in `VISION.md` specifics, `AGENTS.md`, and `CODING_STANDARDS.md`: Discover dedupe, Ohana TV header, no nested boxes, no platform badges on posters, icon-only bottom nav, one-line chips, and reusable components.
+- [x] Slice 31: implemented first feedback sprint: Discover row-start diversity in `movies.js`, visible **Ohana TV** app header, icon-only SVG bottom tabs, Search input at the top without decorative wrapper, compact Settings index via reusable `SettingsRow`, removed provider/platform badges from poster/search cards, and enforced one-line chip truncation on cards/search results.
+- [x] Verification: `npm run build` passed (Vite/PWA, 68 modules, 232.18 kB JS gzip 83.95 kB); dev routes `/`, `/discover`, `/search`, `/settings`, `/settings/streaming`, `/settings/maturity`, `/settings/lists`, `/roadmap` returned HTTP 200 on port 5174.
+- [x] Slice 32: started the reusable-components pass with `UiBadge` for card/search metadata badges and `SectionHeader` for repeated section heading/action layouts in list/search surfaces.
+- [x] Verification: `npm run build` passed (Vite/PWA, 72 modules, 233.45 kB JS gzip 84.29 kB); dev routes `/`, `/discover`, `/search`, `/settings`, `/settings/streaming`, `/settings/maturity`, `/settings/lists`, `/roadmap` returned HTTP 200 on port 5174.
 
 ## Current CX vs Vision status
-- Delivered: primary Discover/Search/Settings IA, route-backed tabs, bottom navigation, Search as vertical retrieval, Search landing recents, Settings deep links, Discover list integration, temporary vs permanent filter separation, first-pass maturity profile presets, and clearer suitability/availability/list signals in cards/details.
-- Partial: Settings subpages still reuse legacy modal for profile creation/import and detailed list/maturity editing; maturity profiles are presets over the existing single `maxMaturityCat` array, not fully persisted multi-profile entities.
-- Deferred: structured collection/person search, true Included/Free/Rent/Buy provider groups, list rename/ownership semantics, and backend/scraper data changes.
+- Delivered: primary Discover/Search/Settings IA, route-backed tabs, bottom navigation, Search as vertical retrieval, Search landing recents, Settings deep links, native profile/list/maturity settings routes, Discover list integration, temporary vs permanent filter separation, compact mobile Discover hierarchy, persisted maturity profile selection/presets, clearer profile-aware suitability/availability/list signals in cards/details, and movie-detail maturity hierarchy with raw parental-guide detail secondary.
+- Partial: maturity profiles are persisted presets rather than fully user-created/duplicable entities.
+- Deferred: structured collection/person search, true Included/Free/Rent/Buy provider groups, list ownership/delete semantics, and backend/scraper data changes.
 
 ## Next recommended slices
-1. Persist real multi-profile maturity settings in `userStore.userData` (`activeMaturityProfileId`, `maturityProfiles`) and migrate current `filterPrefs.maxMaturityCat` into “Me”.
-2. Extract Profile, Maturity, and Lists edit flows from `ConfigModal.vue` into the new Settings routes one section at a time.
-3. Add ownership-aware list delete/leave semantics once ownership is modeled.
+1. Continue reusable components pass: apply `UiBadge`/`SectionHeader` to remaining Settings/MovieModal surfaces, then consider a dedicated interactive chip component for buttons/links.
+2. Tighten Discover card metadata further: consider moving watched/list signals out of poster overlay into a quieter title-row treatment.
+3. Remove or narrow `ConfigModal.vue` now that Settings owns profile/list/maturity; verify pending shared-list onboarding still has a path.
 4. Add lightweight structured Search sections for inferred collections before backend person/collection data exists.
+5. Manual mobile review on Tailscale (`http://100.85.92.106:5174/`) for header height, icon-tab clarity, Search first-screen spacing, and Settings list density.
 
 ## Notes / assumptions
 - Keep implementation local and reviewable; no external deploy until asked.
@@ -67,4 +90,5 @@ Deliver the new `VISION.md` direction incrementally: Discover/Search/Settings IA
 - Search is now first-class visually, but collection/person structured results remain future/backend work.
 - Settings is now first-class as an index, but detailed edit screens still reuse the existing config modal to avoid risky persistence rewrites.
 - Provider subscriptions now live visually in Settings, but still reuse the existing `selectedProviders` persistence path for compatibility.
-- Named maturity profiles are still represented by current maturity limits for now; a real multi-profile data migration should be a separate slice.
+- Named maturity profiles now persist as profile presets in `filterPrefs.maturityProfiles`; custom create/duplicate/delete UI exists in `/settings/maturity`.
+- Latest Alex feedback is partly implemented in Slice 31; remaining work is reusable component consolidation and mobile visual review/polish.

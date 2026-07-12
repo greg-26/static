@@ -14,9 +14,11 @@ Deploys are configured through Netlify CI/CD using the repo-root `netlify.toml`.
 
 ## Project notes
 
-- [ROADMAP.md](./ROADMAP.md) tracks product/UX ideas. It is also visible in the app at `/roadmap`.
 - [AGENTS.md](./AGENTS.md) captures project-specific implementation notes for future agent work.
-- Current roadmap direction: keep search and posters most prominent; move browse controls toward compact chips with rich menus/bottom sheets.
+- [VISION.md](./VISION.md) is the product source of truth, including concrete UX acceptance criteria.
+- [VISION_EXECUTION.md](./VISION_EXECUTION.md) tracks implementation slices and the current fix plan.
+- [CODING_STANDARDS.md](./CODING_STANDARDS.md) captures reusable component and UI implementation standards.
+- Current vision direction: Discover/Search/Settings are separate intent-based routes; Discover answers what to watch, Search retrieves known titles, Settings configures the experience.
 
 ## Stack
 
@@ -70,14 +72,20 @@ Data loading order:
 
 ```
 src/
-  stores/movies.js      ← Pinia store, filtering logic, Fuse.js
+  router/index.js       ← Vue Router routes
+  stores/movies.js      ← Pinia store, filtering logic, Fuse.js, row generation
+  stores/user.js        ← Profile/list/settings persistence
+  views/DiscoverView.vue ← Discover route layout
   components/
-    HeroSection.vue     ← Search and browse filters/chips
-    MovieRow.vue        ← Horizontal scrollable row with arrows
-    MovieCard.vue       ← Poster card with hover overlay
+    AppTabs.vue         ← Bottom navigation
+    HeroSection.vue     ← Discover controls
+    SearchView.vue      ← Search route layout/results
+    SettingsView.vue    ← Settings index/subroutes
+    MovieRow.vue        ← Horizontal discovery rows
+    MovieCard.vue       ← Poster card
     MovieModal.vue      ← Detail popup
-  App.vue               ← Layout: loading → hero → rows/grid → modal
-  components/RoadmapPage.vue ← Simple `/roadmap` page rendering ROADMAP.md
+    RoadmapPage.vue     ← `/roadmap` page rendering VISION.md
+  App.vue               ← App shell + global movie modal
   assets/global.css     ← CSS variables, reset
 ```
 

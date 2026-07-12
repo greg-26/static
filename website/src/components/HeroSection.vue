@@ -74,12 +74,6 @@
               >
                 Any availability
               </button>
-              <button class="menu-option" type="button" role="menuitemradio" aria-checked="false" disabled>
-                Free with ads · later
-              </button>
-              <button class="menu-option" type="button" role="menuitemradio" aria-checked="false" disabled>
-                Rent / Buy · later
-              </button>
             </div>
           </FilterMenu>
 
@@ -217,7 +211,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import FilterMenu from "@/components/FilterMenu.vue";
 import { useMovieStore, GENRE_LABELS } from "@/stores/movies.js";
-import { MATURITY_PROFILES, activeMaturityProfileId as getActiveMaturityProfileId, activeMaturityProfileLabel } from "@/lib/maturityProfiles.js";
+import { profileLabel } from "@/lib/maturityProfiles.js";
 
 defineProps({ showSearch: { type: Boolean, default: true } });
 const emit = defineEmits(["open-settings"]);
@@ -281,10 +275,10 @@ const availabilityChipLabel = computed(() => {
   return `On ${names.length} services`;
 });
 
-const maturityProfiles = MATURITY_PROFILES;
-const maturityActive = computed(() => store.maxMaturityCat.some(v => v >= 0));
-const activeMaturityProfileId = computed(() => getActiveMaturityProfileId(store.maxMaturityCat));
-const maturityProfileLabel = computed(() => activeMaturityProfileLabel(store.maxMaturityCat));
+const maturityProfiles = computed(() => store.maturityProfiles);
+const maturityActive = computed(() => store.activeMaturityProfileId !== "adults" || store.maxMaturityCat.some(v => v >= 0));
+const activeMaturityProfileId = computed(() => store.activeMaturityProfileId);
+const maturityProfileLabel = computed(() => profileLabel(store.maturityProfiles, store.activeMaturityProfileId));
 const ratingChipLabel = computed(() => store.minRating ? `Rating ${store.minRating}+` : "Rating");
 
 function toggleTitleType(value, event) {
@@ -304,8 +298,7 @@ function selectAvailability(mode) {
 }
 
 function selectMaturityProfile(profile) {
-  if (profile.values) store.setMaxMaturityCats(profile.values);
-  else emit("open-settings", "maturity");
+  store.selectMaturityProfile(profile.id);
   activePanel.value = null;
 }
 
@@ -393,7 +386,6 @@ const hasFilters = computed(() =>
 .settings-link,
 .control-chip,
 .clear-btn,
-.family-pill button,
 .menu-option {
   font-family: var(--font-body);
   cursor: pointer;
@@ -426,10 +418,6 @@ const hasFilters = computed(() =>
 .chip-chevron { font-size: 17px; line-height: 0.8; transform: translateY(-1px); }
 .clear-btn { margin-left: auto; }
 
-.family-pill { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; padding: 6px 8px 6px 12px; border: 1px solid rgba(45,212,191,0.32); border-radius: 99px; background: rgba(45,212,191,0.1); color: rgba(255,255,255,0.84); font-size: 12px; }
-.family-pill span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.family-pill button { border: 0; border-radius: 99px; padding: 3px 8px; background: rgba(45,212,191,0.18); color: var(--teal); font-size: 12px; }
-
 .filter-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; color: var(--muted); font-size: 12px; }
 .filter-heading span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .filter-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: rgba(255,255,255,0.68); }
@@ -460,16 +448,24 @@ const hasFilters = computed(() =>
 .filter-summary { margin-top: 12px; font-size: 13px; color: var(--muted); }
 
 @media (max-width: 640px) {
-  .hero { min-height: 330px; padding: 42px 16px 24px; margin-bottom: 14px; }
-  .hero-brand { gap: 14px; margin-bottom: 18px; }
+  .hero { min-height: 0; padding: 22px 16px 12px; margin-bottom: 8px; border-bottom: 0; }
+  .hero-poster-bg { opacity: 0.28; height: 170px; }
+  .hero-bg-overlay { background: linear-gradient(to bottom, rgba(8,8,16,0.9), var(--black)); }
+  .hero-brand { gap: 10px; margin-bottom: 12px; }
+  .hero-kicker { font-size: 16px; letter-spacing: 0.12em; }
   .settings-link { display: none; }
-  .hero-title { font-size: clamp(40px, 15vw, 62px); }
-  .search-panel { padding: 10px; border-radius: 16px; }
-  .search-input { padding: 15px 52px 15px 46px; font-size: 15px; }
+  .hero-title { max-width: 360px; font-size: clamp(30px, 10vw, 42px); line-height: 1; }
+  .search-panel { margin: 0 -6px; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; backdrop-filter: none; }
+  .hero-search { margin-bottom: 8px; }
+  .search-input { padding: 15px 52px 15px 46px; font-size: 15px; border-radius: 14px; }
   .search-actions { right: 10px; }
   .search-clear-btn { width: 30px; height: 30px; font-size: 20px; }
   .search-results-count { display: none; }
+  .chip-row { flex-wrap: nowrap; gap: 8px; margin-top: 0; overflow-x: auto; padding: 2px 6px 8px; scrollbar-width: none; }
+  .chip-row::-webkit-scrollbar { display: none; }
+  .control-chip, .clear-btn { flex: 0 0 auto; min-height: 38px; white-space: nowrap; }
   .clear-btn { margin-left: 0; }
+  .filter-summary { display: none; }
   .poster-col:nth-child(n+4) { display: none; }
   .menu-options { max-width: calc(100vw - 48px); }
   .menu-options--grid { grid-template-columns: minmax(0, 1fr); }

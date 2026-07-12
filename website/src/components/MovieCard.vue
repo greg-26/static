@@ -19,9 +19,9 @@
       </div>
 
       <div class="card-badges">
-        <span v-if="compatibilityLabel" class="card-badge" :class="compatibilityClass">{{ compatibilityLabel }}</span>
-        <span v-if="userStore.isLoggedIn && userStore.isWatched(movie.id)" class="card-badge card-badge--watched">Watched</span>
-        <span v-if="listCount" class="card-badge card-badge--list">{{ listCount }} list{{ listCount === 1 ? '' : 's' }}</span>
+        <UiBadge v-if="compatibilityLabel" variant="overlay" :tone="compatibilityTone">{{ compatibilityLabel }}</UiBadge>
+        <UiBadge v-if="userStore.isLoggedIn && userStore.isWatched(movie.id)" variant="overlay" tone="muted">Watched</UiBadge>
+        <UiBadge v-if="listCount" variant="overlay" tone="gold">{{ listCount }} list{{ listCount === 1 ? '' : 's' }}</UiBadge>
       </div>
 
       <!-- Maturity severity dots -->
@@ -44,9 +44,11 @@
 
 <script setup>
 import { ref, computed } from "vue";
-import { GENRES, PROVIDERS, useMovieStore } from "@/stores/movies.js";
+import { GENRES, useMovieStore } from "@/stores/movies.js";
 import { useUserStore } from "@/stores/user.js";
 import { MATURITY_CATEGORIES, SEVERITY_LABELS, getScore, scoreCssClass } from "@/maturity.js";
+import { profileLabel } from "@/lib/maturityProfiles.js";
+import UiBadge from "@/components/UiBadge.vue";
 
 const props = defineProps({ movie: { type: Object, required: true } });
 defineEmits(["select"]);
@@ -61,15 +63,17 @@ const activeLimits = computed(() => store.maxMaturityCat
   .filter(({ level }) => level >= 0)
 );
 
+const activeProfileName = computed(() => profileLabel(store.maturityProfiles, store.activeMaturityProfileId));
 const compatibilityLabel = computed(() => {
-  if (!activeLimits.value.length || props.movie.mat === undefined) return "";
+  if (props.movie.mat === undefined) return `Unknown fit`;
+  if (!activeLimits.value.length) return `Fits ${activeProfileName.value}`;
   const exceeded = activeLimits.value.some(({ level, category }) => {
     const score = getScore(props.movie.mat, category.shift);
     return (Number.isFinite(score) ? Math.round(score) : 6) > level;
   });
-  return exceeded ? "Check fit" : "Fits";
+  return exceeded ? `Review for ${activeProfileName.value}` : `Fits ${activeProfileName.value}`;
 });
-const compatibilityClass = computed(() => compatibilityLabel.value === "Fits" ? "card-badge--ok" : "card-badge--warn");
+const compatibilityTone = computed(() => compatibilityLabel.value.startsWith("Fits") ? "success" : "warning");
 const listCount = computed(() => userStore.isLoggedIn ? userStore.lists.filter(list => list.movies.includes(props.movie.id)).length : 0);
 
 const genreLabels = computed(() => {
@@ -77,8 +81,7 @@ const genreLabels = computed(() => {
   for (const [name, mask] of Object.entries(GENRES)) {
     if (props.movie.g & mask) labels.push(name);
   }
-  const provider = PROVIDERS.find(p => props.movie.prov & p.bit)?.name;
-  return provider || labels.slice(0, 2).join(" · ") || "–";
+  return labels.slice(0, 2).join(" · ") || "–";
 });
 
 // Sex & Nudity is shift 0; blur if score >= 4 (Strong or Severe)
@@ -198,23 +201,6 @@ const posterStyle = computed(() => ({
   gap: 4px;
   z-index: 2;
 }
-
-.card-badge {
-  padding: 3px 6px;
-  border-radius: 999px;
-  background: rgba(8,8,16,0.72);
-  border: 1px solid rgba(255,255,255,0.12);
-  color: rgba(255,255,255,0.82);
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-  line-height: 1;
-  backdrop-filter: blur(6px);
-}
-.card-badge--ok { border-color: rgba(45,212,191,0.35); color: var(--teal); }
-.card-badge--warn { border-color: rgba(248,113,113,0.4); color: #fca5a5; }
-.card-badge--watched { border-color: rgba(255,255,255,0.32); }
-.card-badge--list { border-color: rgba(245,200,66,0.38); color: var(--gold); }
 
 /* ── Maturity dots ── */
 .card-maturity {

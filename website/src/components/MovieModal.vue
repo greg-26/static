@@ -133,14 +133,14 @@
                 @click="userStore.toggleMovieInList(list.token, movie.id)"
               >{{ list.name }}</button>
 
-              <span v-if="!userStore.lists.length" class="no-lists-hint">No lists yet — create one in ⚙ Settings</span>
+              <span v-if="!userStore.lists.length" class="no-lists-hint">No lists yet — create one in Settings</span>
             </div>
           </div>
 
-          <!-- Healthiness: ML scores from stored matMask + links + IMDb community reviews -->
-          <div class="modal-maturity" v-if="movie.mat !== undefined || matReviews">
-            <div class="mat-header">
-              <p class="modal-section-label">Healthiness</p>
+          <!-- Supporting parental-guide detail: secondary to the suitability summary above. -->
+          <details class="modal-maturity" v-if="movie.mat !== undefined || matReviews">
+            <summary class="mat-header">
+              <p class="modal-section-label">Parental-guide details</p>
               <div class="mat-links">
                 <span v-if="movie.mpa" class="modal-badge modal-badge--mpa">{{ movie.mpa }}</span>
                 <a
@@ -165,7 +165,7 @@
                   title="Common Sense Media review"
                 >CSM</a>
               </div>
-            </div>
+            </summary>
 
             <!-- Score grid from stored bitmask, with per-category detail tags -->
             <div v-if="movie.mat !== undefined" class="mat-score-grid">
@@ -221,7 +221,7 @@
                 <p v-else class="mat-no-reviews">No community reviews for this category</p>
               </details>
             </div>
-          </div>
+          </details>
 
           <div class="modal-providers" v-if="providerNames.length || userStore.isLoggedIn">
             <p class="modal-section-label">Included</p>
@@ -862,15 +862,20 @@ onUnmounted(() => {
 .provider-form-btn--ok:hover   { color: var(--teal);  border-color: rgba(45,212,191,0.4); }
 .provider-form-btn--cancel:hover { color: #f87171; border-color: rgba(248,113,113,0.35); }
 
-/* ── Healthiness section ── */
+/* ── Supporting parental-guide detail ── */
 .modal-maturity { margin-bottom: 18px; }
+.modal-maturity:not([open]) { margin-bottom: 12px; }
 
 .mat-header {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 12px;
+  cursor: pointer;
+  list-style: none;
 }
+.mat-header::-webkit-details-marker { display: none; }
+.modal-maturity:not([open]) .mat-header { margin-bottom: 0; }
 
 .mat-links {
   display: flex;

@@ -14,9 +14,8 @@
       <h3>{{ movie.t }}</h3>
       <p class="overview">{{ synopsis }}</p>
       <div class="chips">
-        <span class="chip" :class="compatClass">{{ compatibilityLabel }}</span>
-        <span v-if="providerLabel" class="chip">{{ providerLabel }}</span>
-        <span v-if="listLabel" class="chip chip--list">{{ listLabel }}</span>
+        <UiBadge :tone="compatTone">{{ compatibilityLabel }}</UiBadge>
+        <UiBadge v-if="listLabel" tone="gold">{{ listLabel }}</UiBadge>
       </div>
     </div>
   </button>
@@ -24,9 +23,11 @@
 
 <script setup>
 import { computed } from "vue";
-import { GENRES, PROVIDERS, useMovieStore } from "@/stores/movies.js";
+import { GENRES, useMovieStore } from "@/stores/movies.js";
 import { useUserStore } from "@/stores/user.js";
-import { MATURITY_CATEGORIES, SEVERITY_LABELS, getScore } from "@/maturity.js";
+import { MATURITY_CATEGORIES, getScore } from "@/maturity.js";
+import { profileLabel } from "@/lib/maturityProfiles.js";
+import UiBadge from "@/components/UiBadge.vue";
 
 const props = defineProps({ movie: { type: Object, required: true } });
 defineEmits(["select"]);
@@ -45,31 +46,25 @@ const synopsis = computed(() => {
   return genres || "Open details for maturity, availability, and list actions.";
 });
 
+const activeProfileName = computed(() => profileLabel(store.maturityProfiles, store.activeMaturityProfileId));
 const activeLimits = computed(() => store.maxMaturityCat
   .map((level, i) => ({ level, category: MATURITY_CATEGORIES[i] }))
   .filter(({ level }) => level >= 0)
 );
 
 const compatibilityLabel = computed(() => {
-  if (!activeLimits.value.length) return "Compatibility: not configured";
-  if (props.movie.mat === undefined) return "Compatibility: unknown";
+  if (props.movie.mat === undefined) return `Unknown fit for ${activeProfileName.value}`;
+  if (!activeLimits.value.length) return `Fits ${activeProfileName.value}`;
   const exceeded = activeLimits.value.find(({ level, category }) => {
     const score = getScore(props.movie.mat, category.shift);
     return (Number.isFinite(score) ? Math.round(score) : 6) > level;
   });
-  if (!exceeded) return "Compatible with active limits";
-  return `Exceeds ${exceeded.category.label} (${SEVERITY_LABELS[exceeded.level]})`;
+  return exceeded ? `Review for ${activeProfileName.value}` : `Fits ${activeProfileName.value}`;
 });
 
-const compatClass = computed(() => {
-  if (!activeLimits.value.length || props.movie.mat === undefined) return "";
-  return compatibilityLabel.value.startsWith("Compatible") ? "chip--ok" : "chip--warn";
-});
-
-const providerLabel = computed(() => {
-  const names = PROVIDERS.filter(p => props.movie.prov & p.bit).map(p => p.name);
-  if (!names.length) return "Availability unknown";
-  return names.slice(0, 2).join(" · ") + (names.length > 2 ? ` +${names.length - 2}` : "");
+const compatTone = computed(() => {
+  if (props.movie.mat === undefined) return "neutral";
+  return compatibilityLabel.value.startsWith("Fits") ? "success" : "warning";
 });
 
 const listLabel = computed(() => {
@@ -121,9 +116,5 @@ const listLabel = computed(() => {
 h3 { font-size: 18px; line-height: 1.1; color: var(--white); }
 .overview { color: rgba(240,238,232,0.68); font-size: 13px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.chip { padding: 4px 8px; border-radius: 99px; background: rgba(255,255,255,0.06); color: rgba(240,238,232,0.72); font-size: 11px; }
-.chip--ok { background: rgba(45,212,191,0.12); color: var(--teal); }
-.chip--warn { background: rgba(248,113,113,0.13); color: #fca5a5; }
-.chip--list { background: rgba(245,200,66,0.12); color: var(--gold); }
 @media (max-width: 640px) { .search-card { grid-template-columns: 72px minmax(0, 1fr); gap: 11px; padding: 10px; } .poster { width: 72px; } h3 { font-size: 16px; } }
 </style>

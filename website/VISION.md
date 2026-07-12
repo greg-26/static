@@ -59,6 +59,53 @@ Power features can come later.
 
 ---
 
+# Specific product and UX requirements
+
+These are concrete constraints from product review. Treat them as acceptance criteria, not vague preferences.
+
+## Brand/header
+
+- The main app header must visibly include the text **Ohana TV**.
+- Do not rely on only a logo mark, emoji, icon, or browser title for brand presence.
+
+## Discover diversity
+
+- The same movie or show must not appear in the first two visible positions of more than one Discover row.
+- If a title already appeared in an earlier row, either remove it from later rows or push it several positions back so the first screen feels diverse.
+- Recommendation row generation should dedupe by title/id across rows before slicing visible row results.
+
+## Visual hierarchy and containers
+
+- Stop nesting boxes inside boxes.
+- Use whitespace, typography, and grouping instead of stacked cards, panels, and borders.
+- Search starts with the search bar at the very top of the Search view, not inside a secondary wrapper card.
+- Settings home should feel like a quick settings list/index, not an endless scroll of oversized boxes.
+
+## Cards and metadata
+
+- Posters/cards should not display streaming platforms.
+- Platforms belong in the movie/show detail view where the user is deciding where to watch.
+- Cards may show only the minimum needed to choose: poster, title, year/rating, and suitability/fit if useful.
+
+## Navigation
+
+- Bottom navigation tabs should show icons only: no text labels.
+- Use proper high-bar app icons such as Material Design Icons or equivalent SVG/icon components, not emojis.
+- Icon size, stroke/fill weight, selected state, and tap target must be consistent across tabs.
+
+## Chips and compact controls
+
+- Chip text must never wrap to two lines.
+- Long chip labels should truncate, shorten, or move into a menu/detail surface.
+- Controls should be reusable and consistent rather than one-off CSS variants.
+
+## Implementation quality
+
+- Code UI primitives as reusable components when the same pattern appears more than once.
+- Reuse shared controls for chips, settings rows, bottom tabs, section headers, and metadata badges instead of copying markup/styles.
+
+---
+
 # Information Architecture
 
 The application has three primary tabs.

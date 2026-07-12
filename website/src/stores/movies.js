@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { ref, computed, shallowRef } from "vue";
 import Fuse from "fuse.js";
 import { MATURITY_CATEGORIES, getScore } from "@/maturity.js";
+import { DEFAULT_MATURITY_PROFILES, normalizeMaturityProfiles, normalizeMaturityValues, profileById } from "@/lib/maturityProfiles.js";
 
 // ── Genres: exact IMDb strings as keys, bitmask values ───────────────────────
 export const GENRES = {
@@ -66,6 +67,8 @@ export const useMovieStore = defineStore("movies", () => {
   // Per-category max score: index matches MATURITY_CATEGORIES order (sex, violence, language, drugs)
   // -1 = no filter active; 0–5 = max allowed rounded score
   const maxMaturityCat = ref([-1, -1, -1, -1]);
+  const activeMaturityProfileId = ref("adults");
+  const maturityProfiles = ref(normalizeMaturityProfiles());
 
   // Sex & Nudity is shift 0; scale 0–5 → invert so lower score = higher sort weight
   const maturityScore = (a) => {
@@ -242,8 +245,30 @@ export const useMovieStore = defineStore("movies", () => {
 
     if (!selectedProviders.value) rows.push(...providerRows);
 
-    return rows;
+    return diversifyRowStarts(rows);
   });
+
+  function movieKey(movie) {
+    return movie?.id || `${movie?.t || ""}-${movie?.y || ""}`.toLowerCase();
+  }
+
+  function diversifyRowStarts(rows) {
+    const seenPreviousRows = new Set();
+
+    return rows.map((row) => {
+      const fresh = [];
+      const repeated = [];
+
+      for (const movie of row.movies) {
+        (seenPreviousRows.has(movieKey(movie)) ? repeated : fresh).push(movie);
+      }
+
+      const movies = [...fresh, ...repeated];
+      for (const movie of row.movies) seenPreviousRows.add(movieKey(movie));
+
+      return { ...row, movies };
+    });
+  }
 
   // ── Filter helpers ────────────────────────────────────────
   function toggleGenre(g) {
@@ -256,26 +281,55 @@ export const useMovieStore = defineStore("movies", () => {
     selectedProviders.value ^= bit;
   }
 
-  function normalizeMaturityLevel(level) {
-    const numeric = Number(level);
-    if (!Number.isFinite(numeric) || numeric < 0) return -1;
-    return Math.min(5, Math.max(0, Math.round(numeric)));
-  }
-
   function setMaxMaturityCat(catIndex, level) {
     if (catIndex < 0 || catIndex >= MATURITY_CATEGORIES.length) return;
     const arr = [...maxMaturityCat.value];
-    arr[catIndex] = normalizeMaturityLevel(level);
+    arr[catIndex] = normalizeMaturityValues(arr.map((value, i) => i === catIndex ? level : value))[catIndex];
     maxMaturityCat.value = arr;
+    activeMaturityProfileId.value = "me";
+    updateMaturityProfile("me", { values: arr });
   }
 
-  function setMaxMaturityCats(values) {
-    const next = MATURITY_CATEGORIES.map((_, i) => normalizeMaturityLevel(values?.[i] ?? -1));
+  function setMaxMaturityCats(values, profileId = "me") {
+    const next = normalizeMaturityValues(values);
     maxMaturityCat.value = next;
+    activeMaturityProfileId.value = profileId;
+    if (profileId === "me") updateMaturityProfile("me", { values: next });
+  }
+
+  function setMaturityProfiles(profiles, legacyValues) {
+    maturityProfiles.value = normalizeMaturityProfiles(profiles, legacyValues);
+    const activeProfile = profileById(maturityProfiles.value, activeMaturityProfileId.value);
+    maxMaturityCat.value = normalizeMaturityValues(activeProfile.values);
+  }
+
+  function updateMaturityProfile(id, patch) {
+    maturityProfiles.value = normalizeMaturityProfiles(
+      maturityProfiles.value.map(profile => profile.id === id ? { ...profile, ...patch } : profile)
+    );
+  }
+
+  function addMaturityProfile(profile) {
+    if (!profile?.id || !profile?.label) return;
+    maturityProfiles.value = normalizeMaturityProfiles([...maturityProfiles.value, { ...profile, builtIn: false }]);
+    selectMaturityProfile(profile.id);
+  }
+
+  function removeMaturityProfile(id) {
+    const target = profileById(maturityProfiles.value, id);
+    if (!target || target.builtIn) return;
+    maturityProfiles.value = normalizeMaturityProfiles(maturityProfiles.value.filter(profile => profile.id !== id));
+    if (activeMaturityProfileId.value === id) selectMaturityProfile("me");
+  }
+
+  function selectMaturityProfile(id) {
+    const profile = profileById(maturityProfiles.value, id);
+    activeMaturityProfileId.value = profile.id;
+    maxMaturityCat.value = normalizeMaturityValues(profile.values);
   }
 
   function clearMaturityFilters() {
-    maxMaturityCat.value = MATURITY_CATEGORIES.map(() => -1);
+    selectMaturityProfile("adults");
   }
 
   function clearFilters() {
@@ -300,8 +354,9 @@ export const useMovieStore = defineStore("movies", () => {
   return {
     allMovies, loading, error,
     searchQuery, selectedGenres, selectedProviders, availabilityMode, titleType, minRating, safeBrowsingEnabled, maxMaturityCat,
+    activeMaturityProfileId, maturityProfiles,
     filteredMovies, movieRows, availableProviders,
-    loadMovies, toggleGenre, toggleProvider, setMaxMaturityCat, setMaxMaturityCats, clearMaturityFilters, clearFilters,
+    loadMovies, toggleGenre, toggleProvider, setMaxMaturityCat, setMaxMaturityCats, setMaturityProfiles, updateMaturityProfile, addMaturityProfile, removeMaturityProfile, selectMaturityProfile, clearMaturityFilters, clearFilters,
   };
 });
 
