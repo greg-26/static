@@ -78,6 +78,8 @@ curl -fL --compressed https://ohana.tv/movies.json -o public/movies.json
 - Ask sub-agents for concise findings, exact file references, and verification results instead of raw exploratory logs.
 - Keep roadmap ideas documented first; do not implement roadmap items unless Alex asks.
 - Prefer small UX changes with mobile verification because this app is being reviewed on a phone.
+- Less is more: default to removing, hiding, merging, or simplifying UI before adding new copy, controls, settings, routes, cards, or explanations.
+- Every Settings row must represent a user-owned configuration; do not add generic “about”, product-note, or marketing sections unless Alex explicitly asks.
 - Once there are relevant, contained improvements, prepare a PR back to the original repo with a focused scope and clear verification notes.
 - Do not move profile/list persistence casually; `user.js` uses 3-way merge logic for KV data.
 - If adding real routing later, account for static hosting fallback behavior.
@@ -316,14 +318,17 @@ Avoid long scrolling settings pages.
 
 ## Ruthlessly reduce noise
 
+Less is more. Start by subtracting.
+
 Continuously ask:
 
 - Can this disappear?
 - Can this move?
 - Can this become implicit?
 - Can two components become one?
+- Is this a real user decision, or just us explaining ourselves?
 
-The best interface is usually the one with fewer visible decisions.
+If a setting, card, label, or paragraph does not change what the user can do, remove it rather than polishing it. The best interface is usually the one with fewer visible decisions.
 
 ---
 

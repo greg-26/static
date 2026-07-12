@@ -39,13 +39,6 @@
         :title="`${userStore.lists.length} ${userStore.lists.length === 1 ? 'list' : 'lists'}`"
         summary="Managed here, used in Discover"
       />
-      <SettingsRow
-        to="/settings/about"
-        icon="i"
-        label="General"
-        title="About Ohana"
-        summary="Product notes and privacy"
-      />
     </div>
 
     <div v-else class="section-panel">
@@ -196,13 +189,6 @@
         </article>
       </template>
 
-      <template v-else>
-        <article class="settings-card settings-card--muted">
-          <p class="section-label">About</p>
-          <h2>Ohana</h2>
-          <p>Discovery first. Search separate. Settings permanent. Lists support choosing what to watch instead of becoming another destination.</p>
-        </article>
-      </template>
     </div>
   </section>
 </template>
@@ -238,7 +224,11 @@ const addingList = ref(false);
 const newMaturityProfileName = ref("");
 const maturityProfileError = ref("");
 
-const activeSection = computed(() => route.params.section || null);
+const settingsSections = new Set(["profile", "streaming", "maturity", "lists"]);
+const activeSection = computed(() => {
+  const section = route.params.section;
+  return settingsSections.has(section) ? section : null;
+});
 const canSaveName = computed(() => {
   const name = editName.value.trim();
   return Boolean(name) && name !== userStore.userData?.name;
@@ -248,7 +238,6 @@ const pageTitle = computed(() => ({
   streaming: "Streaming services",
   maturity: "Maturity profiles",
   lists: "My Lists",
-  about: "About Ohana",
 }[activeSection.value] || "Configure once, use everywhere."));
 const pageIntro = computed(() => activeSection.value
   ? "Permanent choices belong here; Discover stays focused on the current viewing moment."
