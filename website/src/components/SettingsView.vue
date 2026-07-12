@@ -146,39 +146,34 @@
       </template>
 
       <template v-else-if="activeSection === 'lists'">
-        <article class="settings-card settings-card--wide">
-          <p class="section-label">My Lists</p>
-          <h2>{{ userStore.lists.length }} {{ userStore.lists.length === 1 ? 'list' : 'lists' }}</h2>
-          <p>Create, rename, share, and remove lists here. Ownership/delete semantics remain a dedicated follow-up.</p>
-          <div v-if="userStore.isLoggedIn" class="list-stack">
-            <div v-for="list in userStore.lists" :key="list.token" class="list-row">
-              <div>
-                <strong>{{ list.name }}</strong>
-                <span>{{ list.movies.length }} titles</span>
-              </div>
-              <button type="button" @click="renameList(list)">Rename</button>
-              <button type="button" @click="copyShareUrl(list.token)">{{ copiedToken === list.token ? 'Copied' : 'Share' }}</button>
-              <button type="button" class="danger" @click="userStore.removeList(list.token)">Remove from profile</button>
+        <div v-if="userStore.isLoggedIn" class="list-stack">
+          <div v-for="list in userStore.lists" :key="list.token" class="list-row">
+            <div>
+              <strong>{{ list.name }}</strong>
+              <span>{{ list.movies.length }} titles</span>
             </div>
-            <p v-if="!userStore.lists.length" class="empty-note">No lists yet. Create one for a movie night shortlist.</p>
-            <div class="settings-form settings-form--inline">
-              <label>
-                <span>Create list</span>
-                <input v-model="newListName" maxlength="40" placeholder="Family night, classics…" @keydown.enter="createList" />
-              </label>
-              <button type="button" :disabled="creatingList || !newListName.trim()" @click="createList">{{ creatingList ? 'Creating…' : 'Create' }}</button>
-            </div>
-            <div class="settings-form settings-form--inline">
-              <label>
-                <span>Import shared list</span>
-                <input v-model="addListToken" class="mono" placeholder="Paste list token or share URL" @keydown.enter="addSharedList" />
-              </label>
-              <button type="button" :disabled="addingList || !addListToken.trim()" @click="addSharedList">{{ addingList ? 'Adding…' : 'Add' }}</button>
-              <p v-if="listError" class="form-error">{{ listError }}</p>
-            </div>
+            <button type="button" @click="renameList(list)">Rename</button>
+            <button type="button" @click="copyShareUrl(list.token)">{{ copiedToken === list.token ? 'Copied' : 'Share' }}</button>
+            <button type="button" class="danger" @click="userStore.removeList(list.token)">Remove</button>
           </div>
-          <RouterLink v-else class="card-action" to="/settings/profile">Create profile to use lists</RouterLink>
-        </article>
+          <p v-if="!userStore.lists.length" class="empty-note">No lists yet.</p>
+          <div class="settings-form settings-form--inline list-action-row">
+            <label>
+              <span>Create list</span>
+              <input v-model="newListName" maxlength="40" placeholder="Family night, classics…" @keydown.enter="createList" />
+            </label>
+            <button type="button" :disabled="creatingList || !newListName.trim()" @click="createList">{{ creatingList ? 'Creating…' : 'Create' }}</button>
+          </div>
+          <div class="settings-form settings-form--inline list-action-row">
+            <label>
+              <span>Import shared list</span>
+              <input v-model="addListToken" class="mono" placeholder="Paste list token or share URL" @keydown.enter="addSharedList" />
+            </label>
+            <button type="button" :disabled="addingList || !addListToken.trim()" @click="addSharedList">{{ addingList ? 'Adding…' : 'Add' }}</button>
+            <p v-if="listError" class="form-error">{{ listError }}</p>
+          </div>
+        </div>
+        <RouterLink v-else class="card-action" to="/settings/profile">Create profile to use lists</RouterLink>
       </template>
 
     </div>
@@ -443,10 +438,12 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .maturity-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .maturity-chips button { min-height: 32px; padding: 0 10px; color: rgba(240,238,232,0.68); }
 .maturity-chips button.active { border-color: rgba(45,212,191,0.42); background: rgba(45,212,191,0.12); color: var(--teal); }
-.list-stack { display: grid; gap: 10px; }
-.list-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 12px; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; background: rgba(255,255,255,0.035); }
+.list-stack { display: grid; }
+.list-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
+.list-row:first-child { border-top: 1px solid rgba(255,255,255,0.08); }
 .list-row > div { margin-right: auto; display: grid; gap: 2px; }
 .list-row span { color: var(--muted); font-size: 12px; }
+.list-action-row { padding: 16px 0 0; }
 .danger:hover { border-color: rgba(248,113,113,0.45); color: #fca5a5; }
 @media (max-width: 720px) { .settings-view { padding: 20px 14px 48px; } .settings-card--primary, .settings-card--wide { grid-column: auto; } .settings-form--inline { grid-template-columns: 1fr; } }
 </style>
