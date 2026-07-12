@@ -235,7 +235,10 @@ export const useUserStore = defineStore("user", () => {
 
   async function saveFilterPrefs(prefs) {
     if (!userData.value) return;
-    userData.value = { ...userData.value, filterPrefs: prefs };
+    userData.value = {
+      ...userData.value,
+      filterPrefs: { ...(userData.value.filterPrefs ?? {}), ...prefs },
+    };
     await _saveUser();
   }
 

@@ -58,7 +58,10 @@ export const useMovieStore = defineStore("movies", () => {
   const searchQuery = ref("");
   const selectedGenres = ref(new Set());
   const selectedProviders = ref(0);       // bitmask of selected providers
+  const titleType = ref("both");          // both | movies | tv; browsing only, search stays broad
   const minRating = ref(0);
+  // Session-only baseline safety: visible and easy to toggle off, but resets on reload/new session.
+  const safeBrowsingEnabled = ref(true);
   // Per-category max score: index matches MATURITY_CATEGORIES order (sex, violence, language, drugs)
   // -1 = no filter active; 0–5 = max allowed rounded score
   const maxMaturityCat = ref([-1, -1, -1, -1]);
@@ -147,8 +150,16 @@ export const useMovieStore = defineStore("movies", () => {
 
     // No search query: hide movies without a poster
     pool = pool.filter(({ item }) => item.p);
-    // Hide movies with very explicit sex/nudity (maturity score >= 4.5)
-    pool = pool.filter(({ item }) => (getScore(item.mat, 0) || 0) < 4.5);
+    // Baseline safety hides very explicit sex/nudity unless the session-only Safe chip is off.
+    if (safeBrowsingEnabled.value) {
+      pool = pool.filter(({ item }) => (getScore(item.mat, 0) || 0) < 4.5);
+    }
+
+    if (titleType.value === "movies") {
+      pool = pool.filter(({ item }) => item.s !== 1);
+    } else if (titleType.value === "tv") {
+      pool = pool.filter(({ item }) => item.s === 1);
+    }
 
     if (selectedGenres.value.size > 0) {
       let mask = 0;
@@ -199,6 +210,20 @@ export const useMovieStore = defineStore("movies", () => {
     if (trending.length >= 4)
       rows.push({ id: "trending", label: "Popular", movies: trending });
 
+    const providerRows = PROVIDERS
+      .filter((prov) => !selectedProviders.value || (selectedProviders.value & prov.bit))
+      .map((prov) => {
+        const provMovies = pool
+          .filter((m) => m.prov & prov.bit)
+          .sort(byPopRating)
+          .slice(0, ROW_MAX);
+        return { prov, provMovies };
+      })
+      .filter(({ provMovies }) => provMovies.length >= 4)
+      .map(({ prov, provMovies }) => ({ id: `prov-${prov.id}`, label: `On ${prov.name}`, movies: provMovies }));
+
+    if (selectedProviders.value) rows.push(...providerRows);
+
     for (const [genre, mask] of Object.entries(GENRES)) {
       const genreMovies = pool
         .filter((m) => m.g & mask)
@@ -208,14 +233,7 @@ export const useMovieStore = defineStore("movies", () => {
         rows.push({ id: `genre-${genre}`, label: genre, movies: genreMovies });
     }
 
-    for (const prov of PROVIDERS) {
-      const provMovies = pool
-        .filter((m) => m.prov & prov.bit)
-        .sort(byPopRating)
-        .slice(0, ROW_MAX);
-      if (provMovies.length >= 4)
-        rows.push({ id: `prov-${prov.id}`, label: `On ${prov.name}`, movies: provMovies });
-    }
+    if (!selectedProviders.value) rows.push(...providerRows);
 
     return rows;
   });
@@ -257,7 +275,9 @@ export const useMovieStore = defineStore("movies", () => {
     searchQuery.value = "";
     selectedGenres.value = new Set();
     selectedProviders.value = 0;
+    titleType.value = "both";
     minRating.value = 0;
+    safeBrowsingEnabled.value = true;
     clearMaturityFilters();
   }
 
@@ -270,7 +290,7 @@ export const useMovieStore = defineStore("movies", () => {
 
   return {
     allMovies, loading, error,
-    searchQuery, selectedGenres, selectedProviders, minRating, maxMaturityCat,
+    searchQuery, selectedGenres, selectedProviders, titleType, minRating, safeBrowsingEnabled, maxMaturityCat,
     filteredMovies, movieRows, availableProviders,
     loadMovies, toggleGenre, toggleProvider, setMaxMaturityCat, setMaxMaturityCats, clearMaturityFilters, clearFilters,
   };
