@@ -2,14 +2,6 @@
   <section class="settings-view">
     <RouterLink v-if="activeSection" class="back-link" to="/settings">← Settings</RouterLink>
 
-    <SectionHeader
-      class="settings-head"
-      eyebrow="Settings"
-      :title="pageTitle"
-      :intro="pageIntro"
-      level="h1"
-    />
-
     <div v-if="!activeSection" class="settings-list" aria-label="Settings sections">
       <SettingsRow
         to="/settings/profile"
@@ -201,7 +193,6 @@ import { useUserStore } from "@/stores/user.js";
 import { MATURITY_CATEGORIES, SEVERITY_LABELS } from "@/maturity.js";
 import { profileLabel } from "@/lib/maturityProfiles.js";
 import SettingsRow from "@/components/SettingsRow.vue";
-import SectionHeader from "@/components/SectionHeader.vue";
 
 defineEmits(["openConfig"]);
 
@@ -233,17 +224,6 @@ const canSaveName = computed(() => {
   const name = editName.value.trim();
   return Boolean(name) && name !== userStore.userData?.name;
 });
-const pageTitle = computed(() => ({
-  profile: "Profile",
-  streaming: "Streaming services",
-  maturity: "Maturity profiles",
-  lists: "My Lists",
-}[activeSection.value] || "Configure once, use everywhere."));
-const pageIntro = computed(() => activeSection.value
-  ? "Permanent choices belong here; Discover stays focused on the current viewing moment."
-  : "Permanent preferences live here. Discover stays focused on the current viewing moment."
-);
-
 const selectedProviderSummary = computed(() => {
   const selected = movieStore.availableProviders.filter(p => movieStore.selectedProviders & p.bit).map(p => p.name);
   if (!selected.length) return "Any service";
@@ -427,8 +407,6 @@ async function addSharedList() {
 <style scoped>
 .settings-view { padding: 36px 48px 64px; max-width: 1120px; margin: 0 auto; width: 100%; }
 .back-link { display: inline-flex; margin-bottom: 18px; color: var(--teal); text-decoration: none; font-size: 13px; }
-.settings-head { margin-bottom: 22px; }
-.settings-head :deep(.section-title) { font-family: var(--font-display); font-size: clamp(40px, 7vw, 70px); line-height: 0.96; letter-spacing: 0.04em; }
 .section-label { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); font-weight: 800; }
 .settings-list { display: grid; }
 .section-panel { display: grid; gap: 14px; }
