@@ -20,8 +20,6 @@
 
       <div class="card-badges">
         <UiBadge v-if="compatibilityLabel" variant="overlay" :tone="compatibilityTone">{{ compatibilityLabel }}</UiBadge>
-        <UiBadge v-if="userStore.isLoggedIn && userStore.isWatched(movie.id)" variant="overlay" tone="muted">Watched</UiBadge>
-        <UiBadge v-if="listCount" variant="overlay" tone="gold">{{ listCount }} list{{ listCount === 1 ? '' : 's' }}</UiBadge>
       </div>
 
       <!-- Maturity severity dots -->
@@ -36,7 +34,12 @@
       </div>
     </div>
     <div class="card-info">
-      <p class="card-title">{{ movie.t }}</p>
+      <div class="card-title-row">
+        <p class="card-title">{{ movie.t }}</p>
+        <div v-if="statusLabels.length" class="card-status" aria-label="Your activity">
+          <UiBadge v-for="label in statusLabels" :key="label" variant="soft" tone="gold">{{ label }}</UiBadge>
+        </div>
+      </div>
       <p class="card-genres">{{ genreLabels }}</p>
     </div>
   </button>
@@ -75,6 +78,13 @@ const compatibilityLabel = computed(() => {
 });
 const compatibilityTone = computed(() => compatibilityLabel.value.startsWith("Fits") ? "success" : "warning");
 const listCount = computed(() => userStore.isLoggedIn ? userStore.lists.filter(list => list.movies.includes(props.movie.id)).length : 0);
+const statusLabels = computed(() => {
+  if (!userStore.isLoggedIn) return [];
+  const labels = [];
+  if (userStore.isWatched(props.movie.id)) labels.push("Watched");
+  if (listCount.value) labels.push(`${listCount.value} list${listCount.value === 1 ? "" : "s"}`);
+  return labels;
+});
 
 const genreLabels = computed(() => {
   const labels = [];
@@ -231,10 +241,21 @@ const posterStyle = computed(() => ({
 
 /* ── Info ── */
 .card-info {
+  display: grid;
+  gap: 3px;
   padding: 6px 2px 0;
 }
 
+.card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
 .card-title {
+  min-width: 0;
+  flex: 1;
   font-size: 13px;
   font-weight: 500;
   white-space: nowrap;
@@ -243,9 +264,24 @@ const posterStyle = computed(() => ({
   color: var(--white);
 }
 
+.card-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 52%;
+  overflow: hidden;
+}
+
+.card-status :deep(.ui-badge) {
+  padding: 3px 6px;
+  font-size: 9px;
+}
+
 .card-genres {
   font-size: 11px;
   color: var(--muted);
-  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>

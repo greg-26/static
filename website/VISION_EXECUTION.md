@@ -70,6 +70,8 @@ Deliver the new `VISION.md` direction incrementally: Discover/Search/Settings IA
 - [x] Verification: `npm run build` passed (Vite/PWA, 68 modules, 232.18 kB JS gzip 83.95 kB); dev routes `/`, `/discover`, `/search`, `/settings`, `/settings/streaming`, `/settings/maturity`, `/settings/lists`, `/roadmap` returned HTTP 200 on port 5174.
 - [x] Slice 32: started the reusable-components pass with `UiBadge` for card/search metadata badges and `SectionHeader` for repeated section heading/action layouts in list/search surfaces.
 - [x] Verification: `npm run build` passed (Vite/PWA, 72 modules, 233.45 kB JS gzip 84.29 kB); dev routes `/`, `/discover`, `/search`, `/settings`, `/settings/streaming`, `/settings/maturity`, `/settings/lists`, `/roadmap` returned HTTP 200 on port 5174.
+- [x] Slice 33: continued the polish/reusable sprint: moved watched/list status off poster overlays into the quieter card title row, reused `UiBadge` in movie details for TV/MPA/genre badge surfaces, and reused `SectionHeader` for Settings page headings.
+- [x] Verification: `npm run build` passed (Vite/PWA, 72 modules, 233.59 kB JS gzip 84.38 kB); dev routes `/`, `/discover`, `/search`, `/settings`, `/settings/streaming`, `/settings/maturity`, `/settings/lists`, `/roadmap` returned HTTP 200 on port 5174.
 
 ## Current CX vs Vision status
 - Delivered: primary Discover/Search/Settings IA, route-backed tabs, bottom navigation, Search as vertical retrieval, Search landing recents, Settings deep links, native profile/list/maturity settings routes, Discover list integration, temporary vs permanent filter separation, compact mobile Discover hierarchy, persisted maturity profile selection/presets, clearer profile-aware suitability/availability/list signals in cards/details, and movie-detail maturity hierarchy with raw parental-guide detail secondary.
@@ -77,11 +79,10 @@ Deliver the new `VISION.md` direction incrementally: Discover/Search/Settings IA
 - Deferred: structured collection/person search, true Included/Free/Rent/Buy provider groups, list ownership/delete semantics, and backend/scraper data changes.
 
 ## Next recommended slices
-1. Continue reusable components pass: apply `UiBadge`/`SectionHeader` to remaining Settings/MovieModal surfaces, then consider a dedicated interactive chip component for buttons/links.
-2. Tighten Discover card metadata further: consider moving watched/list signals out of poster overlay into a quieter title-row treatment.
-3. Remove or narrow `ConfigModal.vue` now that Settings owns profile/list/maturity; verify pending shared-list onboarding still has a path.
-4. Add lightweight structured Search sections for inferred collections before backend person/collection data exists.
-5. Manual mobile review on Tailscale (`http://100.85.92.106:5174/`) for header height, icon-tab clarity, Search first-screen spacing, and Settings list density.
+1. Add a dedicated reusable interactive chip/button primitive for provider toggles, maturity choices, and list/status actions.
+2. Remove or narrow `ConfigModal.vue` now that Settings owns profile/list/maturity; verify pending shared-list onboarding still has a path.
+3. Add lightweight structured Search sections for inferred collections before backend person/collection data exists.
+4. Manual mobile review on Tailscale (`http://100.85.92.106:5174/`) for header height, icon-tab clarity, Search first-screen spacing, Settings list density, and the quieter card title-row status badges.
 
 ## Notes / assumptions
 - Keep implementation local and reviewable; no external deploy until asked.

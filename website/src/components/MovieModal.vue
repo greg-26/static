@@ -66,12 +66,12 @@
             >
               <img src="https://upload.wikimedia.org/wikipedia/commons/5/59/FilmAffinity_logo.svg" alt="FilmAffinity" class="imdb-logo" />
             </a>
-            <span v-if="movie.s" class="modal-badge">TV Season</span>
+            <UiBadge v-if="movie.s" tone="success">TV Season</UiBadge>
           </div>
           <h2 :id="titleId" class="modal-title">{{ movie.t }}</h2>
 
           <div class="modal-genres">
-            <span v-for="g in genreLabels" :key="g" class="genre-chip">{{ g }}</span>
+            <UiBadge v-for="g in genreLabels" :key="g">{{ g }}</UiBadge>
           </div>
 
           <div class="watch-summary">
@@ -142,7 +142,7 @@
             <summary class="mat-header">
               <p class="modal-section-label">Parental-guide details</p>
               <div class="mat-links">
-                <span v-if="movie.mpa" class="modal-badge modal-badge--mpa">{{ movie.mpa }}</span>
+                <UiBadge v-if="movie.mpa" tone="gold">{{ movie.mpa }}</UiBadge>
                 <a
                   v-if="movie.id"
                   :href="`https://www.imdb.com/title/${movie.id}/parentalguide`"
@@ -288,6 +288,7 @@ import { MATURITY_CATEGORIES, SEVERITY_LABELS, getScore, scoreCssClass } from "@
 import { useUserStore } from "@/stores/user.js";
 import { lockBodyScroll, unlockBodyScroll, trapTabKey } from "@/composables/modalGuards.js";
 import { activeMaturityProfileLabel } from "@/lib/maturityProfiles.js";
+import UiBadge from "@/components/UiBadge.vue";
 
 const userStore = useUserStore();
 const movieStore = useMovieStore();
@@ -708,22 +709,6 @@ onUnmounted(() => {
 .imdb-link { display: inline-flex; align-items: center; text-decoration: none; }
 .imdb-logo { height: 12px; width: auto; border-radius: 2px; }
 
-.modal-badge {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 2px 8px;
-  background: rgba(45,212,191,0.15);
-  border: 1px solid rgba(45,212,191,0.3);
-  border-radius: 99px;
-  color: var(--teal);
-}
-.modal-badge--mpa {
-  background: rgba(250,204,21,0.1);
-  border-color: rgba(250,204,21,0.3);
-  color: #facc15;
-}
-
 .modal-title {
   font-family: var(--font-display);
   font-size: 28px;
@@ -738,15 +723,6 @@ onUnmounted(() => {
 }
 /* The top genre block (above synopsis) is now hidden — genres shown inline as hashtags */
 .modal-body > .modal-genres { display: none; }
-.genre-chip {
-  padding: 3px 10px;
-  background: var(--surface3);
-  border: 1px solid var(--border);
-  border-radius: 99px;
-  font-size: 12px;
-  color: var(--white);
-}
-
 .genre-chip--alt {
   background: var(--surface);
   border-color: transparent;/**/
