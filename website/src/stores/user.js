@@ -1,15 +1,13 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
-import { kvRead, kvWrite, generateToken } from "@/lib/kvStore.js";
+import { kvRead, kvWrite, generateToken, safeAdd, safeRemove, safeToggle, safeReplace } from "@/lib/kvStore.js";
 
 const LS_KEY = "ohanatv_user_token";
 
 export const useUserStore = defineStore("user", () => {
   const userToken = ref(localStorage.getItem(LS_KEY) || null);
   const userData = ref(null); // { name, listTokens, watched, customProviders, filterPrefs }
-  const baseData = ref(null); // snapshot at last successful read — merge base for user doc
   const lists = ref([]);      // [{ token, name, movies }]
-  const baseLists = ref({});  // { [listToken]: { name, movies } } — merge base per list
   const loading = ref(false);
   const saving = ref(false);
 
@@ -21,47 +19,6 @@ export const useUserStore = defineStore("user", () => {
     return lists.value.find(l => l.token === listToken)?.movies.includes(id) ?? false;
   }
 
-  // ── 3-way merge ────────────────────────────────────────────────────────────
-  // For set-like fields: compute intent vs base, apply onto remote.
-  //
-  //   added   = local − base
-  //   removed = base − local
-  //   result  = (remote ∪ added) − removed
-  //
-  // Scalar fields use last-write-wins (local).
-
-  function mergeSet(base = [], local = [], remote = []) {
-    const baseSet = new Set(base);
-    const added   = local.filter(x => !baseSet.has(x));
-    const removed = new Set(base.filter(x => !local.includes(x)));
-    const result  = remote.filter(x => !removed.has(x));
-    for (const x of added) if (!result.includes(x)) result.push(x);
-    return result;
-  }
-
-  function _mergeUserOntoRemote(remote) {
-    const base  = baseData.value ?? {};
-    const local = userData.value ?? {};
-    return {
-      ...remote,
-      name:            local.name            ?? remote.name,
-      filterPrefs:     local.filterPrefs     ?? remote.filterPrefs,
-      customProviders: mergeSet(base.customProviders, local.customProviders, remote.customProviders),
-      listTokens:      mergeSet(base.listTokens,      local.listTokens,      remote.listTokens),
-      watched:         mergeSet(base.watched,          local.watched,         remote.watched),
-    };
-  }
-
-  function _mergeListOntoRemote(listToken, remote) {
-    const base  = baseLists.value[listToken] ?? {};
-    const local = lists.value.find(l => l.token === listToken) ?? {};
-    return {
-      ...remote,
-      name:   local.name ?? remote.name,   // last-write-wins for name
-      movies: mergeSet(base.movies, local.movies, remote.movies),
-    };
-  }
-
   // ── Core persistence ───────────────────────────────────────────────────────
 
   async function init() {
@@ -71,7 +28,6 @@ export const useUserStore = defineStore("user", () => {
       const data = await kvRead(userToken.value);
       if (!data) return;
       userData.value = data;
-      baseData.value = structuredClone(data);
       await _loadAllLists();
     } catch (e) {
       console.warn("user init failed:", e);
@@ -82,46 +38,13 @@ export const useUserStore = defineStore("user", () => {
 
   async function _loadAllLists() {
     const tokens = userData.value?.listTokens ?? [];
-    if (!tokens.length) { lists.value = []; baseLists.value = {}; return; }
+    if (!tokens.length) { lists.value = []; return; }
     const results = await Promise.allSettled(
       tokens.map(t => kvRead(t).then(d => d ? { token: t, ...d } : null))
     );
-    const loaded = results
+    lists.value = results
       .filter(r => r.status === "fulfilled" && r.value)
       .map(r => r.value);
-    lists.value = loaded;
-    // Record merge base for each list
-    baseLists.value = Object.fromEntries(
-      loaded.map(l => [l.token, structuredClone({ name: l.name, movies: l.movies })])
-    );
-  }
-
-  async function _saveUser() {
-    if (!userToken.value || !userData.value) return;
-    saving.value = true;
-    try {
-      const remote = await kvRead(userToken.value);
-      const merged = remote ? _mergeUserOntoRemote(remote) : { ...userData.value };
-      await kvWrite(userToken.value, merged);
-      userData.value = merged;
-      baseData.value = JSON.parse(JSON.stringify(merged)); // merged can't be cloned with structuredClone
-    } finally {
-      saving.value = false;
-    }
-  }
-
-  async function _saveList(listToken) {
-    const local = lists.value.find(l => l.token === listToken);
-    if (!local) return;
-    const remote = await kvRead(listToken);
-    const merged = remote ? _mergeListOntoRemote(listToken, remote) : { name: local.name, movies: local.movies };
-    await kvWrite(listToken, merged);
-    // Update local state and base to the merged result
-    lists.value = lists.value.map(l => l.token === listToken ? { ...l, ...merged } : l);
-    baseLists.value = {
-      ...baseLists.value,
-      [listToken]: structuredClone({ name: merged.name, movies: merged.movies }),
-    };
   }
 
   // ── User lifecycle ─────────────────────────────────────────────────────────
@@ -132,9 +55,7 @@ export const useUserStore = defineStore("user", () => {
     await kvWrite(token, data);
     userToken.value = token;
     userData.value = data;
-    baseData.value = structuredClone(data);
     lists.value = [];
-    baseLists.value = {};
     localStorage.setItem(LS_KEY, token);
   }
 
@@ -143,100 +64,149 @@ export const useUserStore = defineStore("user", () => {
     if (!data) throw new Error("No user found for this token");
     userToken.value = token;
     userData.value = data;
-    baseData.value = structuredClone(data);
     lists.value = [];
-    baseLists.value = {};
     localStorage.setItem(LS_KEY, token);
     await _loadAllLists();
   }
 
   async function setName(name) {
-    if (!userData.value) return;
-    userData.value = { ...userData.value, name };
-    await _saveUser();
+    if (!userToken.value || !userData.value) return;
+    const previous = userData.value;
+    userData.value = { ...userData.value, name }; // optimistic
+    saving.value = true;
+    try {
+      userData.value = await safeReplace(userToken.value, "name", name);
+    } catch (e) {
+      userData.value = previous;
+      throw e;
+    } finally {
+      saving.value = false;
+    }
   }
 
   // ── Lists ──────────────────────────────────────────────────────────────────
 
   async function createList(name) {
-    if (!userData.value) return;
+    if (!userData.value || !userToken.value) return;
     const token = generateToken();
     const listData = { name, movies: [] };
     await kvWrite(token, listData);
     lists.value = [...lists.value, { token, ...listData }];
-    baseLists.value = { ...baseLists.value, [token]: structuredClone(listData) };
-    userData.value = { ...userData.value, listTokens: [...(userData.value.listTokens ?? []), token] };
-    await _saveUser();
+    saving.value = true;
+    try {
+      userData.value = await safeAdd(userToken.value, "listTokens", token);
+    } finally {
+      saving.value = false;
+    }
     return token;
   }
 
   async function addListByToken(token) {
-    if (!userData.value) throw new Error("Not logged in");
+    if (!userData.value || !userToken.value) throw new Error("Not logged in");
     if (userData.value.listTokens?.includes(token)) return;
     const data = await kvRead(token);
     if (!data) throw new Error("List not found");
     lists.value = [...lists.value, { token, ...data }];
-    baseLists.value = { ...baseLists.value, [token]: structuredClone({ name: data.name, movies: data.movies }) };
-    userData.value = { ...userData.value, listTokens: [...(userData.value.listTokens ?? []), token] };
-    await _saveUser();
+    saving.value = true;
+    try {
+      userData.value = await safeAdd(userToken.value, "listTokens", token);
+    } finally {
+      saving.value = false;
+    }
   }
 
   async function removeList(token) {
-    if (!userData.value) return;
-    lists.value = lists.value.filter(l => l.token !== token);
-    const { [token]: _, ...rest } = baseLists.value;
-    baseLists.value = rest;
-    userData.value = { ...userData.value, listTokens: (userData.value.listTokens ?? []).filter(t => t !== token) };
-    await _saveUser();
+    if (!userData.value || !userToken.value) return;
+    const previousLists = lists.value;
+    lists.value = lists.value.filter(l => l.token !== token); // optimistic
+    saving.value = true;
+    try {
+      userData.value = await safeRemove(userToken.value, "listTokens", token);
+    } catch (e) {
+      lists.value = previousLists;
+      throw e;
+    } finally {
+      saving.value = false;
+    }
   }
 
   async function toggleMovieInList(listToken, imdbId) {
     const list = lists.value.find(l => l.token === listToken);
     if (!list) return;
-    const has = list.movies.includes(imdbId);
-    const movies = has ? list.movies.filter(id => id !== imdbId) : [...list.movies, imdbId];
-    // Optimistic local update, then merge-write
-    lists.value = lists.value.map(l => l.token === listToken ? { ...l, movies } : l);
-    await _saveList(listToken);
+    const previousLists = lists.value;
+    const movies = list.movies.includes(imdbId)
+      ? list.movies.filter(id => id !== imdbId)
+      : [...list.movies, imdbId];
+    lists.value = lists.value.map(l => l.token === listToken ? { ...l, movies } : l); // optimistic
+    try {
+      const updated = await safeToggle(listToken, "movies", imdbId);
+      lists.value = lists.value.map(l => l.token === listToken ? { ...l, ...updated } : l);
+    } catch (e) {
+      lists.value = previousLists;
+      throw e;
+    }
   }
 
   // ── Watched ────────────────────────────────────────────────────────────────
 
   async function toggleWatched(imdbId) {
-    if (!userData.value) return;
+    if (!userData.value || !userToken.value) return;
+    const previous = userData.value;
     const watched = userData.value.watched ?? [];
     const newWatched = watched.includes(imdbId)
       ? watched.filter(id => id !== imdbId)
       : [...watched, imdbId];
-    userData.value = { ...userData.value, watched: newWatched };
-    await _saveUser();
+    userData.value = { ...userData.value, watched: newWatched }; // optimistic
+    try {
+      userData.value = await safeToggle(userToken.value, "watched", imdbId);
+    } catch (e) {
+      userData.value = previous;
+      throw e;
+    }
   }
 
   // ── Custom providers ───────────────────────────────────────────────────────
 
   async function addCustomProvider(urlTemplate) {
-    if (!userData.value) return;
-    const existing = userData.value.customProviders ?? [];
-    if (existing.includes(urlTemplate)) return;
-    userData.value = { ...userData.value, customProviders: [...existing, urlTemplate] };
-    await _saveUser();
+    if (!userData.value || !userToken.value) return;
+    if ((userData.value.customProviders ?? []).includes(urlTemplate)) return;
+    const previous = userData.value;
+    userData.value = { ...userData.value, customProviders: [...(userData.value.customProviders ?? []), urlTemplate] };
+    try {
+      userData.value = await safeAdd(userToken.value, "customProviders", urlTemplate);
+    } catch (e) {
+      userData.value = previous;
+      throw e;
+    }
   }
 
   async function removeCustomProvider(urlTemplate) {
-    if (!userData.value) return;
+    if (!userData.value || !userToken.value) return;
+    const previous = userData.value;
     userData.value = {
       ...userData.value,
       customProviders: (userData.value.customProviders ?? []).filter(u => u !== urlTemplate),
     };
-    await _saveUser();
+    try {
+      userData.value = await safeRemove(userToken.value, "customProviders", urlTemplate);
+    } catch (e) {
+      userData.value = previous;
+      throw e;
+    }
   }
 
   // ── Filter preferences ─────────────────────────────────────────────────────
 
   async function saveFilterPrefs(prefs) {
-    if (!userData.value) return;
-    userData.value = { ...userData.value, filterPrefs: prefs };
-    await _saveUser();
+    if (!userData.value || !userToken.value) return;
+    const previous = userData.value;
+    userData.value = { ...userData.value, filterPrefs: prefs }; // optimistic
+    try {
+      userData.value = await safeReplace(userToken.value, "filterPrefs", prefs);
+    } catch (e) {
+      userData.value = previous;
+      throw e;
+    }
   }
 
   // ── Sharing / auth ─────────────────────────────────────────────────────────
@@ -248,9 +218,7 @@ export const useUserStore = defineStore("user", () => {
   function logout() {
     userToken.value = null;
     userData.value = null;
-    baseData.value = null;
     lists.value = [];
-    baseLists.value = {};
     localStorage.removeItem(LS_KEY);
   }
 
