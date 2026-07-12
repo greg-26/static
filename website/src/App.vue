@@ -2,50 +2,36 @@
   <RoadmapPage v-if="isRoadmapRoute" />
 
   <div v-else class="app">
-    <HeroSection @open-settings="showConfig = true" />
+    <AppTabs :active-tab="activeTab" @select="setActiveTab" />
 
-    <main class="catalog">
-      <!-- Still loading: show skeleton rows -->
-      <template v-if="store.loading">
-        <div class="skeleton-row" v-for="n in 3" :key="n">
-          <div class="skeleton-label"></div>
-          <div class="skeleton-cards">
-            <div class="skeleton-card" v-for="c in 8" :key="c"></div>
+    <template v-if="activeTab === 'discover'">
+      <HeroSection :show-search="false" @open-settings="setActiveTab('settings')" />
+
+      <main class="catalog">
+        <!-- Still loading: show skeleton rows -->
+        <template v-if="store.loading">
+          <div class="skeleton-row" v-for="n in 3" :key="n">
+            <div class="skeleton-label"></div>
+            <div class="skeleton-cards">
+              <div class="skeleton-card" v-for="c in 8" :key="c"></div>
+            </div>
           </div>
-        </div>
-      </template>
-
-      <template v-else>
-        <div v-if="store.filteredMovies.length === 0" class="empty-state">
-          <p class="empty-icon">◌</p>
-          <p class="empty-title">No movies match your filters</p>
-          <button class="clear-btn" @click="store.clearFilters">Clear all filters</button>
-        </div>
+        </template>
 
         <template v-else>
-          <!-- Search results: flat grid, rows hidden -->
-          <div v-if="store.searchQuery" class="search-results-grid">
-            <div class="search-results-header">
-              <h2>Results for "<em>{{ store.searchQuery }}</em>"</h2>
-              <span>{{ store.filteredMovies.length }} titles</span>
-            </div>
-            <MovieRow
-              :key="store.searchQuery"
-              :row="{ movies: store.filteredMovies, label: 'Search results' }"
-              @selectMovie="openMovie"
-            />
+          <div v-if="store.filteredMovies.length === 0" class="empty-state">
+            <p class="empty-icon">◌</p>
+            <p class="empty-title">No movies match your filters</p>
+            <button class="clear-btn" @click="store.clearFilters">Clear all filters</button>
           </div>
 
-          <!-- Normal rows (hidden while searching) -->
           <template v-else>
-            <!-- User list rows -->
-            <MovieRow
-              v-for="row in listRows"
-              :key="row.id"
-              :row="row"
+            <FromYourLists
+              :rows="listRows"
               @selectMovie="openMovie"
+              @manage="setActiveTab('settings')"
             />
-            <!-- Regular store rows -->
+
             <MovieRow
               v-for="row in filteredMovieRows"
               :key="row.id"
@@ -61,8 +47,18 @@
             />
           </template>
         </template>
-      </template>
-    </main>
+      </main>
+    </template>
+
+    <SearchView
+      v-else-if="activeTab === 'search'"
+      @selectMovie="openMovie"
+    />
+
+    <SettingsView
+      v-else
+      @openConfig="showConfig = true"
+    />
 
     <footer class="footer" v-if="!store.loading">
       <p><a href="/roadmap">Roadmap</a> · Data from <a href="https://www.imdb.com" target="_blank" rel="noopener">IMDb</a> &amp; <a href="https://www.themoviedb.org" target="_blank" rel="noopener">TMDB</a>. Not affiliated with either.</p>
@@ -87,7 +83,7 @@
     />
 
     <!-- Gear button -->
-    <button class="gear-btn" @click="showConfig = true" title="Settings">⚙</button>
+    <button class="gear-btn" @click="setActiveTab('settings')" title="Settings">⚙</button>
 
     <!-- Config modal -->
     <ConfigModal
@@ -102,7 +98,11 @@
 import { ref, computed, onMounted, watch } from "vue";
 import { useMovieStore } from "@/stores/movies.js";
 import { useUserStore } from "@/stores/user.js";
+import AppTabs from "@/components/AppTabs.vue";
 import HeroSection from "@/components/HeroSection.vue";
+import FromYourLists from "@/components/FromYourLists.vue";
+import SearchView from "@/components/SearchView.vue";
+import SettingsView from "@/components/SettingsView.vue";
 import MovieRow from "@/components/MovieRow.vue";
 import MovieModal from "@/components/MovieModal.vue";
 import ConfigModal from "@/components/ConfigModal.vue";
@@ -111,10 +111,16 @@ import RoadmapPage from "@/components/RoadmapPage.vue";
 const store = useMovieStore();
 const userStore = useUserStore();
 const isRoadmapRoute = window.location.pathname.replace(/\/$/, "") === "/roadmap";
+const activeTab = ref("discover");
 const selectedMovie = ref(null);
 const pendingMovieId = ref(null);
 const showConfig = ref(false);
 const pendingListToken = ref(null);
+
+function setActiveTab(tab) {
+  activeTab.value = tab;
+  if (tab !== "search") store.searchQuery = "";
+}
 
 // Map of imdb id -> movie object for list rows
 const movieById = computed(() => {

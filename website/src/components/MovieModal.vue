@@ -74,6 +74,21 @@
             <span v-for="g in genreLabels" :key="g" class="genre-chip">{{ g }}</span>
           </div>
 
+          <div v-if="compatibilityRows.length" class="compatibility-summary">
+            <div class="compatibility-summary-head">
+              <p class="modal-section-label">Compatible with: <strong>{{ activeProfileName }}</strong></p>
+              <span class="compatibility-pill" :class="compatibilityOk ? 'compatibility-pill--ok' : 'compatibility-pill--warn'">
+                {{ compatibilityOk ? 'Fits current limits' : 'Review before watching' }}
+              </span>
+            </div>
+            <div class="compatibility-grid">
+              <div v-for="row in compatibilityRows" :key="row.key" class="compatibility-row" :class="{ exceeded: row.exceeded }">
+                <span>{{ row.label }}</span>
+                <small>{{ row.movieLabel }} / allowed {{ row.allowedLabel }}</small>
+              </div>
+            </div>
+          </div>
+
           <!-- Synopsis -->
           <div class="modal-synopsis" v-if="synopsis || genreLabels.length">
             <p class="synopsis-text">
@@ -251,12 +266,13 @@
 
 <script setup>
 import { ref, computed, watch, nextTick, onUnmounted } from "vue";
-import { GENRES, PROVIDERS } from "@/stores/movies.js";
+import { GENRES, PROVIDERS, useMovieStore } from "@/stores/movies.js";
 import { MATURITY_CATEGORIES, SEVERITY_LABELS, getScore, scoreCssClass } from "@/maturity.js";
 import { useUserStore } from "@/stores/user.js";
 import { lockBodyScroll, unlockBodyScroll, trapTabKey } from "@/composables/modalGuards.js";
 
 const userStore = useUserStore();
+const movieStore = useMovieStore();
 
 const props = defineProps({ movie: { type: Object, default: null } });
 const emit = defineEmits(["close"]);
@@ -266,6 +282,27 @@ const previouslyFocused = ref(null);
 let bodyLocked = false;
 
 const titleId = computed(() => props.movie?.id ? `movie-dialog-title-${props.movie.id}` : "movie-dialog-title");
+const activeProfileName = computed(() => movieStore.maxMaturityCat.some(v => v >= 0) ? "Active limits" : "Not configured");
+const compatibilityRows = computed(() => {
+  if (!props.movie?.mat || !movieStore.maxMaturityCat.some(v => v >= 0)) return [];
+  return MATURITY_CATEGORIES
+    .map((cat, i) => {
+      const allowed = movieStore.maxMaturityCat[i];
+      if (allowed < 0) return null;
+      const rawScore = getScore(props.movie.mat, cat.shift);
+      const movieScore = Number.isFinite(rawScore) ? Math.round(rawScore) : 6;
+      return {
+        key: cat.key,
+        label: cat.label,
+        movieScore,
+        movieLabel: SEVERITY_LABELS[movieScore] || "Unknown",
+        allowedLabel: SEVERITY_LABELS[allowed] || "Any",
+        exceeded: movieScore > allowed,
+      };
+    })
+    .filter(Boolean);
+});
+const compatibilityOk = computed(() => compatibilityRows.value.length > 0 && compatibilityRows.value.every(row => !row.exceeded));
 
 function focusDialog() {
   dialogRef.value?.focus({ preventScroll: true });
@@ -969,6 +1006,43 @@ onUnmounted(() => {
   line-height: 1.4;
 }
 .mat-items li:last-child { border-bottom: none; }
+
+/* ── Compatibility summary ── */
+.compatibility-summary {
+  margin: 14px 0 18px;
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 14px;
+  background: rgba(255,255,255,0.035);
+}
+.compatibility-summary-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.compatibility-summary strong { color: var(--white); }
+.compatibility-pill {
+  flex-shrink: 0;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+}
+.compatibility-pill--ok { background: rgba(45,212,191,0.12); color: var(--teal); }
+.compatibility-pill--warn { background: rgba(248,113,113,0.13); color: #fca5a5; }
+.compatibility-grid { display: grid; gap: 7px; }
+.compatibility-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: rgba(240,238,232,0.82);
+  font-size: 12px;
+}
+.compatibility-row small { color: var(--teal); text-align: right; }
+.compatibility-row.exceeded small { color: #fca5a5; }
 
 /* ── User actions ── */
 .modal-user-actions { margin-bottom: 18px; }

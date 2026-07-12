@@ -10,14 +10,14 @@
     <div class="hero-content">
       <div class="hero-brand">
         <div>
-          <span class="hero-kicker">Ohana TV</span>
-          <h1 class="hero-title">Find something safe to watch.</h1>
+          <span class="hero-kicker">Discover</span>
+          <h1 class="hero-title">What should we watch tonight?</h1>
         </div>
         <button class="settings-link" type="button" @click="emit('open-settings')">Settings</button>
       </div>
 
       <div class="search-panel">
-        <div class="hero-search">
+        <div v-if="showSearch" class="hero-search">
           <svg class="search-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
             <circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.5"/>
             <path d="M13.5 13.5L17 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
@@ -41,7 +41,7 @@
           </div>
         </div>
 
-        <div ref="chipRowEl" class="chip-row" role="toolbar" aria-label="Browse controls">
+        <div ref="chipRowEl" class="chip-row" role="toolbar" aria-label="Discovery controls">
           <button
             class="control-chip control-chip--primary"
             type="button"
@@ -179,6 +179,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import FilterMenu from "@/components/FilterMenu.vue";
 import { useMovieStore, GENRE_LABELS } from "@/stores/movies.js";
 
+defineProps({ showSearch: { type: Boolean, default: true } });
 const emit = defineEmits(["open-settings"]);
 const store = useMovieStore();
 const activePanel = ref(null);

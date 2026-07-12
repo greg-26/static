@@ -7,8 +7,8 @@
 
     <section class="roadmap-hero">
       <p class="eyebrow">Product notes</p>
-      <h1>Website roadmap</h1>
-      <p>Ideas to review before implementation. This page renders the project’s <code>ROADMAP.md</code>.</p>
+      <h1>Website vision</h1>
+      <p>The product direction currently being implemented. This page renders the project’s <code>VISION.md</code>.</p>
     </section>
 
     <article class="roadmap-card" aria-label="Roadmap content">
@@ -32,7 +32,7 @@
 
 <script setup>
 import { computed } from "vue";
-import roadmapMarkdown from "../../ROADMAP.md?raw";
+import roadmapMarkdown from "../../VISION.md?raw";
 
 function escapeHtml(value) {
   return value
