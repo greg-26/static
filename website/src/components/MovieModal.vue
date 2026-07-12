@@ -74,6 +74,23 @@
             <span v-for="g in genreLabels" :key="g" class="genre-chip">{{ g }}</span>
           </div>
 
+          <div class="watch-summary">
+            <div class="watch-summary-item" :class="suitabilitySummary.className">
+              <span>Suitability</span>
+              <strong>{{ suitabilitySummary.label }}</strong>
+              <RouterLink v-if="suitabilitySummary.action" to="/settings/maturity">Adjust profile</RouterLink>
+            </div>
+            <div class="watch-summary-item" :class="availabilitySummary.className">
+              <span>Availability</span>
+              <strong>{{ availabilitySummary.label }}</strong>
+              <RouterLink v-if="availabilitySummary.action" to="/settings/streaming">Set services</RouterLink>
+            </div>
+            <div v-if="listSummary" class="watch-summary-item watch-summary-item--list">
+              <span>Lists</span>
+              <strong>{{ listSummary }}</strong>
+            </div>
+          </div>
+
           <div v-if="compatibilityRows.length" class="compatibility-summary">
             <div class="compatibility-summary-head">
               <p class="modal-section-label">Compatible with: <strong>{{ activeProfileName }}</strong></p>
@@ -207,7 +224,7 @@
           </div>
 
           <div class="modal-providers" v-if="providerNames.length || userStore.isLoggedIn">
-            <p class="modal-section-label">Available on</p>
+            <p class="modal-section-label">Included</p>
             <div class="provider-list">
               <a v-for="p in providerNames" target="_blank" rel="noopener" :key="p" :href="extraDetails?.tmdbUrl+'/watch'" class="provider-chip">{{ p }}</a>
 
@@ -270,6 +287,7 @@ import { GENRES, PROVIDERS, useMovieStore } from "@/stores/movies.js";
 import { MATURITY_CATEGORIES, SEVERITY_LABELS, getScore, scoreCssClass } from "@/maturity.js";
 import { useUserStore } from "@/stores/user.js";
 import { lockBodyScroll, unlockBodyScroll, trapTabKey } from "@/composables/modalGuards.js";
+import { activeMaturityProfileLabel } from "@/lib/maturityProfiles.js";
 
 const userStore = useUserStore();
 const movieStore = useMovieStore();
@@ -282,9 +300,9 @@ const previouslyFocused = ref(null);
 let bodyLocked = false;
 
 const titleId = computed(() => props.movie?.id ? `movie-dialog-title-${props.movie.id}` : "movie-dialog-title");
-const activeProfileName = computed(() => movieStore.maxMaturityCat.some(v => v >= 0) ? "Active limits" : "Not configured");
+const activeProfileName = computed(() => activeMaturityProfileLabel(movieStore.maxMaturityCat));
 const compatibilityRows = computed(() => {
-  if (!props.movie?.mat || !movieStore.maxMaturityCat.some(v => v >= 0)) return [];
+  if (props.movie?.mat === undefined || !movieStore.maxMaturityCat.some(v => v >= 0)) return [];
   return MATURITY_CATEGORIES
     .map((cat, i) => {
       const allowed = movieStore.maxMaturityCat[i];
@@ -303,6 +321,26 @@ const compatibilityRows = computed(() => {
     .filter(Boolean);
 });
 const compatibilityOk = computed(() => compatibilityRows.value.length > 0 && compatibilityRows.value.every(row => !row.exceeded));
+const suitabilitySummary = computed(() => {
+  if (!movieStore.maxMaturityCat.some(v => v >= 0)) return { label: "Adults / no limits", className: "" };
+  if (props.movie?.mat === undefined) return { label: "Unknown", className: "watch-summary-item--warn", action: true };
+  return compatibilityOk.value
+    ? { label: `Fits ${activeProfileName.value}`, className: "watch-summary-item--ok" }
+    : { label: `Review for ${activeProfileName.value}`, className: "watch-summary-item--warn", action: true };
+});
+const availabilitySummary = computed(() => {
+  if (!props.movie?.prov) return { label: "Availability unknown", className: "", action: true };
+  if (!movieStore.selectedProviders) return { label: providerNames.value.slice(0, 2).join(" · ") || "Set your services", className: "", action: true };
+  const configured = providerNames.value.filter(name => selectedProviderNames.value.includes(name));
+  if (configured.length) return { label: configured.slice(0, 2).join(" · ") + (configured.length > 2 ? ` +${configured.length - 2}` : ""), className: "watch-summary-item--ok" };
+  return { label: "Not in your services", className: "watch-summary-item--warn", action: true };
+});
+const listSummary = computed(() => {
+  if (!props.movie || !userStore.isLoggedIn) return "";
+  const labels = userStore.lists.filter(list => list.movies.includes(props.movie.id)).map(list => list.name);
+  if (userStore.isWatched(props.movie.id)) labels.unshift("Watched");
+  return labels.slice(0, 2).join(" · ");
+});
 
 function focusDialog() {
   dialogRef.value?.focus({ preventScroll: true });
@@ -422,10 +460,16 @@ const genreLabels = computed(() => {
     .map(([name]) => name);
 });
 
+const selectedProviderNames = computed(() => PROVIDERS
+  .filter(p => movieStore.selectedProviders & p.bit)
+  .map(p => p.name)
+);
+
 const providerNames = computed(() => {
   if (!props.movie) return [];
   return PROVIDERS
     .filter(p => props.movie.prov & p.bit)
+    .sort((a, b) => Number(Boolean(movieStore.selectedProviders & b.bit)) - Number(Boolean(movieStore.selectedProviders & a.bit)))
     .map(p => p.name);
 });
 
@@ -1007,6 +1051,42 @@ onUnmounted(() => {
 }
 .mat-items li:last-child { border-bottom: none; }
 
+/* ── Watch summary ── */
+.watch-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0 18px;
+}
+.watch-summary-item {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+  padding: 11px;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 13px;
+  background: rgba(255,255,255,0.035);
+}
+.watch-summary-item span {
+  color: var(--muted);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.watch-summary-item strong {
+  color: var(--white);
+  font-size: 12px;
+  line-height: 1.25;
+}
+.watch-summary-item a {
+  color: var(--teal);
+  font-size: 11px;
+  text-decoration: none;
+}
+.watch-summary-item--ok { border-color: rgba(45,212,191,0.24); background: rgba(45,212,191,0.08); }
+.watch-summary-item--warn { border-color: rgba(248,113,113,0.22); background: rgba(248,113,113,0.08); }
+.watch-summary-item--list { border-color: rgba(245,200,66,0.22); background: rgba(245,200,66,0.08); }
+
 /* ── Compatibility summary ── */
 .compatibility-summary {
   margin: 14px 0 18px;
@@ -1110,5 +1190,6 @@ onUnmounted(() => {
   .modal-poster img { object-position: center top; }
   .modal-close--desktop { display: none; }
   .modal-close--mobile  { display: flex; }
+  .watch-summary { grid-template-columns: 1fr; }
 }
 </style>

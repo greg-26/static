@@ -22,7 +22,7 @@
         <FromYourLists
           :rows="listRows"
           @selectMovie="$emit('selectMovie', $event)"
-          @manage="$emit('openSettings')"
+          @manage="$emit('openSettings', 'lists')"
         />
 
         <MovieRow

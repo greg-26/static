@@ -44,7 +44,7 @@
         <div ref="chipRowEl" class="chip-row" role="toolbar" aria-label="Discovery controls">
           <FilterMenu
             :open="activePanel === 'availability'"
-            :active="Boolean(selectedProviderCount)"
+            :active="store.availabilityMode !== 'my-services' || Boolean(selectedProviderCount)"
             :label="availabilityChipLabel"
             menu-class="filter-menu--picker"
             @toggle="togglePanel('availability')"
@@ -54,29 +54,71 @@
               <span>Configure services in Settings</span>
             </div>
             <div class="menu-options menu-options--single">
-              <button class="menu-option active" type="button" role="menuitemradio" aria-checked="true">
+              <button
+                class="menu-option"
+                :class="{ active: store.availabilityMode === 'my-services' }"
+                type="button"
+                role="menuitemradio"
+                :aria-checked="store.availabilityMode === 'my-services'"
+                @click="selectAvailability('my-services')"
+              >
                 Included with my services
+              </button>
+              <button
+                class="menu-option"
+                :class="{ active: store.availabilityMode === 'any' }"
+                type="button"
+                role="menuitemradio"
+                :aria-checked="store.availabilityMode === 'any'"
+                @click="selectAvailability('any')"
+              >
+                Any availability
               </button>
               <button class="menu-option" type="button" role="menuitemradio" aria-checked="false" disabled>
                 Free with ads · later
               </button>
               <button class="menu-option" type="button" role="menuitemradio" aria-checked="false" disabled>
-                Rent · later
-              </button>
-              <button class="menu-option" type="button" role="menuitemradio" aria-checked="false" disabled>
-                Buy · later
+                Rent / Buy · later
               </button>
             </div>
           </FilterMenu>
 
-          <button
-            class="control-chip control-chip--safe"
-            type="button"
-            :class="{ active: maturityActive }"
-            @click="emit('open-settings')"
+          <FilterMenu
+            :open="activePanel === 'maturity'"
+            :active="maturityActive"
+            menu-class="filter-menu--picker"
+            button-class="control-chip--safe"
+            @toggle="togglePanel('maturity')"
           >
-            {{ maturityProfileLabel }}
-          </button>
+            <template #label>
+              <span class="chip-label-with-icon">
+                <span>{{ maturityProfileLabel }}</span>
+                <span class="chip-chevron" aria-hidden="true">⌄</span>
+              </span>
+            </template>
+            <div class="filter-heading">
+              <p class="filter-label">Maturity profile</p>
+              <span>Active viewing context</span>
+            </div>
+            <div class="menu-options menu-options--single">
+              <button
+                v-for="profile in maturityProfiles"
+                :key="profile.id"
+                class="menu-option menu-option--profile"
+                :class="{ active: activeMaturityProfileId === profile.id }"
+                type="button"
+                role="menuitemradio"
+                :aria-checked="activeMaturityProfileId === profile.id"
+                @click="selectMaturityProfile(profile)"
+              >
+                <span>{{ profile.label }}</span>
+                <small>{{ profile.description }}</small>
+              </button>
+              <button class="menu-option menu-option--settings" type="button" @click="openMaturitySettings">
+                Edit limits in Settings
+              </button>
+            </div>
+          </FilterMenu>
 
           <button
             class="control-chip control-chip--primary"
@@ -175,6 +217,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import FilterMenu from "@/components/FilterMenu.vue";
 import { useMovieStore, GENRE_LABELS } from "@/stores/movies.js";
+import { MATURITY_PROFILES, activeMaturityProfileId as getActiveMaturityProfileId, activeMaturityProfileLabel } from "@/lib/maturityProfiles.js";
 
 defineProps({ showSearch: { type: Boolean, default: true } });
 const emit = defineEmits(["open-settings"]);
@@ -206,7 +249,6 @@ const selectedProviderCount = computed(() =>
 
 const browseFilterCount = computed(() =>
   store.selectedGenres.size +
-  selectedProviderCount.value +
   (store.titleType !== "both" ? 1 : 0) +
   (store.minRating > 0 ? 1 : 0)
 );
@@ -232,14 +274,17 @@ const selectedGenreSummary = computed(() => {
 });
 
 const availabilityChipLabel = computed(() => {
+  if (store.availabilityMode === "any") return "Any availability";
   if (!selectedProviderCount.value) return "Included with my services";
   const names = selectedProviderNames.value.split(", ").filter(Boolean);
   if (names.length === 1) return `On ${names[0]}`;
   return `On ${names.length} services`;
 });
 
+const maturityProfiles = MATURITY_PROFILES;
 const maturityActive = computed(() => store.maxMaturityCat.some(v => v >= 0));
-const maturityProfileLabel = computed(() => maturityActive.value ? "Active profile" : "Maturity profile");
+const activeMaturityProfileId = computed(() => getActiveMaturityProfileId(store.maxMaturityCat));
+const maturityProfileLabel = computed(() => activeMaturityProfileLabel(store.maxMaturityCat));
 const ratingChipLabel = computed(() => store.minRating ? `Rating ${store.minRating}+` : "Rating");
 
 function toggleTitleType(value, event) {
@@ -251,6 +296,22 @@ function toggleTitleType(value, event) {
 function selectGenre(genre) {
   store.selectedGenres = store.selectedGenres.has(genre) ? new Set() : new Set([genre]);
   activePanel.value = null;
+}
+
+function selectAvailability(mode) {
+  store.availabilityMode = mode;
+  activePanel.value = null;
+}
+
+function selectMaturityProfile(profile) {
+  if (profile.values) store.setMaxMaturityCats(profile.values);
+  else emit("open-settings", "maturity");
+  activePanel.value = null;
+}
+
+function openMaturitySettings() {
+  activePanel.value = null;
+  emit("open-settings", "maturity");
 }
 
 function togglePanel(panel) {
@@ -281,6 +342,7 @@ onUnmounted(() => document.removeEventListener("pointerdown", onDocumentPointerD
 const hasFilters = computed(() =>
   store.searchQuery ||
   browseFilterCount.value > 0 ||
+  store.availabilityMode !== "my-services" ||
   maturityActive.value ||
   !store.safeBrowsingEnabled
 );
@@ -379,6 +441,11 @@ const hasFilters = computed(() =>
 .menu-option.active { background: var(--accent); border-color: var(--accent); color: var(--white); }
 .menu-option:disabled { opacity: 0.45; cursor: not-allowed; }
 .menu-option--provider.active { background: rgba(45,212,191,0.15); border-color: var(--teal); color: var(--teal); }
+.menu-option--profile { flex-direction: column; align-items: flex-start; gap: 3px; max-width: 220px; }
+.menu-option--profile small { color: rgba(255,255,255,0.52); font-size: 11px; }
+.menu-option--profile.active { background: rgba(45,212,191,0.15); border-color: var(--teal); color: var(--teal); }
+.menu-option--profile.active small { color: rgba(45,212,191,0.76); }
+.menu-option--settings { color: var(--teal); }
 
 .rating-slider-wrap { width: min(300px, calc(100vw - 72px)); display: grid; grid-template-columns: minmax(150px, 1fr) auto; align-items: center; gap: 12px; padding: 4px 1px; }
 .rating-slider { width: 100%; margin: 0; background: transparent; outline: none; cursor: pointer; accent-color: var(--accent); touch-action: pan-x; }

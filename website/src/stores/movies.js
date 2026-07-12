@@ -57,7 +57,8 @@ export const useMovieStore = defineStore("movies", () => {
   // Filters
   const searchQuery = ref("");
   const selectedGenres = ref(new Set());
-  const selectedProviders = ref(0);       // bitmask of selected providers
+  const selectedProviders = ref(0);       // bitmask of configured services from Settings
+  const availabilityMode = ref("my-services"); // my-services | any; temporary Discover choice
   const titleType = ref("both");          // both | movies | tv; browsing only, search stays broad
   const minRating = ref(0);
   // Session-only baseline safety: visible and easy to toggle off, but resets on reload/new session.
@@ -167,7 +168,7 @@ export const useMovieStore = defineStore("movies", () => {
       pool = pool.filter(({ item }) => item.g & mask);
     }
 
-    if (selectedProviders.value !== 0) {
+    if (availabilityMode.value === "my-services" && selectedProviders.value !== 0) {
       const pMask = selectedProviders.value;
       pool = pool.filter(({ item }) => item.prov & pMask);
     }
@@ -204,11 +205,16 @@ export const useMovieStore = defineStore("movies", () => {
 
     const topRated = [...pool].sort( byRated ).slice(0, ROW_MAX);
     if (topRated.length >= 4)
-      rows.push({ id: "top-rated", label: "Top Rated", movies: topRated });
+      rows.push({ id: "recommended", label: "Recommended for this profile", movies: topRated });
+
+    const hiddenGems = [...pool]
+      .filter((m) => (m.r || 0) >= 7 && (m.pop || 0) < 30)
+      .sort(byRated)
+      .slice(0, ROW_MAX);
 
     const trending = [...pool].sort( byTrending ).slice(0, ROW_MAX);
     if (trending.length >= 4)
-      rows.push({ id: "trending", label: "Popular", movies: trending });
+      rows.push({ id: "popular", label: "Popular now", movies: trending });
 
     const providerRows = PROVIDERS
       .filter((prov) => !selectedProviders.value || (selectedProviders.value & prov.bit))
@@ -220,9 +226,10 @@ export const useMovieStore = defineStore("movies", () => {
         return { prov, provMovies };
       })
       .filter(({ provMovies }) => provMovies.length >= 4)
-      .map(({ prov, provMovies }) => ({ id: `prov-${prov.id}`, label: `On ${prov.name}`, movies: provMovies }));
+      .map(({ prov, provMovies }) => ({ id: `prov-${prov.id}`, label: selectedProviders.value & prov.bit ? `Included with your services · ${prov.name}` : `On ${prov.name}`, movies: provMovies }));
 
-    if (selectedProviders.value) rows.push(...providerRows);
+    if (selectedProviders.value) rows.push({ id: "included-services", label: "Included with your services", movies: [...pool].filter((m) => m.prov & selectedProviders.value).sort(byPopRating).slice(0, ROW_MAX) }, ...providerRows);
+    if (hiddenGems.length >= 4) rows.push({ id: "hidden-gems", label: "Hidden gems", movies: hiddenGems });
 
     for (const [genre, mask] of Object.entries(GENRES)) {
       const genreMovies = pool
@@ -274,9 +281,11 @@ export const useMovieStore = defineStore("movies", () => {
   function clearFilters() {
     searchQuery.value = "";
     selectedGenres.value = new Set();
-    selectedProviders.value = 0;
+    // Provider selections are permanent account settings (“my services”), not
+    // a throwaway Discover filter. Keep them intact when clearing the session.
     titleType.value = "both";
     minRating.value = 0;
+    availabilityMode.value = "my-services";
     safeBrowsingEnabled.value = true;
     clearMaturityFilters();
   }
@@ -290,7 +299,7 @@ export const useMovieStore = defineStore("movies", () => {
 
   return {
     allMovies, loading, error,
-    searchQuery, selectedGenres, selectedProviders, titleType, minRating, safeBrowsingEnabled, maxMaturityCat,
+    searchQuery, selectedGenres, selectedProviders, availabilityMode, titleType, minRating, safeBrowsingEnabled, maxMaturityCat,
     filteredMovies, movieRows, availableProviders,
     loadMovies, toggleGenre, toggleProvider, setMaxMaturityCat, setMaxMaturityCats, clearMaturityFilters, clearFilters,
   };

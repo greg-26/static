@@ -51,6 +51,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useMovieStore } from "@/stores/movies.js";
 import { useUserStore } from "@/stores/user.js";
+import { addRecentViewed } from "@/lib/recentActivity.js";
 import AppTabs from "@/components/AppTabs.vue";
 import MovieModal from "@/components/MovieModal.vue";
 import ConfigModal from "@/components/ConfigModal.vue";
@@ -77,7 +78,11 @@ function goToTab(tab) {
   if (route.name !== tab) router.push({ name: tab });
 }
 
-function openSettings() {
+function openSettings(section = null) {
+  if (typeof section === "string" && section) {
+    router.push({ name: "settings-section", params: { section } });
+    return;
+  }
   router.push({ name: "settings" });
 }
 
@@ -85,6 +90,7 @@ function openMovie(movie) {
   if (!movie) return;
   pendingMovieId.value = movie.id;
   selectedMovie.value = movie;
+  addRecentViewed(movie.id);
   router.push({ query: { ...route.query, movie: movie.id } });
 }
 

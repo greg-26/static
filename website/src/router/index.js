@@ -13,6 +13,7 @@ const router = createRouter({
     { path: "/discover", name: "discover", component: DiscoverView, meta: { tab: "discover" } },
     { path: "/search", name: "search", component: SearchView, meta: { tab: "search" } },
     { path: "/settings", name: "settings", component: SettingsView, meta: { tab: "settings" } },
+    { path: "/settings/:section", name: "settings-section", component: SettingsView, meta: { tab: "settings" } },
     { path: "/roadmap", name: "roadmap", component: RoadmapPage },
     { path: "/:pathMatch(.*)*", redirect: "/discover" },
   ],
