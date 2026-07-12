@@ -1,0 +1,130 @@
+<template>
+  <div ref="wrapEl" class="filter-menu-wrap">
+    <button
+      class="control-chip"
+      type="button"
+      :class="[{ active: open || active }, buttonClass]"
+      :aria-expanded="open"
+      aria-haspopup="menu"
+      @click="emit('toggle')"
+    >
+      <slot name="label">{{ label }}</slot>
+    </button>
+
+    <div
+      v-if="open"
+      ref="menuEl"
+      class="filter-menu"
+      :class="menuClass"
+      :style="menuStyle"
+      role="menu"
+    >
+      <slot />
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+
+const props = defineProps({
+  open: { type: Boolean, default: false },
+  active: { type: Boolean, default: false },
+  label: { type: String, default: "" },
+  menuClass: { type: [String, Array, Object], default: "" },
+  buttonClass: { type: [String, Array, Object], default: "" },
+});
+
+const emit = defineEmits(["toggle"]);
+const wrapEl = ref(null);
+const menuEl = ref(null);
+const xOffset = ref(0);
+
+const menuStyle = computed(() => ({
+  transform: xOffset.value ? `translateX(${xOffset.value}px)` : undefined,
+}));
+
+function fitMenuToViewport() {
+  if (!props.open || !menuEl.value) return;
+
+  xOffset.value = 0;
+  nextTick(() => {
+    const menu = menuEl.value;
+    if (!menu) return;
+
+    const margin = 12;
+    const rect = menu.getBoundingClientRect();
+    let offset = 0;
+
+    if (rect.right > window.innerWidth - margin) {
+      offset = window.innerWidth - margin - rect.right;
+    }
+    if (rect.left + offset < margin) {
+      offset += margin - (rect.left + offset);
+    }
+
+    xOffset.value = Math.round(offset);
+  });
+}
+
+watch(() => props.open, open => {
+  if (open) nextTick(fitMenuToViewport);
+  else xOffset.value = 0;
+});
+
+onMounted(() => window.addEventListener("resize", fitMenuToViewport));
+onBeforeUnmount(() => window.removeEventListener("resize", fitMenuToViewport));
+</script>
+
+<style scoped>
+.filter-menu-wrap { position: relative; display: inline-flex; }
+
+.control-chip {
+  padding: 7px 12px;
+  border: 1px solid rgba(255,255,255,0.13);
+  border-radius: 99px;
+  background: rgba(255,255,255,0.04);
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s, opacity 0.15s;
+}
+.control-chip:hover,
+.control-chip.active {
+  border-color: var(--accent);
+  color: var(--white);
+  background: rgba(232,54,93,0.14);
+}
+.control-chip--safe.active {
+  border-color: rgba(45,212,191,0.42);
+  background: rgba(45,212,191,0.12);
+  color: var(--teal);
+}
+
+.filter-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 100;
+  width: max-content;
+  min-width: max(100%, 168px);
+  max-width: calc(100vw - 24px);
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 16px;
+  background: rgba(15,15,26,0.98);
+  box-shadow: 0 22px 60px rgba(0,0,0,0.42);
+  backdrop-filter: blur(16px);
+}
+
+.filter-menu--picker { width: max-content; min-width: max-content; }
+.filter-menu--rating { width: max-content; min-width: max-content; justify-items: center; }
+.filter-menu--title-type { width: max-content; min-width: max(100%, 168px); }
+
+@media (max-width: 640px) {
+  .filter-menu { max-width: calc(100vw - 24px); }
+}
+</style>

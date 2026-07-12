@@ -46,11 +46,23 @@ Tailscale/dev URL on this Pi has been `http://100.85.92.106:5173/` when Vite use
 
 Keep the Vite dev server running during active work/review so Alex can check the dev version from his phone over Tailscale. If it is stopped or stale, restart it with `npm run dev -- --host 0.0.0.0` and mention the reachable Tailscale URL.
 
+When starting or refreshing the dev server for Alex, send him the latest Tailscale endpoint on Telegram too, using OpenClaw session messaging when a Telegram session is visible/reachable. If Telegram routing is not visible from the current session, record that blocker in the final update rather than faking it.
+
 Real data should be downloaded/refreshed with:
 
 ```bash
 curl -fL --compressed https://ohana.tv/movies.json -o public/movies.json
 ```
+
+## Roadmap execution protocol
+
+- For roadmap execution, work in small, reviewable slices; do not do a massive lift unless Alex explicitly asks.
+- Maintain `ROADMAP_EXECUTION.md` as the durable tracker for current step, sequence, assumptions, blockers, endpoint, and verification notes so work can resume after unsafe reset/context loss.
+- Before roadmap implementation, read `README.md`, `ROADMAP.md`, this `AGENTS.md`, and `ROADMAP_EXECUTION.md`.
+- Sequence work according to `ROADMAP.md` and update the tracker before/after each slice.
+- Use subagents for scoped audits, implementation consensus, and separation of concerns; ask them for concise findings, exact file refs, risks, and verification results.
+- Preserve existing worktree changes: inspect `git status --short` and relevant diffs before editing.
+- After each implementation slice, run the smallest meaningful verification gate, usually `npm run build`, and note manual/mobile checks still needed.
 
 ## Guardrails
 

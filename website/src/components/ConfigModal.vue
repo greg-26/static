@@ -207,7 +207,11 @@ const maturitySummary = computed(() => {
     .map((level, i) => ({ level, category: MATURITY_CATEGORIES[i] }))
     .filter(({ level }) => level >= 0);
   if (!active.length) return "Off";
-  return active.map(({ level, category }) => `${category.label} ≤ ${SEVERITY_LABELS[level]}`).join(" · ");
+  if (active.length === 1) {
+    const { level, category } = active[0];
+    return `${category.label} ≤ ${SEVERITY_LABELS[level]}`;
+  }
+  return `${active.length} active limits`;
 });
 
 watch(() => userStore.userData?.name, (n) => {
@@ -326,6 +330,7 @@ onUnmounted(() => {
 
 .config-modal {
   width: min(760px, 100%);
+  max-width: calc(100vw - 36px);
   max-height: calc(100dvh - 36px);
   overflow-y: auto;
   padding: 24px;
@@ -382,10 +387,10 @@ onUnmounted(() => {
 .add-list-details .inline-form { margin-top: 8px; }
 
 .family-limits-toggle { width: 100%; margin-top: 14px; display: flex; justify-content: space-between; gap: 12px; padding: 13px 14px; border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; background: rgba(8,8,16,0.42); color: var(--white); font: inherit; text-align: left; cursor: pointer; }
-.family-limits-toggle span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: rgba(255,255,255,0.86); }
+.family-limits-toggle span:first-child { min-width: 0; overflow-wrap: anywhere; color: rgba(255,255,255,0.86); }
 .family-limits-panel { display: grid; gap: 14px; margin-top: 14px; }
 .mat-cat-row { display: grid; gap: 8px; }
-.mat-cat-title { display: flex; justify-content: space-between; gap: 12px; color: rgba(255,255,255,0.82); font-weight: 700; }
+.mat-cat-title { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; color: rgba(255,255,255,0.82); font-weight: 700; }
 .mat-cat-title small { color: var(--muted); font-weight: 400; }
 .mat-chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
 .maturity-chip { padding: 6px 10px; border: 1px solid rgba(255,255,255,0.13); border-radius: 99px; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.72); font: inherit; font-size: 12px; cursor: pointer; }
@@ -402,7 +407,7 @@ onUnmounted(() => {
 
 @media (max-width: 640px) {
   .config-backdrop { padding: 0; }
-  .config-modal { min-height: 100dvh; max-height: none; border-radius: 0; border-left: 0; border-right: 0; padding: 20px 16px; }
+  .config-modal { min-height: 100dvh; max-width: 100vw; max-height: none; border-radius: 0; border-left: 0; border-right: 0; padding: 20px 16px; }
   .config-title { font-size: 40px; }
   .inline-form, .inline-form--stackable { align-items: stretch; flex-direction: column; }
   .btn { width: 100%; }

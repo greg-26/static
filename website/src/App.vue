@@ -1,5 +1,7 @@
 <template>
-  <div class="app">
+  <RoadmapPage v-if="isRoadmapRoute" />
+
+  <div v-else class="app">
     <HeroSection @open-settings="showConfig = true" />
 
     <main class="catalog">
@@ -63,7 +65,7 @@
     </main>
 
     <footer class="footer" v-if="!store.loading">
-      <p>Data from <a href="https://www.imdb.com" target="_blank" rel="noopener">IMDb</a> &amp; <a href="https://www.themoviedb.org" target="_blank" rel="noopener">TMDB</a>. Not affiliated with either.</p>
+      <p><a href="/roadmap">Roadmap</a> · Data from <a href="https://www.imdb.com" target="_blank" rel="noopener">IMDb</a> &amp; <a href="https://www.themoviedb.org" target="_blank" rel="noopener">TMDB</a>. Not affiliated with either.</p>
     </footer>
 
     <div
@@ -104,9 +106,11 @@ import HeroSection from "@/components/HeroSection.vue";
 import MovieRow from "@/components/MovieRow.vue";
 import MovieModal from "@/components/MovieModal.vue";
 import ConfigModal from "@/components/ConfigModal.vue";
+import RoadmapPage from "@/components/RoadmapPage.vue";
 
 const store = useMovieStore();
 const userStore = useUserStore();
+const isRoadmapRoute = window.location.pathname.replace(/\/$/, "") === "/roadmap";
 const selectedMovie = ref(null);
 const pendingMovieId = ref(null);
 const showConfig = ref(false);
@@ -222,22 +226,28 @@ watch(() => userStore.isLoggedIn, (loggedIn) => {
   if (prefs.selectedProviders !== undefined) {
     store.selectedProviders = prefs.selectedProviders;
   }
+  if (["both", "movies", "tv"].includes(prefs.titleType)) {
+    store.titleType = prefs.titleType;
+  }
 }, { immediate: true });
 
 // Debounced save of filter prefs to user data
 let filterSaveTimer = null;
-watch([() => [...store.maxMaturityCat], () => store.selectedProviders], () => {
+watch([() => [...store.maxMaturityCat], () => store.selectedProviders, () => store.titleType], () => {
   if (!userStore.isLoggedIn) return;
   clearTimeout(filterSaveTimer);
   filterSaveTimer = setTimeout(() => {
     userStore.saveFilterPrefs({
       maxMaturityCat: [...store.maxMaturityCat],
       selectedProviders: store.selectedProviders,
+      titleType: store.titleType,
     });
   }, 800);
 }, { deep: true });
 
 onMounted(async () => {
+  if (isRoadmapRoute) return;
+
   window.addEventListener("popstate", onPopState);
 
   const params = new URLSearchParams(window.location.search);

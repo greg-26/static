@@ -233,5 +233,6 @@ onUnmounted(() => {
 @media (max-width: 640px) {
   .row-header { padding: 0 16px; }
   .row-track  { padding: 8px 16px 16px; }
+  .row-arrow { display: none; }
 }
 </style>
