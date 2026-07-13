@@ -30,7 +30,7 @@ Scope: this file is for the `website/` project only inside the Ohana static repo
 - `src/maturity.js` — maturity category definitions and score helpers.
 - `VISION.md` — product/CX source of truth; specifics section is acceptance criteria.
 - `DESIGN_GUIDELINES.md` — durable design principles, screen intent, visual hierarchy, and UX critique checklist.
-- `VISION_EXECUTION.md` — current execution tracker and immediate fix plan.
+- `VISION_EXECUTION.md` — thin execution index and current next-step pointer. Deeper execution docs live under `docs/vision-execution/`; archived logs are not part of routine context.
 - `CODING_STANDARDS.md` — reusable component and UI implementation standards.
 - `agents/ceo-assistant.md` — CEO feedback intake/coordinator prompt.
 - `agents/pmt.md`, `agents/principal-engineer.md`, `agents/qa.md` — specialist review/planning prompts.
@@ -67,9 +67,10 @@ curl -fL --compressed https://ohana.tv/movies.json -o public/movies.json
 ## Roadmap execution protocol
 
 - For roadmap execution, work in small, reviewable slices; do not do a massive lift unless Alex explicitly asks.
-- Maintain `VISION_EXECUTION.md` as the durable tracker for current step, sequence, assumptions, blockers, endpoint, and verification notes so work can resume after unsafe reset/context loss.
-- Before vision implementation, read `README.md`, `VISION.md`, `DESIGN_GUIDELINES.md`, `CODING_STANDARDS.md`, this `AGENTS.md`, and `VISION_EXECUTION.md`.
-- Sequence work according to `VISION.md` and the immediate fix plan in `VISION_EXECUTION.md`; update the tracker before/after each slice.
+- Use progressive disclosure for execution docs: read `VISION_EXECUTION.md` first, then `docs/vision-execution/current-status.md`; read `docs/vision-execution/sprint-plan.md` only for planning/scope selection; read archived logs only for auditing history or debugging a regression.
+- Do not turn `VISION_EXECUTION.md` back into a long rolling log. Keep it as the durable current-state router; move completed/stale detail into `docs/vision-execution/archive/`.
+- Before vision implementation, read `README.md`, `VISION.md`, `DESIGN_GUIDELINES.md`, `CODING_STANDARDS.md`, this `AGENTS.md`, `VISION_EXECUTION.md`, and only the focused execution sub-docs needed for the task.
+- Sequence work according to `VISION.md` and the current focus in `VISION_EXECUTION.md` / `docs/vision-execution/current-status.md`; update the tracker before/after each slice.
 - Use subagents for scoped audits, implementation consensus, and separation of concerns; ask them for concise findings, exact file refs, risks, and verification results.
 - For Alex/CEO feedback intake, use `agents/ceo-assistant.md`: capture the feedback in `reports/ceo/`, then coordinate PM/design/principal-engineer updates before implementation.
 - Preserve existing worktree changes: inspect `git status --short` and relevant diffs before editing.
@@ -90,19 +91,14 @@ curl -fL --compressed https://ohana.tv/movies.json -o public/movies.json
 
 ## Current explicit product feedback
 
-Track and enforce these in reviews until implemented:
+Do not duplicate a stale feedback checklist here. Current acceptance criteria live in `VISION.md`; active execution follow-ups live in `VISION_EXECUTION.md` and `docs/vision-execution/current-status.md`.
 
-- Header must visibly say **Ohana TV**.
-- Discover must not repeat the same title in the first two visible slots of multiple rows; dedupe or push repeats back.
-- Avoid boxes inside boxes. Search starts with the search bar at the top. Settings home should be a compact quick-list index, not large stacked cards.
-- Poster/movie cards must not show platforms. Show platform/provider options only in the movie/show detail view.
-- Movie details on mobile should be full-screen, with the close button fixed at the top and always reachable while scrolling.
-- Movie details must show suitability details per movie: category scores/intensity, active-profile allowed levels, pass/exceeds status, and available supporting tags/details. Poster/filter surfaces may use a summary, but details must explain the “why” so users make informed decisions. If the old score/detail behavior was lost, check the original Ohana repo/history before rebuilding it.
-- Discover must not show a separate “Start with what you already saved.” banner/headline; the first list-integrated row should simply be **From your lists**, with current Discover filters applied and an All lists/specific-list dropdown.
-- Add/maintain a dedicated `/lists/:listId` poster-grid view for a full saved list; specific-list rows should link to it with **See all**.
-- Bottom navigation uses icon-only tabs with proper app icons (Material Design Icons or equivalent), no labels, no emojis.
-- Chip labels must stay on one line; shorten/truncate/move long text into menus.
-- Use reusable components for repeated UI primitives instead of copy-pasted markup/CSS.
+Standing reminders that remain broadly relevant:
+
+- Preserve the core IA: Discover for curated browsing, Search for intentional retrieval, Settings for persistent configuration.
+- Keep mobile hierarchy calm: fewer boxes, reusable primitives, one-line chips, compact Settings rows, and provider details in movie detail rather than poster cards.
+- Movie details must explain suitability with category reasoning, especially for the active profile; do not regress to a vague verdict-only modal.
+- When feedback is implemented, update the execution docs instead of leaving old “current” instructions in this file.
 
 ## Design guidance
 
