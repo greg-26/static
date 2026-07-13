@@ -49,12 +49,12 @@ const iconPath = ICON_PATHS[props.icon] || "";
 
 .settings-row:hover .settings-row-chevron,
 .settings-row:focus-visible .settings-row-chevron {
-  color: var(--accent);
+  color: var(--teal);
   transform: translateX(2px);
 }
 
 .settings-row:focus-visible {
-  outline: 2px solid rgba(232,54,93,0.6);
+  outline: 2px solid rgba(45,212,191,0.62);
   outline-offset: 4px;
   border-radius: 10px;
 }

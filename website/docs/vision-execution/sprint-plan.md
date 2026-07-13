@@ -14,10 +14,10 @@ Already landed:
 - English primary Discover controls.
 - Movie-detail suitability reasoning for every active profile, including Adults/no-limit profiles with explicit **No limit set** rows.
 - Search result cards annotate abstract availability from existing provider bitmasks only, and Search result hover/active borders use teal/neutral states rather than red.
+- Settings-route visible inputs were verified as label-wrapped; non-destructive focus indicators in `SearchBox`, Settings form inputs, and Settings row focus/chevron now use teal/neutral states rather than red.
 
 Open scope:
 
-- Real labels/accessibility names for Settings text inputs flagged by QA; current visible Settings inputs appear label-wrapped, so verify before changing UI. If verified clean, keep scope useful by replacing non-destructive red focus indicators with teal/neutral states in `SearchBox`, Settings form inputs, and Settings row focus/chevron; do not rewrite Settings forms just to create work.
 - Better no-profile vs wrong-profile copy for `/settings/lists`, `/lists/:listId`, and invalid-list states.
 - QA/modal coverage for movie-detail dialog content, close control, focus/scroll state, suitability, and availability rows.
 
@@ -26,7 +26,7 @@ Acceptance criteria:
 - Movie details always explain suitability without requiring users to open raw parental-guide details.
 - `/search?q=godfather` puts **The Godfather** (1972) first or clearly first among canonical suggestions; `harry potter` and `james bond` still behave sensibly.
 - Search results annotate availability calmly from current data, do not filter retrieval, do not show provider-name clutter on cards, and use teal/neutral interactive states rather than red for hover/active feedback.
-- Settings-route input probes find no unlabeled visible inputs; if the probe is clean, record verification and only adjust focus color semantics, not form structure.
+- Settings-route input probes find no unlabeled visible inputs, and non-destructive focus color semantics stay teal/neutral rather than red.
 - `/settings/lists` and `/lists/:bad` explain profile/list state accurately and tersely.
 
 Verification:

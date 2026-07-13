@@ -432,7 +432,7 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .settings-form--inline { grid-template-columns: minmax(180px, 1fr) auto; align-items: end; }
 .settings-form label { display: grid; gap: 6px; color: rgba(240,238,232,0.72); font-size: 13px; }
 .settings-form input { width: 100%; min-height: 42px; border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; background: rgba(8,8,16,0.72); color: var(--white); font: inherit; padding: 0 12px; outline: none; }
-.settings-form input:focus { border-color: rgba(232,54,93,0.62); }
+.settings-form input:focus { border-color: rgba(45,212,191,0.68); box-shadow: 0 0 0 2px rgba(45,212,191,0.13); }
 .settings-form input[readonly] { color: rgba(240,238,232,0.7); }
 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
 .action-row { display: flex; flex-wrap: wrap; gap: 8px; }

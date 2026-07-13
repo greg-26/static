@@ -19,12 +19,12 @@ Recently landed:
 - Slice 74: Discover first row is profile-aware and primary Discover controls are normalized to English.
 - Slice 75: Movie-detail suitability reasoning stays visible for Adults/no-limit profiles with explicit **No limit set** category rows.
 - Slice 76: Search result cards show abstract availability annotations from existing provider bitmasks only, and Search result hover/active borders now use teal/neutral feedback instead of red.
+- Slice 77: Settings-route visible text inputs were verified as label-wrapped, and remaining non-destructive focus affordances in `SearchBox`, Settings form inputs, and `SettingsRow` chevrons/outlines now use teal instead of red.
 
 Next useful slices:
 
-1. Settings-route text input label/accessibility-name verification; current visible Settings inputs are wrapped by labels, so this should be a quick audit/test slice rather than a UI rewrite. If labels pass, use the slice to mop up non-destructive red focus indicators (`SearchBox`, Settings form inputs, Settings row focus/chevron) instead of changing copy or layout.
-2. No-profile/wrong-profile copy for list-gated surfaces.
-3. Modal QA coverage for movie-detail content, close control, focus/scroll state, suitability, and availability rows.
+1. No-profile/wrong-profile copy for list-gated surfaces.
+2. Modal QA coverage for movie-detail content, close control, focus/scroll state, suitability, and availability rows.
 
 ## Do not do yet
 - Do not implement true Included/Free/Rent/Buy provider grouping until backend/scraper data supports it.
