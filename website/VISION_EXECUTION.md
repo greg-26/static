@@ -166,7 +166,7 @@ Deliver the new `VISION.md` direction incrementally: Discover/Search/Settings IA
 ## Current CX vs Vision status
 - Delivered: primary Discover/Search/Settings IA, route-backed tabs, bottom navigation, Search as vertical retrieval, reusable Search input primitive, Search landing recents, Settings deep links, native profile/list/maturity settings routes, custom maturity profile create/duplicate/rename/delete, Discover list integration, dedicated `/lists/:listId` poster-grid browsing, temporary vs permanent filter separation, compact mobile Discover hierarchy, persisted maturity profile selection/presets, clearer profile-aware suitability/availability/list signals in cards/details, movie-detail maturity hierarchy with raw parental-guide detail secondary, a narrowed shared-list invite modal instead of duplicate broad Settings modal UI, and `UiChip` support for semantic links plus buttons.
 - Partial: manual mobile review is still needed for the new list grid, bottom-nav interaction, movie detail full-screen/close-button behavior, narrowed shared-list invite flow, lightweight structured Search sections/deep links/no-results state, the stacked mobile From your lists row actions, the Search no-mobile-autofocus/recent-chip/touch-card behavior, the flatter Settings subroutes, and the Discover hero after removing the redundant Settings shortcut.
-- CEO feedback status: implemented and build/route-smoke verified locally: manage-list share behavior, Settings index two-line density, shorter **Available on …** row titles, duplicate movie-detail availability removal, cross-profile suitability glance, and the subtle row-title list selector. Still needs manual phone review for chip/dropdown state semantics.
+- CEO feedback status: implemented and build/route-smoke verified locally: manage-list share behavior, Settings index two-line density, shorter **Available on …** row titles, duplicate movie-detail availability removal, cross-profile suitability glance, and the subtle row-title list selector. Still open: source and phone verification of chip/dropdown state semantics, especially removing red/accent styling from non-destructive chip/menu selected or hover states.
 - PM/QA follow-up backlog: visible suitability reasoning for Adults/no-limit profiles, canonical Search ranking for obvious title intent (`godfather`), abstract availability annotations in Search/cards without provider-name clutter, profile-aware first-row labeling, one-language primary controls, Settings input labels, list/profile gate copy, and modal-specific QA coverage.
 - Deferred: true backend-backed collection/person search, true Included/Free/Rent/Buy provider groups, list ownership/delete semantics, and backend/scraper data changes.
 
@@ -201,9 +201,16 @@ Deliver the new `VISION.md` direction incrementally: Discover/Search/Settings IA
 - Remaining drift is now more specific than “mobile polish”: Sprint 7 is only partially closed because the list selector is still a separate `<select>` in `FromYourLists.vue` rather than a subtle row-title control, and chip/dropdown states still deserve a focused source/phone pass. Sprint 9 should follow with trust/retrieval/accessibility fixes, especially mixed English/Spanish Discover controls and canonical Search ranking for `godfather`.
 - Key steering decision: do not keep extending Sprint 6. Treat Sprints 1–8 as implemented/pending manual QA, close the remaining Sprint 7 control/header gaps next, then move to Sprint 9 PM/QA trust fixes. No backend provider grouping, person search, list ownership/delete semantics, or persistence rewrites.
 
+## Steering review — 2026-07-13 11:54
+- Conflict check: only this steering cron job is visible, no active processes are running, and `git status --short` is clean at `8a8c5d3` after Slice 70. Safe for documentation-only steering updates.
+- Recent diff/state review confirms the row-title list selector requirement is now implemented: `FromYourLists.vue` uses `MovieRow` label actions plus `FilterMenu`/`UiChip`, no native `<select>`, and provider row labels use **Available on …** language.
+- Remaining Sprint 7 risk is control-state semantics, not row-header structure: generic `UiChip` hover/active defaults and Discover menu active styles still use the red accent in non-destructive contexts. This conflicts with `DESIGN_GUIDELINES.md` color meaning and should be fixed before calling Sprint 7 fully done.
+- Plan-vs-code alignment otherwise remains strong: Discover/Search/Settings/list routes are present, Search stays retrieval-only and query-backed, `/lists/:listId` is complete-list grid territory, Settings is route-backed, and movie details now avoid duplicate availability while showing cross-profile suitability plus active-profile category reasoning.
+- Key steering decision: next implementation slice should close Sprint 7 with a small source-driven chip/menu color-state pass and touch dropdown verification, then move to Sprint 9 trust/retrieval/accessibility items. Do not reopen broad mobile polish or add backend/person/ownership work.
+
 ## Sprint plan
 
-Current sprint: **Sprint 7 — CEO feedback: control states and row headers**. Sprint 8’s core movie-detail hierarchy changes are implemented in Slice 69; Sprint 9 is next after the remaining Sprint 7 control/list-header cleanup.
+Current sprint: **Sprint 7 — CEO feedback: control states and row headers**. Row-header/list-selector work landed in Slice 70; close Sprint 7 with a focused chip/menu color-state and dropdown-touch verification pass, then move to Sprint 9 trust/retrieval/accessibility follow-ups. Sprint 8’s core movie-detail hierarchy changes are implemented in Slice 69.
 
 ### Sprint 1 — Finish list-first Discover integration
 Goal: make lists support discovery without becoming a competing promo surface.
@@ -359,26 +366,27 @@ Verification:
 - Record findings and any follow-up slices in this file before starting more implementation.
 
 ### Sprint 7 — CEO feedback: control states and row headers
-Status: current / partial. Availability row copy is implemented; remaining focus is the row-title list selector plus chip/dropdown state verification.
+Status: current / nearly closed. Availability row copy and row-title list selector are implemented; remaining focus is chip/dropdown state semantics and touch verification.
 
 Goal: fix the visible control/state problems Alex flagged without broad redesign.
 
 Scope:
 - Fix chip dropdown interaction failures in Discover/list controls.
-- Normalize chip selected/unselected/disabled visuals so disabled/unselected chips never turn red.
-- Integrate the list selector into the row-title/header pattern: **From your lists — All lists ▼**.
-- Shorten availability row copy from long explanatory phrasing to **Available on <service>** or **Available on your services**.
+- Normalize chip selected/unselected/disabled/hover visuals so non-destructive chips and menu options never use red/accent treatment.
+- Verify the list selector remains integrated into the row-title/header pattern: **From your lists — All lists ▼**.
+- Keep availability row copy short: **Available on <service>** or **Available on your services**.
 
 Acceptance criteria:
 - Every dropdown chip opens and applies its selection on touch/mobile and desktop.
 - Chips have clear selected and unselected states; disabled/unavailable is quiet, not red.
 - The list selector reads as part of the **From your lists** row header, not as a separate loud toolbar.
 - Availability row headers are short enough to scan on mobile.
+- Source review confirms generic chip/menu selected and hover states use neutral/teal/blue interaction colors, reserving red for destructive/error states.
 
 Verification:
 - `npm run build`.
 - Manual mobile check of `/discover` controls, list selector, and all chip states.
-- Source/CSS grep or visual review confirms no disabled chip style uses red/destructive treatment.
+- Source/CSS grep or visual review confirms no generic chip/menu selected, hover, active, or disabled style uses red/destructive treatment.
 
 ### Sprint 8 — CEO feedback: movie-detail decision hierarchy
 Status: implemented in Slice 69; pending manual phone/profile QA.
