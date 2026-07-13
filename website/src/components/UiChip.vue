@@ -79,15 +79,20 @@ const pressed = computed(() => props.active ? "true" : "false");
 
 .ui-chip:hover,
 .ui-chip:focus-visible {
-  border-color: rgba(232,54,93,0.54);
+  border-color: rgba(45,212,191,0.42);
   color: var(--white);
   outline: none;
 }
 
-.ui-chip.is-active,
+.ui-chip.is-active {
+  border-color: rgba(45,212,191,0.42);
+  background: rgba(45,212,191,0.12);
+  color: var(--teal);
+}
+
 .ui-chip--accent.is-active {
-  border-color: var(--accent);
-  background: rgba(232,54,93,0.14);
+  border-color: rgba(255,255,255,0.42);
+  background: rgba(255,255,255,0.14);
   color: var(--white);
 }
 
@@ -98,8 +103,10 @@ const pressed = computed(() => props.active ? "true" : "false");
 }
 
 .ui-chip--danger:hover,
-.ui-chip--danger:focus-visible {
+.ui-chip--danger:focus-visible,
+.ui-chip--danger.is-active {
   border-color: rgba(248,113,113,0.45);
+  background: rgba(248,113,113,0.12);
   color: #fca5a5;
 }
 
