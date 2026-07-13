@@ -25,6 +25,7 @@ Deliver the new `VISION.md` direction incrementally: Discover/Search/Settings IA
 10. todo: Planning agents must review and address — [PM-tech vision/CX report](reports/pmt/2026-07-13-pm-tech-vision-cx-report.md).
 11. todo: CEO feedback process correction and product follow-up — [Manage-list share and Settings density CEO feedback](reports/ceo/2026-07-13-manage-list-share-settings-density-ceo-feedback.md).
 12. todo: Planning agents must review and address — [Principal engineer plan](reports/principal-engineer/2026-07-13-principal-engineer-plan.md).
+13. todo: CEO feedback to route through PM/design/engineering — [Settings lists open/copy-share CEO feedback](reports/ceo/2026-07-13-settings-lists-open-copy-share-ceo-feedback.md).
 
 ## Durable agent prompts
 - CEO assistant prompt: [`agents/ceo-assistant.md`](agents/ceo-assistant.md) → captures Alex/CEO feedback in `reports/ceo/`, then routes PM/design/engineering follow-up without implementing ad hoc.
@@ -162,11 +163,14 @@ Deliver the new `VISION.md` direction incrementally: Discover/Search/Settings IA
 - [x] Verification: `npm run build` passed (Vite/PWA, 78 modules, 237.18 kB JS gzip 86.02 kB); route smoke `/discover`, `/discover?movie=tt0120737`, `/search`, `/search?q=godfather`, `/settings`, `/settings/maturity`, and `/lists/bad-id` returned HTTP 200 on port 5174; source grep confirmed the old `availabilitySummary`, top-level `Availability` summary label, and `Included` provider section label are gone from `MovieModal.vue`.
 - [x] Slice 70: closed the remaining Sprint 7 row-header gap by moving the **From your lists** list picker out of a separate native `<select>` controls strip and into the row title as a subtle reusable `FilterMenu`/`UiChip` dropdown; `MovieRow` now exposes a label action slot for row-title controls without custom row markup.
 - [x] Verification: `npm run build` passed (Vite/PWA, 78 modules, 237.19 kB JS gzip 85.91 kB); route smoke `/discover`, `/search`, `/search?q=godfather`, `/settings`, `/settings/maturity`, and `/lists/bad-id` returned HTTP 200 on port 5173; source grep confirmed `FromYourLists.vue` no longer uses a native `<select>` and the new list dropdown active state uses non-red teal/neutral styling.
+- [x] Captured Alex CEO feedback from 2026-07-13 in `reports/ceo/2026-07-13-settings-lists-open-copy-share-ceo-feedback.md`, `VISION.md`, and `DESIGN_GUIDELINES.md`: Settings → Lists rows should open the dedicated `/lists/:listId` poster-grid contents, and list Share should copy automatically with brief **Copied** feedback instead of showing a raw link in normal flow.
+- [x] Slice 71: implemented the Settings → Lists CEO feedback. List rows now act as keyboard/click navigational rows to `/lists/:listId`, secondary Rename/Copy link/Remove actions do not trigger row navigation, list share uses clipboard-first copy behavior with 1-second **Copied** feedback, and the manual raw URL prompt is only a clipboard-failure fallback. Also moved generic Settings button hover away from red to teal, preserving red only for destructive danger hover.
+- [x] Verification: `npm run build` passed (Vite/PWA, 78 modules, 238.13 kB JS gzip 86.25 kB); route smoke `/settings/lists`, `/lists/bad-id`, `/discover`, and `/search?q=godfather` returned HTTP 200 on port 5174; source grep confirmed `SettingsView.vue` no longer uses `navigator.share` or `shareList` and its list action label is now `Copy link` / `Copied`.
 
 ## Current CX vs Vision status
 - Delivered: primary Discover/Search/Settings IA, route-backed tabs, bottom navigation, Search as vertical retrieval, reusable Search input primitive, Search landing recents, Settings deep links, native profile/list/maturity settings routes, custom maturity profile create/duplicate/rename/delete, Discover list integration, dedicated `/lists/:listId` poster-grid browsing, temporary vs permanent filter separation, compact mobile Discover hierarchy, persisted maturity profile selection/presets, clearer profile-aware suitability/availability/list signals in cards/details, movie-detail maturity hierarchy with raw parental-guide detail secondary, a narrowed shared-list invite modal instead of duplicate broad Settings modal UI, and `UiChip` support for semantic links plus buttons.
 - Partial: manual mobile review is still needed for the new list grid, bottom-nav interaction, movie detail full-screen/close-button behavior, narrowed shared-list invite flow, lightweight structured Search sections/deep links/no-results state, the stacked mobile From your lists row actions, the Search no-mobile-autofocus/recent-chip/touch-card behavior, the flatter Settings subroutes, and the Discover hero after removing the redundant Settings shortcut.
-- CEO feedback status: implemented and build/route-smoke verified locally: manage-list share behavior, Settings index two-line density, shorter **Available on …** row titles, duplicate movie-detail availability removal, cross-profile suitability glance, and the subtle row-title list selector. Still open: source and phone verification of chip/dropdown state semantics, especially removing red/accent styling from non-destructive chip/menu selected or hover states.
+- CEO feedback status: implemented locally: manage-list share behavior, Settings index two-line density, shorter **Available on …** row titles, duplicate movie-detail availability removal, cross-profile suitability glance, subtle row-title list selector, and Settings → Lists row-open navigation plus clipboard-first **Copied** share feedback. Still open: source and phone verification of chip/dropdown state semantics, especially removing red/accent styling from non-destructive chip/menu selected or hover states.
 - PM/QA follow-up backlog: visible suitability reasoning for Adults/no-limit profiles, canonical Search ranking for obvious title intent (`godfather`), abstract availability annotations in Search/cards without provider-name clutter, profile-aware first-row labeling, one-language primary controls, Settings input labels, list/profile gate copy, and modal-specific QA coverage.
 - Deferred: true backend-backed collection/person search, true Included/Free/Rent/Buy provider groups, list ownership/delete semantics, and backend/scraper data changes.
 
@@ -435,6 +439,30 @@ Acceptance criteria:
 Verification:
 - `npm run build`.
 - Manual checks: `/discover`, `/search?q=godfather`, `/search?q=harry%20potter`, `/search?q=james%20bond`, typo query, `/settings/profile`, `/settings/maturity`, `/settings/lists`, `/lists/bad-id`, and a movie-detail deep link.
+
+### Sprint 10 — CEO feedback: Settings list navigation and copy-share behavior
+Status: implemented and build/route-smoke verified in Slice 71.
+
+Goal: make Settings → Lists behave like a useful list hub, not an admin table or raw-link copier.
+
+Scope:
+- Make each list row/title in `/settings/lists` open the dedicated `/lists/:listId` poster-grid view.
+- Keep Rename, Share/Copy, and Remove as secondary actions; their clicks must not accidentally navigate to the list page.
+- Change list sharing on this surface to clipboard-first behavior: generate the existing share URL, copy it immediately, and show local **Copied** feedback for about 1 second.
+- Keep manual copy prompt only as a clipboard-failure fallback.
+- Preserve current token/share URL generation and profile/list persistence semantics.
+
+Acceptance criteria:
+- Tapping/clicking a list row in Settings shows the movies in that list.
+- `/lists/:listId` remains a complete poster-grid view, not a filtered discovery preview.
+- Pressing Share/Copy does not show a raw URL in the happy path.
+- Feedback says **Copied** rather than **Shared**, clears after roughly 1 second, and does not interrupt the list-management flow.
+- Secondary list actions do not trigger row navigation.
+
+Verification:
+- `npm run build`.
+- Route smoke: `/settings/lists`, `/lists/bad-id`, and a real `/lists/:listId` where local profile/list data exists.
+- Manual check: row navigation, Rename, Share/Copy, Remove, and clipboard fallback behavior where possible.
 
 ## Do not do yet
 - Do not implement true Included/Free/Rent/Buy provider grouping until backend/scraper data supports it.

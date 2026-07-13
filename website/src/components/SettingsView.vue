@@ -143,14 +143,26 @@
 
       <template v-else-if="activeSection === 'lists'">
         <div v-if="userStore.isLoggedIn" class="list-stack">
-          <div v-for="list in userStore.lists" :key="list.token" class="list-row">
-            <div>
+          <div
+            v-for="list in userStore.lists"
+            :key="list.token"
+            class="list-row"
+            role="link"
+            tabindex="0"
+            :aria-label="`Open ${list.name} list with ${list.movies.length} titles`"
+            @click="openList(list)"
+            @keydown.enter.prevent="openList(list)"
+            @keydown.space.prevent="openList(list)"
+          >
+            <div class="list-row__summary">
               <strong>{{ list.name }}</strong>
               <span>{{ list.movies.length }} titles</span>
             </div>
-            <button type="button" @click="renameList(list)">Rename</button>
-            <button type="button" @click="shareList(list)">{{ copiedToken === list.token ? 'Copied' : 'Share' }}</button>
-            <button type="button" class="danger" @click="userStore.removeList(list.token)">Remove</button>
+            <div class="list-row__actions" @click.stop @keydown.stop>
+              <button type="button" @click="renameList(list)">Rename</button>
+              <button type="button" @click="copyListShareLink(list)">{{ copiedToken === list.token ? 'Copied' : 'Copy link' }}</button>
+              <button type="button" class="danger" @click="userStore.removeList(list.token)">Remove</button>
+            </div>
           </div>
           <p v-if="!userStore.lists.length" class="empty-note">No lists yet.</p>
           <div class="settings-form settings-form--inline list-action-row">
@@ -178,7 +190,7 @@
 
 <script setup>
 import { computed, ref, watch } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useMovieStore } from "@/stores/movies.js";
 import { useUserStore } from "@/stores/user.js";
 import { MATURITY_CATEGORIES, SEVERITY_LABELS } from "@/maturity.js";
@@ -187,6 +199,7 @@ import SettingsRow from "@/components/SettingsRow.vue";
 import UiChip from "@/components/UiChip.vue";
 
 const route = useRoute();
+const router = useRouter();
 const movieStore = useMovieStore();
 const userStore = useUserStore();
 const copiedToken = ref(null);
@@ -352,25 +365,19 @@ async function renameList(list) {
   await userStore.renameList(list.token, nextName);
 }
 
-async function shareList(list) {
+function openList(list) {
+  router.push({ name: "list", params: { listId: list.token } });
+}
+
+async function copyListShareLink(list) {
   const url = userStore.getShareUrl(list.token);
   try {
-    if (navigator.share) {
-      await navigator.share({
-        title: `Ohana list: ${list.name}`,
-        text: `Add “${list.name}” to Ohana TV`,
-        url,
-      });
-      return;
-    }
-
     await navigator.clipboard.writeText(url);
     copiedToken.value = list.token;
-    setTimeout(() => { if (copiedToken.value === list.token) copiedToken.value = null; }, 1800);
+    setTimeout(() => { if (copiedToken.value === list.token) copiedToken.value = null; }, 1000);
   } catch (e) {
-    if (e?.name === "AbortError") return;
     window.prompt("Copy share link", url);
-    console.warn("Could not share list", e);
+    console.warn("Could not copy list share link", e);
   }
 }
 
@@ -419,7 +426,7 @@ async function addSharedList() {
 h2 { margin-top: 5px; color: var(--white); font-size: 22px; }
 .settings-card p:not(.section-label) { color: rgba(240,238,232,0.66); }
 button:not(.ui-chip), .card-action { align-self: flex-start; min-height: 38px; border: 1px solid rgba(255,255,255,0.14); border-radius: 999px; background: rgba(255,255,255,0.05); color: var(--white); font: inherit; font-size: 13px; padding: 0 14px; cursor: pointer; display: inline-flex; align-items: center; text-decoration: none; }
-button:not(.ui-chip):hover, .card-action:hover { border-color: rgba(232,54,93,0.54); color: var(--accent); }
+button:not(.ui-chip):hover, .card-action:hover { border-color: rgba(107,226,214,0.45); color: var(--teal); }
 button:disabled { opacity: 0.45; cursor: not-allowed; }
 .settings-form { display: grid; gap: 10px; align-items: start; }
 .settings-form--inline { grid-template-columns: minmax(180px, 1fr) auto; align-items: end; }
@@ -440,9 +447,12 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .maturity-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 
 .list-stack { display: grid; }
-.list-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
+.list-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.08); cursor: pointer; border-radius: 12px; transition: background 0.16s ease, border-color 0.16s ease; }
 .list-row:first-child { border-top: 1px solid rgba(255,255,255,0.08); }
-.list-row > div { margin-right: auto; display: grid; gap: 2px; }
+.list-row:hover, .list-row:focus-visible { background: rgba(255,255,255,0.035); border-bottom-color: rgba(107,226,214,0.28); outline: none; }
+.list-row:focus-visible { box-shadow: 0 0 0 2px rgba(107,226,214,0.24); }
+.list-row__summary { margin-right: auto; display: grid; gap: 2px; min-width: min(220px, 100%); }
+.list-row__actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .list-row span { color: var(--muted); font-size: 12px; }
 .list-action-row { padding: 16px 0 0; }
 .danger:hover { border-color: rgba(248,113,113,0.45); color: #fca5a5; }

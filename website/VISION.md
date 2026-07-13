@@ -255,6 +255,8 @@ The same temporary Discover filters may be applied when navigating from Discover
 
 Every **From your lists** row for a specific list should include a **See all** link that navigates to this route for that list id.
 
+Settings → My Lists should also use this route as the primary way to inspect a list: clicking/tapping a list row opens `/lists/:listId` so the user can see the movies in that list. Rename, share, remove, and other management actions remain secondary row actions.
+
 ---
 
 ## Discovery sections
@@ -617,12 +619,16 @@ Capabilities:
 
 - Create
 - Rename
-- Share
+- Copy share link
 - Import
 - Delete
 - Leave shared list
 
 Opening a list shows its contents.
+
+List rows are primarily navigational: tapping the list opens the dedicated `/lists/:listId` poster-grid view.
+
+Sharing a list should copy the share URL automatically and show brief local **Copied** feedback for about 1 second. Do not display the raw URL as normal UI after the action; manual copy prompts are only fallback behavior when clipboard access fails.
 
 Unlike the original proposal, this page is **not** a primary navigation destination.
 

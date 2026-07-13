@@ -154,6 +154,8 @@ Lists are not a primary destination. They support discovery.
 - Show saved titles near the top of Discover as a normal content row.
 - Use a dedicated list route for complete list browsing.
 - Prefer poster grids for full-list views and horizontal rows for discovery previews.
+- In Settings → Lists, each list row should primarily open that dedicated list route; management actions are secondary.
+- Share/copy interactions should complete the task for the user: copy the link automatically, show brief local **Copied** feedback, and avoid exposing raw URLs unless clipboard fallback is required.
 
 ### Movie details
 
