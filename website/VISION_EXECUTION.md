@@ -20,6 +20,7 @@ Current sprint: **Sprint 9 — PM/QA trust, retrieval, and accessibility follow-
 
 Recently landed:
 
+- CEO dropdown-filter fix: Discover dropdown menus render selectable options again; remaining work there is manual phone/touch verification only.
 - Exact-title Search ranking now prefers canonical user intent; `/search?q=godfather` puts **The Godfather** (1972) first.
 - Discover’s first recommendation row is profile-aware.
 - Primary Discover control chrome is normalized to English.
@@ -28,10 +29,9 @@ Recently landed:
 
 Next useful slices:
 
-1. P0 CEO feedback: fix Discover dropdown filters not showing options. [CEO feedback report](reports/ceo/2026-07-13-dropdown-filters-ceo-feedback.md).
-2. Treat Settings-route input labels/accessibility names as an audit-first slice. Visible Settings inputs are label-wrapped; if verification stays clean, record it and spend remaining color-state cleanup on non-destructive red focus indicators rather than inventing new labels.
-3. Improve no-profile/wrong-profile copy for list-gated surfaces.
-4. Extend QA/modal coverage for movie-detail content, close control, focus/scroll state, suitability, and availability rows.
+1. Treat Settings-route input labels/accessibility names as an audit-first slice. Visible Settings inputs are label-wrapped; if verification stays clean, record it and spend remaining color-state cleanup on non-destructive red focus indicators (`SearchBox`, `SettingsView` inputs, `SettingsRow` focus/chevron) rather than inventing new labels.
+2. Improve no-profile/wrong-profile copy for list-gated surfaces.
+3. Extend QA/modal coverage for movie-detail content, close control, focus/scroll state, suitability, and availability rows.
 
 ## Durable agent prompts
 

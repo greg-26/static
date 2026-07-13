@@ -8,6 +8,7 @@ Goal: cover remaining product-vision and QA findings that are not generic chrome
 
 Already landed:
 
+- Discover dropdown menu options restored after CEO feedback; remaining dropdown work is manual phone/touch verification, not another implementation pass.
 - Exact/near-exact Search ranking: `godfather` now surfaces **The Godfather** (1972) first.
 - Discover first-row active-profile naming.
 - English primary Discover controls.
@@ -16,7 +17,7 @@ Already landed:
 
 Open scope:
 
-- Real labels/accessibility names for Settings text inputs flagged by QA; current visible Settings inputs appear label-wrapped, so verify before changing UI. If verified clean, keep scope useful by replacing non-destructive red focus indicators with teal/neutral states; do not rewrite Settings forms just to create work.
+- Real labels/accessibility names for Settings text inputs flagged by QA; current visible Settings inputs appear label-wrapped, so verify before changing UI. If verified clean, keep scope useful by replacing non-destructive red focus indicators with teal/neutral states in `SearchBox`, Settings form inputs, and Settings row focus/chevron; do not rewrite Settings forms just to create work.
 - Better no-profile vs wrong-profile copy for `/settings/lists`, `/lists/:listId`, and invalid-list states.
 - QA/modal coverage for movie-detail dialog content, close control, focus/scroll state, suitability, and availability rows.
 
