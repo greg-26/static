@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import DiscoverView from "@/views/DiscoverView.vue";
 import SearchView from "@/components/SearchView.vue";
 import SettingsView from "@/components/SettingsView.vue";
+import ListView from "@/views/ListView.vue";
 import RoadmapPage from "@/components/RoadmapPage.vue";
 
 export const TAB_ROUTES = ["discover", "search", "settings"];
@@ -14,6 +15,7 @@ const router = createRouter({
     { path: "/search", name: "search", component: SearchView, meta: { tab: "search" } },
     { path: "/settings", name: "settings", component: SettingsView, meta: { tab: "settings" } },
     { path: "/settings/:section", name: "settings-section", component: SettingsView, meta: { tab: "settings" } },
+    { path: "/lists/:listId", name: "list", component: ListView, meta: { tab: "discover" } },
     { path: "/roadmap", name: "roadmap", component: RoadmapPage },
     { path: "/:pathMatch(.*)*", redirect: "/discover" },
   ],

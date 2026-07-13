@@ -16,6 +16,7 @@ Deploys are configured through Netlify CI/CD using the repo-root `netlify.toml`.
 
 - [AGENTS.md](./AGENTS.md) captures project-specific implementation notes for future agent work.
 - [VISION.md](./VISION.md) is the product source of truth, including concrete UX acceptance criteria.
+- [DESIGN_GUIDELINES.md](./DESIGN_GUIDELINES.md) captures durable product design principles, screen intent, visual hierarchy, and the UX critique checklist.
 - [VISION_EXECUTION.md](./VISION_EXECUTION.md) tracks implementation slices and the current fix plan.
 - [CODING_STANDARDS.md](./CODING_STANDARDS.md) captures reusable component and UI implementation standards.
 - Current vision direction: Discover/Search/Settings are separate intent-based routes; Discover answers what to watch, Search retrieves known titles, Settings configures the experience.
@@ -80,6 +81,7 @@ src/
     AppTabs.vue         ← Bottom navigation
     HeroSection.vue     ← Discover controls
     SearchView.vue      ← Search route layout/results
+    SearchBox.vue       ← Reusable search input primitive
     SettingsView.vue    ← Settings index/subroutes
     MovieRow.vue        ← Horizontal discovery rows
     MovieCard.vue       ← Poster card

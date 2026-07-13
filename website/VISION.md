@@ -20,42 +20,9 @@ The redesign aims to make Ohana feel simple, calm, and highly focused.
 
 # Design principles
 
-## Discovery first
+Durable design principles live in [`DESIGN_GUIDELINES.md`](./DESIGN_GUIDELINES.md).
 
-The application exists primarily to answer one question:
-
-> **What should we watch tonight?**
-
-Everything else should support that decision.
-
-## Separate exploration from search
-
-Browsing and searching are different user intentions.
-
-Discovery helps users who don't know what they want yet.
-
-Search helps users who already have something in mind.
-
-The experience should optimize independently for both.
-
-## Configure once, use everywhere
-
-Permanent preferences belong in Settings.
-
-Temporary viewing choices belong in Discover.
-
-Users should rarely need to leave Discover once their account has been configured.
-
-## Simplicity over flexibility
-
-Wherever possible:
-
-- Single-select over multi-select
-- Fewer controls
-- Better defaults
-- Fewer decisions
-
-Power features can come later.
+This document remains the product source of truth for Ohana's vision, information architecture, and concrete UX acceptance criteria.
 
 ---
 
@@ -85,7 +52,7 @@ These are concrete constraints from product review. Treat them as acceptance cri
 
 - Posters/cards should not display streaming platforms.
 - Platforms belong in the movie/show detail view where the user is deciding where to watch.
-- Cards may show only the minimum needed to choose: poster, title, year/rating, and suitability/fit if useful.
+- Cards may show only the minimum needed to choose: poster, title, year/rating, suitability/fit, and an abstract availability signal if useful. Do not show streaming provider/platform names on cards.
 
 ## Navigation
 
@@ -232,6 +199,8 @@ Header:
 
 **From your lists**
 
+Do not add a separate banner, hero title, or explanatory headline such as “Start with what you already saved.” The section itself is the first row: a normal content row headed **From your lists**.
+
 Dropdown:
 
 - All lists
@@ -244,11 +213,39 @@ Action:
 
 **Manage lists**
 
-Selecting a list filters this section only.
+Secondary action:
+
+**See all**
+
+Selecting **All lists** shows a deduped preview across saved lists so this section remains a discovery row, not a full library dump.
+
+Selecting a specific list filters this section only. The global Discover filters still apply to the row, so the saved titles respect the current temporary viewing context. For a specific list, **See all** opens that list's dedicated grid view.
 
 Users can quickly continue browsing recommendations below without changing screens.
 
 This allows users to first revisit things they already intended to watch before exploring something new.
+
+The **See all** action opens a dedicated list view for the selected list.
+
+---
+
+## List view
+
+Ohana supports a dedicated route for viewing one saved list.
+
+URL input is the list id.
+
+Example:
+
+`/lists/:listId`
+
+This view shows all movies in that list as posters.
+
+Because this is a full laundry-list view rather than a recommendation preview, use a responsive poster grid instead of a horizontal row.
+
+The same temporary Discover filters may be applied when navigating from Discover, but the page’s primary job is completeness: show the selected list clearly, with all available poster items visible through scrolling.
+
+Every **From your lists** row for a specific list should include a **See all** link that navigates to this route for that list id.
 
 ---
 
@@ -303,6 +300,14 @@ Add to list.
 
 Movie details combine Ohana's three differentiators.
 
+### Mobile detail surface
+
+On mobile, the movie detail view should feel full-screen, not like a small floating desktop modal.
+
+- Use the full viewport height and width available on the phone.
+- Keep the close button fixed at the top so it remains reachable while scrolling details.
+- Avoid trapping key decision information below awkward modal chrome.
+
 ### Overview
 
 - Poster
@@ -320,11 +325,14 @@ Example:
 
 > Compatible with: **With kids**
 
+Suitability must help people make informed decisions, not blindly accept a verdict. Summary labels are useful at the filter/poster level, but the detail view must expose the underlying reasons per movie.
+
 Each maturity category shows:
 
-- Movie intensity
-- Allowed level
+- Movie intensity / score
+- Allowed level for the active profile
 - Compatible or exceeds
+- Specific supporting details/tags when available
 
 Categories may include:
 
@@ -335,7 +343,7 @@ Categories may include:
 - Drugs
 - Alcohol
 
-Users understand *why* a title matches instead of seeing only a single score.
+Users understand *why* a title matches instead of seeing only a single score. If the current implementation has lost the previous score/detail presentation, check the original Ohana repo/history and restore the useful parts rather than inventing a new opaque summary.
 
 ### Availability
 
@@ -382,7 +390,7 @@ Each result can show:
 
 Search answers:
 
-> "What is this?"
+> "Help me find something specific."
 
 Discover answers:
 

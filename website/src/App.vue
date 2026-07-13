@@ -3,7 +3,6 @@
     v-slot="{ Component }"
     @selectMovie="openMovie"
     @openSettings="openSettings"
-    @openConfig="showConfig = true"
   >
     <div class="app" :class="{ 'app--with-tabs': activeTab }">
       <header v-if="activeTab && !store.loading" class="app-header" aria-label="Ohana TV">
@@ -17,7 +16,6 @@
         :is="Component"
         @selectMovie="openMovie"
         @openSettings="openSettings"
-        @openConfig="showConfig = true"
       />
 
       <footer class="footer" v-if="activeTab && !store.loading">
@@ -45,7 +43,7 @@
       />
 
       <ConfigModal
-        v-if="showConfig"
+        v-if="showConfig && pendingListToken"
         :pending-list-token="pendingListToken"
         @close="showConfig = false"
       />

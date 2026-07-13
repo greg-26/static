@@ -1,5 +1,7 @@
 # Ohana TV Coding Standards
 
+For product design rationale, screen intent, visual hierarchy, and the critique checklist, see [`DESIGN_GUIDELINES.md`](./DESIGN_GUIDELINES.md). This file translates those principles into implementation standards.
+
 ## Reusable UI first
 
 If the same UI pattern appears twice, make or reuse a component.

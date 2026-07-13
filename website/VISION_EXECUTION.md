@@ -17,9 +17,10 @@ Deliver the new `VISION.md` direction incrementally: Discover/Search/Settings IA
 2. Split Discover and Search experiences without rewriting data/persistence.
 3. Add a vertical Search page with annotated result cards.
 4. Convert Settings into a first-class page/index while preserving existing modal flows only where useful.
-5. Improve Discover list integration with a visible “From your lists” section.
+5. Improve Discover list integration with a visible “From your lists” section: no extra banner/headline like “Start with what you already saved.”; the first row itself should be “From your lists”, respect the active Discover filters, and include an All lists/specific-list dropdown.
 6. Improve compatibility language in cards/details using existing maturity limits.
-7. Run build after each meaningful slice and keep this file updated.
+7. Add a dedicated list route/view where the URL input is the list id (`/lists/:listId`) and the page shows all movies in that list as a poster grid, not a horizontal row; each specific-list row should expose a “See all” link to that route.
+8. Run build after each meaningful slice and keep this file updated.
 
 ## Progress
 - [x] Read `VISION.md`, `README.md`, `AGENTS.md`; `ROADMAP.md`/`ROADMAP_EXECUTION.md` are referenced but absent.
@@ -74,24 +75,255 @@ Deliver the new `VISION.md` direction incrementally: Discover/Search/Settings IA
 - [x] Verification: `npm run build` passed (Vite/PWA, 72 modules, 233.59 kB JS gzip 84.38 kB); dev routes `/`, `/discover`, `/search`, `/settings`, `/settings/streaming`, `/settings/maturity`, `/settings/lists`, `/roadmap` returned HTTP 200 on port 5174.
 - [x] Slice 34: applied Alex feedback on Search: removed the explanatory hero copy and empty-state prompt between the search box and results/recents, tightening Search into search field first, content immediately after.
 - [x] Verification: `npm run build` passed (Vite/PWA, 72 modules, 233.11 kB JS gzip 84.18 kB); dev routes `/search`, `/settings`, `/discover` returned HTTP 200 on port 5174.
+- [x] Slice 35: started the reusable interactive-chip primitive with `UiChip`, then reused it for Settings streaming-service toggles and maturity limit choices so selected/disabled/one-line chip behavior is centralized.
+- [x] Verification: `npm run build` passed (Vite/PWA, 74 modules, 232.72 kB JS gzip 84.08 kB); dev routes `/settings`, `/settings/streaming`, `/settings/maturity` returned HTTP 200 on port 5174.
+- [x] Slice 36: finished the list-first Discover correction: removed the promo panel/headline from `FromYourLists.vue`, kept only lightweight All lists/specific-list controls, kept the row heading exactly **From your lists**, capped previews at 24, and filtered saved-list previews through active Discover filters.
+- [x] Verification: `npm run build` passed (Vite/PWA, 74 modules, 233.59 kB JS gzip 84.37 kB); dev routes `/discover`, `/settings`, `/settings/streaming`, `/settings/maturity` returned HTTP 200 on port 5174.
+- [x] Slice 37: added dedicated `/lists/:listId` saved-list browsing with a responsive poster grid, calm invalid/missing-list states, movie modal integration, and **See all** links from specific Discover list previews.
+- [x] Verification: `npm run build` passed (Vite/PWA, 76 modules, 236.14 kB JS gzip 85.00 kB); dev route smoke `/discover`, `/lists/bad-id`, and `/settings/lists` returned HTTP 200 on port 5174.
+- [x] Captured Alex feedback from 2026-07-13 in `VISION.md` and `AGENTS.md`: mobile movie details should be full-screen with a fixed top close button, and detail suitability must expose per-movie score/detail reasoning instead of only summary verdicts.
+- [x] Slice 38: tightened movie details against that feedback: mobile close is fixed at the top safe area while scrolling, and suitability rows now show per-category pass/exceeds status, movie score, active-profile allowed level, and supporting tags when available.
+- [x] Verification: `npm run build` passed (Vite/PWA, 76 modules, 237.52 kB JS gzip 85.49 kB); route smoke `/discover`, `/search`, `/settings`, `/lists/bad-id` returned HTTP 200 on port 5174.
+- [x] Slice 39: continued reusable UI primitive consolidation by moving Search recent-search chips onto `UiChip`, keeping truncation/hover/focus behavior centralized instead of maintaining another local chip style.
+- [x] Verification: `npm run build` passed (Vite/PWA, 76 modules, 237.54 kB JS gzip 85.49 kB); route smoke `/search`, `/discover`, `/settings`, `/settings/streaming`, `/settings/maturity` returned HTTP 200 on port 5174.
+- [x] Slice 40: continued `UiChip` consolidation in Discover by moving the content-type chips and rating preset chips onto the shared primitive while preserving the compact horizontal mobile control row.
+- [x] Verification: `npm run build` passed (Vite/PWA, 76 modules, 237.48 kB JS gzip 85.45 kB); route smoke `/discover`, `/search`, `/settings`, `/settings/streaming`, `/settings/maturity` returned HTTP 200 on port 5174.
+- [x] Slice 41: moved `FilterMenu` trigger buttons onto `UiChip`, removing another local chip-button implementation while preserving dropdown/safe active states for Discover controls.
+- [x] Verification: `npm run build` passed (Vite/PWA, 76 modules, 237.49 kB JS gzip 85.46 kB); route smoke `/discover`, `/search`, `/settings`, `/settings/streaming`, `/settings/maturity` returned HTTP 200 on port 5174.
+- [x] Slice 42: continued chip consolidation in movie details and the legacy compatibility modal by moving watched/list toggles and legacy maturity-limit choices onto `UiChip`, removing the now-dead local chip CSS.
+- [x] Verification: `npm run build` passed (Vite/PWA, 76 modules, 237.49 kB JS gzip 85.44 kB); route smoke `/discover`, `/search`, `/settings`, `/settings/streaming`, `/settings/maturity` returned HTTP 200 on port 5174.
+- [x] Slice 43: narrowed the legacy `ConfigModal.vue` to the only remaining app-shell modal role: accepting a shared-list invite from `?add=` when no profile is available. Removed dead `openConfig` event wiring and duplicated profile/list/maturity/settings UI from the modal; route-backed Settings remains the core management surface.
+- [x] Verification: `npm run build` passed (Vite/PWA, 76 modules, 231.54 kB JS gzip 83.66 kB); route smoke `/discover`, `/search`, `/settings`, `/settings/profile`, `/settings/lists`, and `/discover?add=bad-token` returned HTTP 200 on port 5174.
+- [x] Slice 44: started lightweight structured Search without backend entities by splitting exact title matches, high-confidence related title matches, and remaining fuzzy results into vertical sections. Related groups only appear when multiple title/alternate-title phrase matches support them, preserving broad Fuse retrieval and exact-title priority.
+- [x] Verification: `npm run build` passed (Vite/PWA, 76 modules, 233.13 kB JS gzip 84.17 kB); route smoke `/search`, `/search?q=godfather`, `/discover`, `/settings`, and `/settings/maturity` returned HTTP 200 on port 5174.
+- [x] Slice 45: mobile Discover/list polish: moved the From your lists selector, See all, and Manage lists actions into the `MovieRow` header action slot so the section now starts with the normal **From your lists** row heading instead of a separate controls strip. Added reusable row header actions in `MovieRow` for future contained row actions.
+- [x] Verification: `npm run build` passed (Vite/PWA, 76 modules, 233.49 kB JS gzip 84.28 kB); route smoke `/discover`, `/search`, `/search?q=godfather`, `/settings`, `/settings/maturity`, and `/lists/bad-id` returned HTTP 200 on port 5174.
+- [x] Slice 46: removed the dead Discover hero search UI, `showSearch` prop, and search-query filter-count coupling now that Search is a dedicated route. Discover controls are lighter and no longer carry dormant retrieval code or duplicate search-bar styling.
+- [x] Verification: `npm run build` passed (Vite/PWA, 76 modules, 232.01 kB JS gzip 83.94 kB); route smoke `/discover`, `/search`, `/search?q=godfather`, `/settings`, `/settings/maturity`, and `/lists/bad-id` returned HTTP 200 on port 5174.
+- [x] Slice 47: fixed movie-detail suitability/profile naming during Sprint 6 mobile CX review. The detail modal now uses the actual active maturity profile id/label, including custom profiles, instead of reverse-guessing from maturity limit values and accidentally falling back to built-in names.
+- [x] Verification: `npm run build` passed (Vite/PWA, 76 modules, 231.83 kB JS gzip 83.85 kB); route smoke `/discover`, `/search`, `/search?q=godfather`, `/settings`, `/settings/maturity`, and `/lists/bad-id` returned HTTP 200 on port 5174.
+- [x] Slice 48: tightened Search mobile behavior during Sprint 6 review. The Search tab no longer auto-focuses on touch/mobile viewports (avoids immediately opening the keyboard and hiding first-screen content), and recent-search persistence now records committed searches/result selections instead of every debounced partial query while typing.
+- [x] Verification: `npm run build` passed (Vite/PWA, 76 modules, 231.95 kB JS gzip 83.90 kB); route smoke `/search`, `/search?q=godfather`, `/discover`, `/settings`, `/settings/maturity`, and `/lists/bad-id` returned HTTP 200 on port 5174.
+- [x] Slice 49: made Search query deep links real. `/search?q=...` now hydrates the Search view/results, and committed searches/recents update the `q` route query while preserving other query params such as `movie=`.
+- [x] Verification: `npm run build` passed (Vite/PWA, 76 modules, 232.40 kB JS gzip 84.11 kB); dev routes `/search`, `/search?q=godfather`, `/search?q=harry%20potter`, `/discover`, `/settings`, `/settings/maturity`, and `/lists/bad-id` returned HTTP 200 on port 5173.
+- [x] Slice 50: extracted the Search input into reusable `SearchBox.vue`, preserving desktop-only autofocus, clear, submit, and route-query behavior while moving the search-field chrome out of `SearchView.vue`.
+- [x] Verification: `npm run build` passed (Vite/PWA, 78 modules, 233.08 kB JS gzip 84.39 kB); dev routes `/search`, `/search?q=godfather`, `/discover`, `/settings`, `/settings/maturity`, and `/lists/bad-id` returned HTTP 200 on port 5174.
+- [x] Slice 51: tightened mobile Discover first-screen density by reducing the mobile hero chrome, hiding the redundant Discover kicker on phones, shrinking the poster backdrop, and slightly reducing filter-chip height so recommendation rows appear sooner below the app header.
+- [x] Verification: `npm run build` passed (Vite/PWA, 78 modules, 233.08 kB JS gzip 84.39 kB); dev route smoke `/discover`, `/search`, `/settings`, `/settings/maturity`, and `/lists/bad-id` returned HTTP 200 on ports 5173 and 5174.
+- [x] Slice 52: tightened Search mobile recents behavior by reusing the desktop-only focus rule when a recent search chip is selected, so tapping a recent query on touch devices shows results without immediately reopening the keyboard.
+- [x] Verification: `npm run build` passed (Vite/PWA, 78 modules, 233.09 kB JS gzip 84.39 kB); dev routes `/search`, `/search?q=godfather`, `/discover`, `/settings`, `/settings/maturity`, and `/lists/bad-id` returned HTTP 200 on port 5174.
+- [x] Slice 53: polished the Settings index row icons by moving from placeholder text glyphs to consistent Material Design SVG icons inside the reusable `SettingsRow` primitive.
+- [x] Verification: `npm run build` passed (Vite/PWA, 78 modules, 234.02 kB JS gzip 84.87 kB); dev routes `/settings`, `/settings/profile`, `/settings/streaming`, `/settings/maturity`, `/settings/lists`, `/discover`, `/search`, and `/lists/bad-id` returned HTTP 200 on port 5174.
+- [x] Slice 54: tightened Settings subroute density for Sprint 6 mobile review by removing the oversized bordered card treatment from dedicated Settings pages, flattening the maturity action panel, and moving maturity-profile selection onto shared `UiChip` so profile choices use the same one-line selected-state primitive as other settings chips.
+- [x] Verification: `npm run build` passed (Vite/PWA, 78 modules, 233.97 kB JS gzip 84.86 kB); dev routes `/settings`, `/settings/profile`, `/settings/streaming`, `/settings/maturity`, `/settings/lists`, `/discover`, `/search`, and `/lists/bad-id` returned HTTP 200 on port 5174.
+- [x] Slice 55: removed the redundant desktop Settings pill from the Discover hero. Settings remains available through the primary bottom tab and the maturity control’s explicit Settings path, reducing extra hero chrome while preserving the route-backed configuration flow.
+- [x] Verification: `npm run build` passed (Vite/PWA, 78 modules, 233.86 kB JS gzip 84.84 kB); dev routes `/discover`, `/search`, `/search?q=godfather`, `/settings`, `/settings/maturity`, and `/lists/bad-id` returned HTTP 200 on port 5174.
+- [x] Slice 56: addressed the Sprint 6 row-header crowding risk by letting slotted row actions stack below the row title on phone widths while keeping simple `See all` rows inline. This keeps **From your lists** starting as a normal row heading without squeezing the selector/actions into the title line.
+- [x] Verification: `npm run build` passed (Vite/PWA, 78 modules, 233.91 kB JS gzip 84.86 kB); route smoke `/discover`, `/search`, `/search?q=godfather`, `/settings`, `/settings/maturity`, and `/lists/bad-id` returned HTTP 200 on port 5174.
+- [x] Slice 57: tightened phone poster-card behavior by disabling sticky hover zoom on coarse/touch pointers and hiding the tiny maturity-dot detail strip on touch cards; the card keeps the summary fit badge, while detailed suitability reasoning stays in movie details.
+- [x] Verification: `npm run build` passed (Vite/PWA, 78 modules, 233.91 kB JS gzip 84.86 kB); route smoke `/discover`, `/search`, `/search?q=godfather`, `/settings`, `/settings/maturity`, and `/lists/bad-id` returned HTTP 200 on port 5174.
+- [x] Slice 58: added a compact no-results state to Search so query-backed searches that miss the catalog do not leave a blank results surface; copy explicitly notes Search ignores Discover filters.
+- [x] Verification: `npm run build` passed (Vite/PWA, 78 modules, 234.22 kB JS gzip 84.97 kB); route smoke `/search`, `/search?q=zzzzunlikelytitle`, `/search?q=godfather`, `/discover`, `/settings`, `/settings/maturity`, and `/lists/bad-id` returned HTTP 200 on port 5174.
+- [x] Slice 59: tightened the Search landing mobile behavior by preventing the clear action from re-focusing the search box on touch/mobile viewports and making recent-search chips horizontally scroll instead of wrapping into a tall block.
+- [x] Verification: `npm run build` passed (Vite/PWA, 78 modules, 234.24 kB JS gzip 84.96 kB); route smoke `/search`, `/search?q=zzzzunlikelytitle`, `/search?q=godfather`, `/discover`, `/settings`, `/settings/maturity`, and `/lists/bad-id` returned HTTP 200 on port 5174.
+- [x] Slice 60: tightened structured Search confidence so the **Related titles** section only appears for stronger title-series signals: multi-word phrase matches or one-word collection prefixes of at least six characters. Short vague matches like “star” now remain in normal results instead of being over-labeled as related.
+- [x] Verification: `npm run build` passed (Vite/PWA, 78 modules, 234.41 kB JS gzip 85.02 kB); route smoke `/search`, `/search?q=godfather`, `/search?q=star`, `/search?q=harry%20potter`, `/search?q=zzzzunlikelytitle`, `/discover`, `/settings`, `/settings/maturity`, and `/lists/bad-id` returned HTTP 200 on port 5174.
+- [x] Slice 61: tightened mobile Search result touch behavior by removing sticky hover lift/background changes on coarse/touch pointers while preserving active press feedback and desktop hover/focus affordances.
+- [x] Verification: `npm run build` passed (Vite/PWA, 78 modules, 234.41 kB JS gzip 85.02 kB); route smoke `/search`, `/search?q=godfather`, `/search?q=star`, `/discover`, `/settings`, `/settings/maturity`, and `/lists/bad-id` returned HTTP 200 on port 5174.
+- [x] Slice 62: continued small mobile/reusable polish by moving the **From your lists** row actions (`See all`, `Manage lists`) onto shared `UiChip`, removing the local action-chip CSS while keeping the list selector lightweight and horizontally scrollable on phones.
+- [x] Verification: `npm run build` passed (Vite/PWA, 78 modules, 234.52 kB JS gzip 85.03 kB); route smoke `/discover`, `/search`, `/search?q=godfather`, `/settings`, `/settings/maturity`, and `/lists/bad-id` returned HTTP 200 on port 5174.
+- [x] Slice 63: continued action-chip consolidation by moving default `MovieRow` **See all** links and `/lists/:listId` empty/back/manage actions onto `UiChip`, removing another local link-action style and keeping list route actions one-line/mobile-safe.
+- [x] Verification: `npm run build` passed (Vite/PWA, 78 modules, 234.99 kB JS gzip 85.07 kB).
+- [x] Slice 64: fixed the Sprint 6 accessibility watch item by making `UiChip` polymorphic for real router links/anchors as well as buttons, then converting navigation chips in `MovieRow`, `FromYourLists`, and `/lists/:listId` away from custom RouterLink button shims.
+- [x] Verification: `npm run build` passed (Vite/PWA, 78 modules, 234.80 kB JS gzip 85.12 kB); route smoke `/discover`, `/search`, `/search?q=godfather`, `/settings`, `/settings/maturity`, and `/lists/bad-id` returned HTTP 200 on port 5174.
 
 ## Current CX vs Vision status
-- Delivered: primary Discover/Search/Settings IA, route-backed tabs, bottom navigation, Search as vertical retrieval, Search landing recents, Settings deep links, native profile/list/maturity settings routes, Discover list integration, temporary vs permanent filter separation, compact mobile Discover hierarchy, persisted maturity profile selection/presets, clearer profile-aware suitability/availability/list signals in cards/details, and movie-detail maturity hierarchy with raw parental-guide detail secondary.
-- Partial: maturity profiles are persisted presets rather than fully user-created/duplicable entities.
-- Deferred: structured collection/person search, true Included/Free/Rent/Buy provider groups, list ownership/delete semantics, and backend/scraper data changes.
+- Delivered: primary Discover/Search/Settings IA, route-backed tabs, bottom navigation, Search as vertical retrieval, reusable Search input primitive, Search landing recents, Settings deep links, native profile/list/maturity settings routes, custom maturity profile create/duplicate/rename/delete, Discover list integration, dedicated `/lists/:listId` poster-grid browsing, temporary vs permanent filter separation, compact mobile Discover hierarchy, persisted maturity profile selection/presets, clearer profile-aware suitability/availability/list signals in cards/details, movie-detail maturity hierarchy with raw parental-guide detail secondary, a narrowed shared-list invite modal instead of duplicate broad Settings modal UI, and `UiChip` support for semantic links plus buttons.
+- Partial: manual mobile review is still needed for the new list grid, bottom-nav interaction, movie detail full-screen/close-button behavior, narrowed shared-list invite flow, lightweight structured Search sections/deep links/no-results state, the stacked mobile From your lists row actions, the Search no-mobile-autofocus/recent-chip/touch-card behavior, the flatter Settings subroutes, and the Discover hero after removing the redundant Settings shortcut.
+- Deferred: true backend-backed collection/person search, true Included/Free/Rent/Buy provider groups, list ownership/delete semantics, and backend/scraper data changes.
 
-## Next recommended slices
-1. Add a dedicated reusable interactive chip/button primitive for provider toggles, maturity choices, and list/status actions.
-2. Remove or narrow `ConfigModal.vue` now that Settings owns profile/list/maturity; verify pending shared-list onboarding still has a path.
-3. Add lightweight structured Search sections for inferred collections before backend person/collection data exists.
-4. Manual mobile review on Tailscale (`http://100.85.92.106:5174/`) for header height, icon-tab clarity, Search first-screen spacing, Settings list density, and the quieter card title-row status badges.
+## Steering review — 2026-07-13 06:11
+- Repo state shows a large uncommitted implementation stack spanning docs, routing, Discover/Search/Settings, modal cleanup, and reusable primitives. Do not broaden the sprint with new feature scope until that stack is manually reviewed, build/smoke verified, and either committed or intentionally split.
+- Plan-vs-implementation alignment is good: current code has `/lists/:listId`, route-backed Settings, `SearchBox`, `UiChip`, a narrowed shared-list `ConfigModal`, query-backed Search, and reduced Discover chrome matching `VISION.md`/`DESIGN_GUIDELINES.md`.
+- Main risk is polish debt, not missing product direction: duplicated See all affordance in `MovieRow` plus `FromYourLists` row actions should be checked visually, and mobile review must confirm the compact headers/actions do not crowd the row title.
+- Next work should stay inside Sprint 6: phone-sized UX review, exact/related Search behavior checks, movie-detail suitability readability, and list-grid completeness. No backend/person search, provider grouping, list ownership/delete semantics, or persistence rewrites yet.
+
+## Steering review — 2026-07-13 08:56
+- Conflict check: no other Ohana cron jobs or active processes were visible; only this steering job is scheduled. It is safe to update docs, but the worktree still carries a large uncommitted implementation stack, so implementation agents should avoid broad new code and avoid rebasing/resetting over it.
+- Plan-vs-implementation alignment remains solid: routes include `/discover`, `/search`, `/settings/:section`, `/lists/:listId`, and `/roadmap`; Search uses `SearchBox`, query-backed results, exact/related/more sections, recents, and a no-results state; Discover list integration uses the normal **From your lists** row plus selector/action slot; the saved-list page is a poster grid; Settings and movie detail have continued reusable-chip consolidation.
+- Steering adjustment: Sprint 6 should now bias toward verification, visual QA, and stabilization rather than more primitive extraction. The next implementation slice should be a phone-sized manual review pass that records concrete findings before further code polish.
+- Watch items for the next agent: confirm `/lists/:listId` intentionally shows complete list contents and does not silently inherit Discover filters; verify the full-screen mobile movie-detail close button and category reasoning with real catalog data.
+
+## Sprint plan
+
+Current sprint: **Sprint 6 — Mobile CX review and polish**.
+
+### Sprint 1 — Finish list-first Discover integration
+Goal: make lists support discovery without becoming a competing promo surface.
+
+Scope:
+- Remove any remaining “Start with what you already saved.” banner/headline from `FromYourLists.vue`.
+- Make the first Discover list surface a normal content row headed exactly **From your lists**.
+- Keep a lightweight selector for **All lists** plus individual lists.
+- Apply the active temporary Discover filters to the list preview row.
+- Keep **Manage lists** as a secondary Settings action.
+
+Acceptance criteria:
+- No extra list promo headline/banner appears above the row.
+- **All lists** shows one deduped preview row, capped enough that recommendations still appear soon after on mobile.
+- Selecting one list affects only the list preview section, not global Discover rows.
+- The preview row respects active genre/rating/maturity/content-type/availability filters.
+- Empty/no-match list states are compact and do not push recommendations far down the page.
+
+Dependencies:
+- Existing `FromYourLists.vue`, user list store, Discover filters, and movie row/card components.
+
+Verification:
+- `npm run build`.
+- Manual mobile review of `/discover` with no lists, one list, multiple lists, and active filters.
+
+### Sprint 2 — Add dedicated list route and poster-grid view
+Goal: complete the `/lists/:listId` vision requirement for full saved-list browsing.
+
+Scope:
+- Add route `/lists/:listId`.
+- Resolve the list by id from persisted user/profile data.
+- Render all available movies in that list as a responsive poster grid, not a horizontal row.
+- Add **See all** links from specific-list Discover rows to `/lists/:listId`.
+- Add a compact invalid/missing-list state with a path back to Discover or Settings → My Lists.
+
+Acceptance criteria:
+- `/lists/:listId` shows the selected list title and all available poster items through vertical scrolling.
+- The full list page prioritizes completeness; it must not use carousel curation or row slicing.
+- Specific-list Discover rows expose **See all** and navigate to the correct id.
+- Movie detail still opens from grid cards.
+- Invalid list ids fail calmly without breaking the app shell.
+
+Dependencies:
+- Sprint 1 list selector/row behavior.
+- Existing router, list store, poster card, and movie modal wiring.
+
+Verification:
+- `npm run build`.
+- Route smoke tests: `/lists/<known-id>`, `/lists/bad-id`, `/discover`, `/settings/lists`.
+- Manual mobile check for grid density, tap targets, and bottom-nav interaction.
+
+### Sprint 3 — Consolidate reusable UI primitives
+Goal: make repeated controls consistent without broad redesign.
+
+Scope:
+- Apply `UiChip` only to repeated chip/action surfaces where it removes duplicated behavior or CSS.
+- Confirm repeated metadata badges use `UiBadge`.
+- Confirm repeated section/action headings use `SectionHeader`.
+- Keep Settings rows on `SettingsRow`.
+- Remove duplicate CSS variants made obsolete by those primitives.
+
+Acceptance criteria:
+- Chip selected/disabled/focus/nowrap behavior is centralized for repeated chip surfaces.
+- Chips never wrap to two lines; long labels truncate or move into menu/detail surfaces.
+- Poster/search cards do not regain platform/provider badges.
+- Component consolidation does not flatten distinct semantic controls into misleading generic UI.
+
+Dependencies:
+- Existing `UiChip`, `UiBadge`, `SectionHeader`, and `SettingsRow` work from slices 31–35.
+
+Verification:
+- `npm run build`.
+- Spot-check `/discover`, `/search`, `/settings`, `/settings/streaming`, `/settings/maturity`, and movie detail modal.
+
+### Sprint 4 — Audit and narrow legacy `ConfigModal.vue`
+Goal: avoid stale duplicate settings flows while protecting persistence and onboarding paths.
+
+Scope:
+- Audit every remaining `ConfigModal.vue` entry point before changing behavior.
+- Keep only genuinely needed flows, likely shared-list onboarding or temporary compatibility bridges.
+- Move any remaining core profile/list/maturity behavior to route-backed Settings pages only if the path is safe and small.
+- Delete dead modal UI/CSS only after confirming no route/query flow depends on it.
+
+Acceptance criteria:
+- Profile, streaming, maturity, and list management do not require the broad legacy modal.
+- Any remaining modal use is narrow, named, and documented in this file.
+- Shared-list invite/add flows and movie add-to-list query paths still work.
+- KV/profile merge behavior is untouched unless explicitly scoped and verified.
+
+Dependencies:
+- Settings route functionality from slices 24, 25, 27, and 29.
+- Careful inspection of `App.vue`, `user.js`, query params, and list/profile persistence.
+
+Verification:
+- `npm run build`.
+- Smoke: create/restore profile, create/import/share/rename/remove list, change maturity profile, open movie with add-to-list action, and any shared-list invite/add query behavior.
+
+### Sprint 5 — Prototype lightweight structured Search
+Goal: improve intentional retrieval without inventing backend entities.
+
+Scope:
+- Add inferred collection grouping only when existing title data makes confidence high.
+- Keep Search vertical; do not add carousels.
+- Preserve exact-title priority for specific searches.
+- Do not add person/studio search until backend data exists.
+
+Acceptance criteria:
+- Search still ignores Discover filters and annotates results instead.
+- Queries like “The Godfather” prioritize exact title retrieval.
+- Queries like “James Bond” or “Harry Potter” may show a collection-like grouped section only when multiple matching titles support it.
+- Compatibility, availability, and list annotations remain visible.
+
+Dependencies:
+- Existing Fuse search and movie metadata only.
+
+Verification:
+- `npm run build`.
+- Manual searches: `godfather`, `james bond`, `harry potter`, typo query, and empty query recents.
+
+### Sprint 6 — Mobile CX review and polish
+Status: current. Start here next; Sprints 1–5 have implementation slices recorded above.
+
+Goal: verify the redesigned experience against `VISION.md`, `AGENTS.md`, and `CODING_STANDARDS.md` on a phone-sized viewport.
+
+Scope:
+- Review header height and visible **Ohana TV** brand.
+- Review icon-only bottom tab clarity and consistent icon weight/tap targets.
+- Review Discover first-screen density and list row weight.
+- Review Search first-screen spacing.
+- Review Settings list density.
+- Review movie detail on mobile: full-screen presentation, fixed top close button, suitability details visible and understandable.
+- Review lightweight structured Search sections: exact title first, related title grouping only when clearly supported, remaining fuzzy results still visible.
+- Review `/lists/:listId` grid as a complete saved-list view; do not turn it back into a curated carousel or over-filtered discovery preview.
+- Audit nested boxes, chip wrapping, card metadata noise, and selected states.
+
+Acceptance criteria:
+- Discover recommendations appear quickly after controls/list preview.
+- Search starts with the search field and useful content immediately after.
+- Settings feels like a compact index, not a form dump.
+- Movie detail on mobile uses the available screen, keeps close reachable at top, and does not bury suitability reasoning behind a vague verdict.
+- Structured Search improves retrieval clarity without pretending to have real collection/person backend entities.
+- Full-list pages prioritize completeness and simple poster scanning.
+- No screen relies on nested decorative boxes where spacing/type would work.
+- No chips wrap; icon tabs remain label-free and non-emoji.
+
+Dependencies:
+- Ideally after Sprints 1–3.
+
+Verification:
+- `npm run build`.
+- Manual mobile review on Tailscale (`http://100.85.92.106:5174/`).
+- Manual searches: `godfather`, `james bond`, `harry potter`, typo query, and empty query recents.
+- Record findings and any follow-up slices in this file before starting more implementation.
+
+## Do not do yet
+- Do not implement true Included/Free/Rent/Buy provider grouping until backend/scraper data supports it.
+- Do not implement real person/studio search without backend data.
+- Do not implement list ownership/delete semantics beyond current rename/remove-from-profile language.
+- Do not rewrite profile/list persistence or KV merge behavior as part of UI cleanup.
+- Do not deploy externally unless Alex asks.
 
 ## Notes / assumptions
 - Keep implementation local and reviewable; no external deploy until asked.
 - Preserve current Pinia stores and KV merge behavior.
-- Use existing data fields; do not invent backend support for availability categories or multi-profile maturity yet.
-- Search is now first-class visually, but collection/person structured results remain future/backend work.
-- Settings is now first-class as an index, but detailed edit screens still reuse the existing config modal to avoid risky persistence rewrites.
+- Use existing data fields; do not invent backend support for availability categories.
+- Search is now first-class visually; collection/person structured results remain future/backend work except for a limited inferred-collection prototype.
+- Settings is now first-class as an index, and core profile/list/maturity edit flows have route-backed pages; any remaining `ConfigModal.vue` dependency should be audited before removal.
 - Provider subscriptions now live visually in Settings, but still reuse the existing `selectedProviders` persistence path for compatibility.
-- Named maturity profiles now persist as profile presets in `filterPrefs.maturityProfiles`; custom create/duplicate/delete UI exists in `/settings/maturity`.
-- Latest Alex feedback is partly implemented in Slice 31; remaining work is reusable component consolidation and mobile visual review/polish.
+- Named maturity profiles now persist as profile presets in `filterPrefs.maturityProfiles`; custom create/duplicate/rename/delete UI exists in `/settings/maturity`.
+- Latest Alex feedback remaining priority: movie-detail mobile/full-screen behavior and suitability-detail reasoning, then reusable component consolidation and mobile visual review/polish.

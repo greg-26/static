@@ -5,28 +5,28 @@
     <div v-if="!activeSection" class="settings-list" aria-label="Settings sections">
       <SettingsRow
         to="/settings/profile"
-        icon="P"
+        icon="profile"
         label="Profile"
         :title="userStore.isLoggedIn ? (userStore.userData?.name || 'Your profile') : 'No profile yet'"
         :summary="userStore.isLoggedIn ? 'Recovery token configured' : 'Create or restore profile'"
       />
       <SettingsRow
         to="/settings/streaming"
-        icon="▶"
+        icon="streaming"
         label="Streaming services"
         :title="selectedProviderSummary"
         summary="Used by Discover availability"
       />
       <SettingsRow
         to="/settings/maturity"
-        icon="M"
+        icon="maturity"
         label="Maturity profiles"
         :title="maturitySummary"
         summary="Active viewing context"
       />
       <SettingsRow
         to="/settings/lists"
-        icon="L"
+        icon="lists"
         label="My Lists"
         :title="`${userStore.lists.length} ${userStore.lists.length === 1 ? 'list' : 'lists'}`"
         summary="Managed here, used in Discover"
@@ -78,15 +78,13 @@
           <h2>{{ selectedProviderSummary }}</h2>
           <p>These are permanent subscriptions. Discover can temporarily switch to “Any availability” without deleting them.</p>
           <div class="provider-grid" aria-label="Streaming services">
-            <button
+            <UiChip
               v-for="provider in movieStore.availableProviders"
               :key="provider.id"
-              type="button"
-              class="provider-toggle"
-              :class="{ active: movieStore.selectedProviders & provider.bit }"
-              :aria-pressed="Boolean(movieStore.selectedProviders & provider.bit)"
+              tone="safe"
+              :active="Boolean(movieStore.selectedProviders & provider.bit)"
               @click="movieStore.toggleProvider(provider.bit)"
-            >{{ provider.name }}</button>
+            >{{ provider.name }}</UiChip>
           </div>
         </article>
       </template>
@@ -96,18 +94,15 @@
           <p class="section-label">Maturity profiles</p>
           <h2>Active profile: {{ activeProfileLabel }}</h2>
           <p>Choose the active viewing context, or edit the detailed limits for your personal profile.</p>
-          <div class="profile-grid">
-            <button
+          <div class="profile-grid" aria-label="Maturity profiles">
+            <UiChip
               v-for="profile in maturityProfiles"
               :key="profile.id"
-              type="button"
-              class="profile-option"
-              :class="{ active: activeProfileId === profile.id }"
+              tone="safe"
+              :active="activeProfileId === profile.id"
+              :label="profile.label"
               @click="selectMaturityProfile(profile)"
-            >
-              <strong>{{ profile.label }}</strong>
-              <span>{{ profile.description }}</span>
-            </button>
+            />
           </div>
           <div class="profile-actions-panel">
             <div class="settings-form settings-form--inline">
@@ -131,14 +126,15 @@
                 <span>{{ categorySummary(catIdx) }}</span>
               </div>
               <div class="maturity-chips">
-                <button type="button" :class="{ active: movieStore.maxMaturityCat[catIdx] === -1 }" @click="movieStore.setMaxMaturityCat(catIdx, -1)">Any</button>
-                <button
+                <UiChip size="sm" tone="safe" :active="movieStore.maxMaturityCat[catIdx] === -1" @click="movieStore.setMaxMaturityCat(catIdx, -1)">Any</UiChip>
+                <UiChip
                   v-for="(label, level) in severityLabels"
                   :key="level"
-                  type="button"
-                  :class="{ active: movieStore.maxMaturityCat[catIdx] === level }"
+                  size="sm"
+                  tone="safe"
+                  :active="movieStore.maxMaturityCat[catIdx] === level"
                   @click="movieStore.setMaxMaturityCat(catIdx, level)"
-                >{{ label }}</button>
+                >{{ label }}</UiChip>
               </div>
             </div>
           </div>
@@ -188,8 +184,7 @@ import { useUserStore } from "@/stores/user.js";
 import { MATURITY_CATEGORIES, SEVERITY_LABELS } from "@/maturity.js";
 import { profileLabel } from "@/lib/maturityProfiles.js";
 import SettingsRow from "@/components/SettingsRow.vue";
-
-defineEmits(["openConfig"]);
+import UiChip from "@/components/UiChip.vue";
 
 const route = useRoute();
 const movieStore = useMovieStore();
@@ -404,16 +399,15 @@ async function addSharedList() {
 .back-link { display: inline-flex; margin-bottom: 18px; color: var(--teal); text-decoration: none; font-size: 13px; }
 .section-label { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); font-weight: 800; }
 .settings-list { display: grid; }
-.section-panel { display: grid; gap: 14px; }
-.settings-card { min-height: 190px; display: flex; flex-direction: column; justify-content: space-between; gap: 18px; padding: 20px; border: 1px solid rgba(255,255,255,0.09); border-radius: 20px; background: rgba(15,15,26,0.82); color: inherit; text-decoration: none; }
+.section-panel { display: grid; gap: 20px; }
+.settings-card { display: grid; gap: 18px; color: inherit; text-decoration: none; }
 .settings-card--primary,
 .settings-card--wide { grid-column: 1 / -1; }
-.settings-card--primary { background: radial-gradient(circle at 15% 0%, rgba(232,54,93,0.2), transparent 36%), rgba(15,15,26,0.86); }
 .settings-card--muted { opacity: 0.82; }
 h2 { margin-top: 5px; color: var(--white); font-size: 22px; }
 .settings-card p:not(.section-label) { color: rgba(240,238,232,0.66); }
-button, .card-action { align-self: flex-start; min-height: 38px; border: 1px solid rgba(255,255,255,0.14); border-radius: 999px; background: rgba(255,255,255,0.05); color: var(--white); font: inherit; font-size: 13px; padding: 0 14px; cursor: pointer; display: inline-flex; align-items: center; text-decoration: none; }
-button:hover, .settings-card:hover .card-action { border-color: rgba(232,54,93,0.54); color: var(--accent); }
+button:not(.ui-chip), .card-action { align-self: flex-start; min-height: 38px; border: 1px solid rgba(255,255,255,0.14); border-radius: 999px; background: rgba(255,255,255,0.05); color: var(--white); font: inherit; font-size: 13px; padding: 0 14px; cursor: pointer; display: inline-flex; align-items: center; text-decoration: none; }
+button:not(.ui-chip):hover, .card-action:hover { border-color: rgba(232,54,93,0.54); color: var(--accent); }
 button:disabled { opacity: 0.45; cursor: not-allowed; }
 .settings-form { display: grid; gap: 10px; align-items: start; }
 .settings-form--inline { grid-template-columns: minmax(180px, 1fr) auto; align-items: end; }
@@ -426,18 +420,13 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .form-error { color: #fca5a5; font-size: 13px; }
 .empty-note { padding: 12px; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; background: rgba(255,255,255,0.035); color: var(--muted); font-size: 14px; }
 .provider-grid, .profile-grid { display: flex; flex-wrap: wrap; gap: 8px; }
-.provider-toggle { align-self: auto; color: rgba(240,238,232,0.66); }
-.provider-toggle.active, .profile-option.active { border-color: rgba(45,212,191,0.42); background: rgba(45,212,191,0.12); color: var(--teal); }
-.profile-option { flex-direction: column; align-items: flex-start; gap: 3px; min-height: 76px; border-radius: 14px; }
-.profile-option span { color: rgba(240,238,232,0.58); font-size: 12px; }
-.profile-actions-panel { display: grid; gap: 10px; padding: 12px; border-radius: 16px; background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.08); }
+.profile-actions-panel { display: grid; gap: 10px; padding: 12px 0; }
 .maturity-editor { display: grid; gap: 14px; }
 .maturity-row { display: grid; gap: 8px; }
 .maturity-row > div:first-child { display: flex; justify-content: space-between; gap: 12px; color: rgba(240,238,232,0.82); }
 .maturity-row span { color: var(--muted); font-size: 12px; }
 .maturity-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.maturity-chips button { min-height: 32px; padding: 0 10px; color: rgba(240,238,232,0.68); }
-.maturity-chips button.active { border-color: rgba(45,212,191,0.42); background: rgba(45,212,191,0.12); color: var(--teal); }
+
 .list-stack { display: grid; }
 .list-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
 .list-row:first-child { border-top: 1px solid rgba(255,255,255,0.08); }

@@ -1,15 +1,15 @@
 <template>
   <div ref="wrapEl" class="filter-menu-wrap">
-    <button
+    <UiChip
       class="control-chip"
-      type="button"
-      :class="[{ active: open || active }, buttonClass]"
+      :class="buttonClass"
+      :active="open || active"
       :aria-expanded="open"
       aria-haspopup="menu"
       @click="emit('toggle')"
     >
       <slot name="label">{{ label }}</slot>
-    </button>
+    </UiChip>
 
     <div
       v-if="open"
@@ -26,6 +26,7 @@
 
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import UiChip from "@/components/UiChip.vue";
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -79,35 +80,16 @@ onBeforeUnmount(() => window.removeEventListener("resize", fitMenuToViewport));
 <style scoped>
 .filter-menu-wrap { position: relative; display: inline-flex; }
 
-.control-chip {
-  padding: 7px 12px;
-  border: 1px solid rgba(255,255,255,0.13);
-  border-radius: 99px;
-  background: rgba(255,255,255,0.04);
-  color: var(--muted);
-  font-family: var(--font-body);
-  font-size: 13px;
-  cursor: pointer;
-  transition: border-color 0.15s, color 0.15s, background 0.15s, opacity 0.15s;
-}
-.control-chip:hover,
-.control-chip.active {
-  border-color: var(--accent);
-  color: var(--white);
-  background: rgba(232,54,93,0.14);
-}
-.control-chip--dropdown {
-  padding: 8px 16px;
-  font-weight: 700;
-  color: rgba(255,255,255,0.78);
-}
+.control-chip { flex: 0 0 auto; }
+.control-chip--dropdown { font-weight: 700; color: rgba(255,255,255,0.78); }
+.control-chip--dropdown.is-active,
 .control-chip--dropdown:hover,
-.control-chip--dropdown.active {
+.control-chip--dropdown:focus-visible {
   border-color: rgba(255,255,255,0.34);
   background: rgba(255,255,255,0.1);
   color: var(--white);
 }
-.control-chip--safe.active {
+.control-chip--safe.is-active {
   border-color: rgba(45,212,191,0.42);
   background: rgba(45,212,191,0.12);
   color: var(--teal);

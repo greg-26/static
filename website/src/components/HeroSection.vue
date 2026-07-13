@@ -13,34 +13,9 @@
           <span class="hero-kicker">Discover</span>
           <h1 class="hero-title">What should we watch tonight?</h1>
         </div>
-        <button class="settings-link" type="button" @click="emit('open-settings')">Settings</button>
       </div>
 
       <div class="search-panel">
-        <div v-if="showSearch" class="hero-search">
-          <svg class="search-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-            <circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M13.5 13.5L17 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-          <input
-            ref="searchInputEl"
-            v-model="localSearch"
-            type="search"
-            placeholder="Search movies, shows, Spanish titles…"
-            class="search-input"
-            spellcheck="false"
-            aria-label="Search movies"
-            @focus="selectSearchText"
-            @pointerup="selectSearchText"
-          />
-          <div v-if="localSearch || store.searchQuery" class="search-actions">
-            <button class="search-clear-btn" type="button" aria-label="Clear search" @click="clearSearch">
-              <span aria-hidden="true">×</span>
-            </button>
-            <span v-if="store.searchQuery" class="search-results-count">{{ store.filteredMovies.length }} results</span>
-          </div>
-        </div>
-
         <div ref="chipRowEl" class="chip-row" role="toolbar" aria-label="Discovery controls">
           <FilterMenu
             :open="activePanel === 'availability'"
@@ -114,27 +89,23 @@
             </div>
           </FilterMenu>
 
-          <button
+          <UiChip
             class="control-chip control-chip--primary"
-            type="button"
-            :class="{ active: store.titleType === 'tv' }"
-            :aria-pressed="store.titleType === 'tv'"
+            :active="store.titleType === 'tv'"
             @click="toggleTitleType('tv', $event)"
           >
             <span>Series</span>
             <span v-if="store.titleType === 'tv'" class="chip-remove" aria-hidden="true">×</span>
-          </button>
+          </UiChip>
 
-          <button
+          <UiChip
             class="control-chip control-chip--primary"
-            type="button"
-            :class="{ active: store.titleType === 'movies' }"
-            :aria-pressed="store.titleType === 'movies'"
+            :active="store.titleType === 'movies'"
             @click="toggleTitleType('movies', $event)"
           >
             <span>Películas</span>
             <span v-if="store.titleType === 'movies'" class="chip-remove" aria-hidden="true">×</span>
-          </button>
+          </UiChip>
 
           <FilterMenu
             :open="activePanel === 'genres'"
@@ -190,8 +161,14 @@
                 />
                 <span class="rating-value">{{ store.minRating ? `${store.minRating}+` : 'All' }}</span>
                 <div class="rating-presets" aria-label="Rating presets">
-                  <button type="button" :class="{ active: store.minRating === 0 }" @click="store.minRating = 0">Any</button>
-                  <button v-for="rating in [6,7,8,9]" :key="rating" type="button" :class="{ active: store.minRating === rating }" @click="store.minRating = rating">{{ rating }}+</button>
+                  <UiChip size="sm" :active="store.minRating === 0" @click="store.minRating = 0">Any</UiChip>
+                  <UiChip
+                    v-for="rating in [6,7,8,9]"
+                    :key="rating"
+                    size="sm"
+                    :active="store.minRating === rating"
+                    @click="store.minRating = rating"
+                  >{{ rating }}+</UiChip>
                 </div>
               </div>
           </FilterMenu>
@@ -208,25 +185,16 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import FilterMenu from "@/components/FilterMenu.vue";
+import UiChip from "@/components/UiChip.vue";
 import { useMovieStore, GENRE_LABELS } from "@/stores/movies.js";
 import { profileLabel } from "@/lib/maturityProfiles.js";
 
-defineProps({ showSearch: { type: Boolean, default: true } });
 const emit = defineEmits(["open-settings"]);
 const store = useMovieStore();
 const activePanel = ref(null);
 const chipRowEl = ref(null);
-const searchInputEl = ref(null);
-
-const localSearch = ref(store.searchQuery);
-let debounceTimer = null;
-watch(localSearch, val => {
-  clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(() => { store.searchQuery = val; }, 120);
-});
-watch(() => store.searchQuery, val => { if (val !== localSearch.value) localSearch.value = val; });
 
 const BASE = "https://image.tmdb.org/t/p/w342/";
 const HERO_POSTER_COLS = [
@@ -311,18 +279,6 @@ function togglePanel(panel) {
   activePanel.value = activePanel.value === panel ? null : panel;
 }
 
-function selectSearchText() {
-  if (!localSearch.value) return;
-  requestAnimationFrame(() => searchInputEl.value?.select());
-}
-
-function clearSearch() {
-  clearTimeout(debounceTimer);
-  localSearch.value = "";
-  store.searchQuery = "";
-  searchInputEl.value?.focus();
-}
-
 function onDocumentPointerDown(event) {
   if (!activePanel.value) return;
   if (chipRowEl.value?.contains(event.target)) return;
@@ -333,7 +289,6 @@ onMounted(() => document.addEventListener("pointerdown", onDocumentPointerDown))
 onUnmounted(() => document.removeEventListener("pointerdown", onDocumentPointerDown));
 
 const hasFilters = computed(() =>
-  store.searchQuery ||
   browseFilterCount.value > 0 ||
   store.availabilityMode !== "my-services" ||
   maturityActive.value ||
@@ -383,7 +338,6 @@ const hasFilters = computed(() =>
 .hero-kicker { font-family: var(--font-display); font-size: 28px; letter-spacing: 0.14em; color: #34d399; text-shadow: 0 0 35px rgba(52,211,153,0.34); }
 .hero-title { max-width: 780px; margin-top: 4px; font-family: var(--font-display); font-size: clamp(42px, 7vw, 78px); letter-spacing: 0.045em; line-height: 0.95; color: var(--white); }
 
-.settings-link,
 .control-chip,
 .clear-btn,
 .menu-option {
@@ -391,27 +345,14 @@ const hasFilters = computed(() =>
   cursor: pointer;
   transition: border-color 0.15s, color 0.15s, background 0.15s, opacity 0.15s;
 }
-.settings-link { padding: 8px 14px; border: 1px solid rgba(255,255,255,0.16); border-radius: 99px; background: rgba(22,22,31,0.72); color: var(--white); }
-.settings-link:hover { border-color: var(--accent); color: var(--accent); }
 
 .search-panel { position: relative; overflow: visible; max-width: 920px; padding: 14px; border: 1px solid rgba(255,255,255,0.11); border-radius: 20px; background: rgba(15,15,26,0.78); box-shadow: 0 24px 70px rgba(0,0,0,0.28); backdrop-filter: blur(12px); }
-.hero-search { position: relative; display: flex; align-items: center; }
-.search-icon { position: absolute; left: 18px; width: 20px; height: 20px; color: var(--muted); pointer-events: none; }
-.search-input { width: 100%; min-width: 0; padding: 17px 184px 17px 52px; background: rgba(8,8,16,0.92); border: 1px solid rgba(255,255,255,0.14); border-radius: 14px; color: var(--white); font-family: var(--font-body); font-size: 17px; outline: none; }
-.search-input::placeholder { color: rgba(240,238,232,0.46); }
-.search-input:focus { border-color: rgba(232,54,93,0.72); background: rgba(12,12,21,0.98); }
-.search-input::-webkit-search-cancel-button { display: none; }
-.search-actions { position: absolute; right: 12px; display: inline-flex; align-items: center; gap: 10px; }
-.search-clear-btn { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: 1px solid rgba(255,255,255,0.14); border-radius: 50%; background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.72); font-size: 22px; line-height: 1; cursor: pointer; transition: border-color 0.15s, color 0.15s, background 0.15s; }
-.search-clear-btn:hover, .search-clear-btn:focus-visible { border-color: rgba(232,54,93,0.62); background: rgba(232,54,93,0.14); color: var(--white); outline: none; }
-.search-results-count { font-size: 12px; color: var(--muted); pointer-events: none; white-space: nowrap; }
-
-.chip-row { position: relative; z-index: 30; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+.chip-row { position: relative; z-index: 30; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .control-chip, .clear-btn { padding: 7px 12px; border: 1px solid rgba(255,255,255,0.13); border-radius: 99px; background: rgba(255,255,255,0.04); color: var(--muted); font-size: 13px; }
 .control-chip--primary { display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px; font-weight: 700; color: rgba(255,255,255,0.78); }
-.control-chip:hover, .clear-btn:hover, .control-chip.active { border-color: var(--accent); color: var(--white); background: rgba(232,54,93,0.14); }
+.control-chip:hover, .clear-btn:hover, .control-chip.active, .control-chip.is-active { border-color: var(--accent); color: var(--white); background: rgba(232,54,93,0.14); }
 .control-chip--primary:hover { border-color: rgba(255,255,255,0.26); background: rgba(255,255,255,0.06); color: var(--white); }
-.control-chip--primary.active { border-color: rgba(255,255,255,0.42); background: rgba(255,255,255,0.16); color: var(--white); }
+.control-chip--primary.active, .control-chip--primary.is-active { border-color: rgba(255,255,255,0.42); background: rgba(255,255,255,0.16); color: var(--white); }
 .chip-remove { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; background: rgba(255,255,255,0.18); color: rgba(255,255,255,0.9); font-size: 14px; line-height: 1; }
 .control-chip--safe.active { border-color: rgba(45,212,191,0.42); background: rgba(45,212,191,0.12); color: var(--teal); }
 .chip-label-with-icon { display: inline-flex; align-items: center; gap: 8px; }
@@ -443,27 +384,19 @@ const hasFilters = computed(() =>
 .rating-slider::-moz-range-thumb { width: 26px; height: 26px; border: 0; border-radius: 50%; background: var(--accent); cursor: pointer; box-shadow: 0 0 0 7px rgba(232,54,93,0.18); }
 .rating-value { font-size: 13px; font-weight: 700; color: var(--white); min-width: 36px; text-align: center; }
 .rating-presets { grid-column: 1 / -1; display: flex; gap: 6px; }
-.rating-presets button { min-height: 32px; padding: 0 10px; border: 1px solid rgba(255,255,255,0.14); border-radius: 999px; background: rgba(255,255,255,0.04); color: var(--muted); font: inherit; font-size: 12px; cursor: pointer; }
-.rating-presets button.active { border-color: var(--accent); background: rgba(232,54,93,0.14); color: var(--white); }
 .filter-summary { margin-top: 12px; font-size: 13px; color: var(--muted); }
 
 @media (max-width: 640px) {
-  .hero { min-height: 0; padding: 22px 16px 12px; margin-bottom: 8px; border-bottom: 0; }
-  .hero-poster-bg { opacity: 0.28; height: 170px; }
-  .hero-bg-overlay { background: linear-gradient(to bottom, rgba(8,8,16,0.9), var(--black)); }
-  .hero-brand { gap: 10px; margin-bottom: 12px; }
-  .hero-kicker { font-size: 16px; letter-spacing: 0.12em; }
-  .settings-link { display: none; }
-  .hero-title { max-width: 360px; font-size: clamp(30px, 10vw, 42px); line-height: 1; }
-  .search-panel { margin: 0 -6px; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; backdrop-filter: none; }
-  .hero-search { margin-bottom: 8px; }
-  .search-input { padding: 15px 52px 15px 46px; font-size: 15px; border-radius: 14px; }
-  .search-actions { right: 10px; }
-  .search-clear-btn { width: 30px; height: 30px; font-size: 20px; }
-  .search-results-count { display: none; }
-  .chip-row { flex-wrap: nowrap; gap: 8px; margin-top: 0; overflow-x: auto; padding: 2px 6px 8px; scrollbar-width: none; }
+  .hero { min-height: 0; padding: 14px 16px 8px; margin-bottom: 4px; border-bottom: 0; }
+  .hero-poster-bg { opacity: 0.22; height: 132px; }
+  .hero-bg-overlay { background: linear-gradient(to bottom, rgba(8,8,16,0.94), var(--black)); }
+  .hero-brand { gap: 8px; margin-bottom: 9px; }
+  .hero-kicker { display: none; }
+  .hero-title { max-width: 320px; font-size: clamp(24px, 8vw, 34px); line-height: 1.02; letter-spacing: 0.035em; }
+  .search-panel { margin: 0 -8px; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; backdrop-filter: none; }
+  .chip-row { flex-wrap: nowrap; gap: 8px; margin-top: 0; overflow-x: auto; padding: 2px 8px 6px; scrollbar-width: none; }
   .chip-row::-webkit-scrollbar { display: none; }
-  .control-chip, .clear-btn { flex: 0 0 auto; min-height: 38px; white-space: nowrap; }
+  .control-chip, .clear-btn { flex: 0 0 auto; min-height: 36px; white-space: nowrap; }
   .clear-btn { margin-left: 0; }
   .filter-summary { display: none; }
   .poster-col:nth-child(n+4) { display: none; }

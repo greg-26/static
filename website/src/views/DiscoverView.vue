@@ -1,5 +1,5 @@
 <template>
-  <HeroSection :show-search="false" @open-settings="$emit('openSettings')" />
+  <HeroSection @open-settings="$emit('openSettings')" />
 
   <main class="catalog">
     <template v-if="store.loading">
@@ -64,12 +64,17 @@ const movieById = computed(() => {
 
 const listRows = computed(() => {
   if (!userStore.isLoggedIn) return [];
+  const allowedIds = new Set(store.filteredMovies.map(movie => movie.id));
   return userStore.lists
     .filter(list => list.movies.length > 0)
     .map(list => ({
       id: "list-" + list.token,
+      listToken: list.token,
       label: "My list · " + list.name,
-      movies: list.movies.map(id => movieById.value.get(id)).filter(Boolean),
+      seeAllTo: { name: "list", params: { listId: list.token } },
+      movies: list.movies
+        .map(id => movieById.value.get(id))
+        .filter(movie => movie && allowedIds.has(movie.id)),
     }))
     .filter(row => row.movies.length > 0);
 });

@@ -100,8 +100,16 @@
             </div>
             <div class="compatibility-grid">
               <div v-for="row in compatibilityRows" :key="row.key" class="compatibility-row" :class="{ exceeded: row.exceeded }">
-                <span>{{ row.label }}</span>
-                <small>{{ row.movieLabel }} / allowed {{ row.allowedLabel }}</small>
+                <div class="compatibility-row-main">
+                  <span>{{ row.label }}</span>
+                  <strong>{{ row.exceeded ? 'Exceeds profile' : 'Fits profile' }}</strong>
+                </div>
+                <div class="compatibility-row-detail">
+                  <small>{{ row.movieLabel }} ({{ row.movieScore }}/5) · allowed {{ row.allowedLabel }}</small>
+                  <div v-if="row.supportTags.length" class="compatibility-tags" :aria-label="`${row.label} details`">
+                    <span v-for="tag in row.supportTags" :key="tag">{{ tag }}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -117,21 +125,24 @@
           <!-- User actions (watched + lists) -->
           <div v-if="userStore.isLoggedIn" class="modal-user-actions">
             <div class="user-actions-row">
-              <button
-                class="watched-btn"
-                :class="{ 'watched-btn--active': userStore.isWatched(movie.id) }"
+              <UiChip
+                size="sm"
+                tone="safe"
+                :active="userStore.isWatched(movie.id)"
                 @click="userStore.toggleWatched(movie.id)"
               >
                 {{ userStore.isWatched(movie.id) ? "✓ Watched" : "Mark watched" }}
-              </button>
+              </UiChip>
 
-              <button
+              <UiChip
                 v-for="list in userStore.lists"
                 :key="list.token"
-                class="list-chip"
-                :class="{ 'list-chip--active': userStore.isInList(list.token, movie.id) }"
+                size="sm"
+                tone="safe"
+                :active="userStore.isInList(list.token, movie.id)"
+                :label="list.name"
                 @click="userStore.toggleMovieInList(list.token, movie.id)"
-              >{{ list.name }}</button>
+              />
 
               <span v-if="!userStore.lists.length" class="no-lists-hint">No lists yet — create one in Settings</span>
             </div>
@@ -287,8 +298,9 @@ import { GENRES, PROVIDERS, useMovieStore } from "@/stores/movies.js";
 import { MATURITY_CATEGORIES, SEVERITY_LABELS, getScore, scoreCssClass } from "@/maturity.js";
 import { useUserStore } from "@/stores/user.js";
 import { lockBodyScroll, unlockBodyScroll, trapTabKey } from "@/composables/modalGuards.js";
-import { activeMaturityProfileLabel } from "@/lib/maturityProfiles.js";
+import { profileLabel } from "@/lib/maturityProfiles.js";
 import UiBadge from "@/components/UiBadge.vue";
+import UiChip from "@/components/UiChip.vue";
 
 const userStore = useUserStore();
 const movieStore = useMovieStore();
@@ -301,7 +313,7 @@ const previouslyFocused = ref(null);
 let bodyLocked = false;
 
 const titleId = computed(() => props.movie?.id ? `movie-dialog-title-${props.movie.id}` : "movie-dialog-title");
-const activeProfileName = computed(() => activeMaturityProfileLabel(movieStore.maxMaturityCat));
+const activeProfileName = computed(() => profileLabel(movieStore.maturityProfiles, movieStore.activeMaturityProfileId));
 const compatibilityRows = computed(() => {
   if (props.movie?.mat === undefined || !movieStore.maxMaturityCat.some(v => v >= 0)) return [];
   return MATURITY_CATEGORIES
@@ -310,12 +322,16 @@ const compatibilityRows = computed(() => {
       if (allowed < 0) return null;
       const rawScore = getScore(props.movie.mat, cat.shift);
       const movieScore = Number.isFinite(rawScore) ? Math.round(rawScore) : 6;
+      const supportTags = (extraDetails.value?.tags?.[TAG_KEYS[cat.key]] || [])
+        .slice(0, 4)
+        .map(tag => tag.replaceAll('_', ' ').toLowerCase());
       return {
         key: cat.key,
         label: cat.label,
         movieScore,
         movieLabel: SEVERITY_LABELS[movieScore] || "Unknown",
         allowedLabel: SEVERITY_LABELS[allowed] || "Any",
+        supportTags,
         exceeded: movieScore > allowed,
       };
     })
@@ -1095,15 +1111,42 @@ onUnmounted(() => {
 .compatibility-pill--warn { background: rgba(248,113,113,0.13); color: #fca5a5; }
 .compatibility-grid { display: grid; gap: 7px; }
 .compatibility-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(116px, 0.7fr) minmax(0, 1.3fr);
   gap: 12px;
   color: rgba(240,238,232,0.82);
   font-size: 12px;
 }
-.compatibility-row small { color: var(--teal); text-align: right; }
+.compatibility-row-main,
+.compatibility-row-detail {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+.compatibility-row-main span { color: var(--white); font-weight: 650; }
+.compatibility-row-main strong { color: var(--teal); font-size: 11px; }
+.compatibility-row.exceeded .compatibility-row-main strong { color: #fca5a5; }
+.compatibility-row small { color: var(--teal); }
 .compatibility-row.exceeded small { color: #fca5a5; }
+.compatibility-tags {
+  display: flex;
+  gap: 5px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.compatibility-tags::-webkit-scrollbar { display: none; }
+.compatibility-tags span {
+  flex: 0 0 auto;
+  max-width: 148px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 2px 7px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 10px;
+}
 
 /* ── User actions ── */
 .modal-user-actions { margin-bottom: 18px; }
@@ -1113,44 +1156,6 @@ onUnmounted(() => {
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
-}
-
-.watched-btn {
-  padding: 5px 14px;
-  border-radius: 99px;
-  font-family: var(--font-body);
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  border: 1px solid var(--border);
-  background: var(--surface3);
-  color: var(--muted);
-  transition: all 0.15s;
-}
-.watched-btn:hover { border-color: rgba(255,255,255,0.2); color: var(--white); }
-.watched-btn--active {
-  background: rgba(45, 212, 191, 0.15);
-  border-color: rgba(45, 212, 191, 0.35);
-  color: var(--teal);
-}
-
-.list-chip {
-  padding: 5px 14px;
-  border-radius: 99px;
-  font-family: var(--font-body);
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  border: 1px solid var(--border);
-  background: var(--surface3);
-  color: var(--muted);
-  transition: all 0.15s;
-}
-.list-chip:hover { border-color: rgba(255,255,255,0.2); color: var(--white); }
-.list-chip--active {
-  background: rgba(45,212,191,0.15);
-  border-color: rgba(45,212,191,0.35);
-  color: var(--teal);
 }
 
 .no-lists-hint {
@@ -1163,14 +1168,26 @@ onUnmounted(() => {
 @media (max-width: 560px) {
   .modal {
     flex-direction: column;
-    padding: 16px 16px 40px 16px;
+    padding: calc(48px + env(safe-area-inset-top, 0px)) 16px 40px 16px;
     gap: 16px;
     max-width: none;
   }
   .modal-poster { width: 100%; height: 200px; }
   .modal-poster img { object-position: center top; }
   .modal-close--desktop { display: none; }
-  .modal-close--mobile  { display: flex; }
+  .modal-close--mobile  {
+    position: fixed;
+    top: calc(10px + env(safe-area-inset-top, 0px));
+    left: 12px;
+    z-index: 120;
+    display: flex;
+    width: 38px;
+    height: 38px;
+    background: rgba(8,8,16,0.82);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.32);
+  }
+  .modal-close--mobile svg { width: 18px; height: 18px; }
   .watch-summary { grid-template-columns: 1fr; }
+  .compatibility-row { grid-template-columns: 1fr; gap: 5px; }
 }
 </style>

@@ -1,43 +1,46 @@
 <template>
-  <section v-if="rows.length" class="from-lists">
-    <div class="from-lists-panel">
-      <SectionHeader eyebrow="From your lists" title="Start with what you already saved." tone="gold">
-        <template #actions>
-      <div class="list-tools">
-        <select v-model="selectedList" aria-label="Choose list">
-          <option value="all">All lists</option>
-          <option v-for="row in rows" :key="row.id" :value="row.id">{{ cleanLabel(row.label) }}</option>
-        </select>
-        <button type="button" @click="$emit('manage')">Manage lists</button>
-      </div>
-        </template>
-      </SectionHeader>
-    </div>
-
+  <section v-if="rows.length" class="from-lists" aria-label="From your lists">
     <MovieRow
       v-for="row in visibleRows"
       :key="row.id"
       :row="row"
       @selectMovie="$emit('selectMovie', $event)"
-    />
+    >
+      <template #actions="{ row: visibleRow }">
+        <div class="list-tools">
+          <select v-model="selectedList" aria-label="Choose list">
+            <option value="all">All lists</option>
+            <option v-for="optionRow in rows" :key="optionRow.id" :value="optionRow.id">{{ cleanLabel(optionRow.label) }}</option>
+          </select>
+          <UiChip v-if="visibleRow.seeAllTo" :to="visibleRow.seeAllTo" size="sm" tone="safe">See all</UiChip>
+          <UiChip size="sm" tone="safe" @click="$emit('manage')">Manage lists</UiChip>
+        </div>
+      </template>
+    </MovieRow>
   </section>
 </template>
 
 <script setup>
 import { computed, ref, watch } from "vue";
 import MovieRow from "@/components/MovieRow.vue";
-import SectionHeader from "@/components/SectionHeader.vue";
+import UiChip from "@/components/UiChip.vue";
 
 const props = defineProps({ rows: { type: Array, default: () => [] } });
 defineEmits(["selectMovie", "manage"]);
 
+const PREVIEW_LIMIT = 24;
 const selectedList = ref("all");
+
 watch(() => props.rows.map(r => r.id).join("|"), () => {
   if (selectedList.value !== "all" && !props.rows.some(row => row.id === selectedList.value)) selectedList.value = "all";
 });
 
 const visibleRows = computed(() => {
-  if (selectedList.value !== "all") return props.rows.filter(row => row.id === selectedList.value);
+  if (selectedList.value !== "all") {
+    const row = props.rows.find(candidate => candidate.id === selectedList.value);
+    return row ? [{ ...row, label: "From your lists", movies: row.movies.slice(0, PREVIEW_LIMIT), seeAllTo: row.seeAllTo }] : [];
+  }
+
   const seen = new Set();
   const movies = [];
   for (const row of props.rows) {
@@ -45,9 +48,9 @@ const visibleRows = computed(() => {
       if (seen.has(movie.id)) continue;
       seen.add(movie.id);
       movies.push(movie);
-      if (movies.length >= 24) break;
+      if (movies.length >= PREVIEW_LIMIT) break;
     }
-    if (movies.length >= 24) break;
+    if (movies.length >= PREVIEW_LIMIT) break;
   }
   return movies.length ? [{ id: "all-lists", label: "From your lists", movies }] : [];
 });
@@ -55,11 +58,36 @@ function cleanLabel(label) { return label.replace(/^My list ·\s*/, ""); }
 </script>
 
 <style scoped>
-.from-lists { margin-bottom: 24px; padding-top: 4px; }
-.from-lists-panel { margin: 0 48px 10px; padding: 18px; border: 1px solid rgba(245,200,66,0.18); border-radius: 18px; background: linear-gradient(135deg, rgba(245,200,66,0.11), rgba(255,255,255,0.03)); }
-.list-tools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
-select, button { min-height: 38px; border: 1px solid rgba(255,255,255,0.14); border-radius: 999px; background: rgba(8,8,16,0.66); color: var(--white); font: inherit; font-size: 13px; padding: 0 12px; }
-button { cursor: pointer; color: var(--gold); }
-button:hover { border-color: rgba(245,200,66,0.44); }
-@media (max-width: 640px) { .from-lists-panel { margin: 0 16px 8px; padding: 14px; } .list-tools { justify-content: flex-start; } select { max-width: 100%; } }
+.from-lists { margin-bottom: 6px; padding-top: 2px; }
+.list-tools {
+  min-width: 0;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
+select {
+  flex: 0 0 auto;
+  min-height: 32px;
+  max-width: 100%;
+  min-width: 126px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 999px;
+  background: rgba(8,8,16,0.5);
+  color: var(--white);
+  font: inherit;
+  font-size: 12px;
+  padding: 0 11px;
+}
+.list-tools :deep(.ui-chip) { flex: 0 0 auto; }
+@media (max-width: 640px) {
+  .from-lists { margin-bottom: 2px; }
+  .list-tools {
+    justify-content: flex-start;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .list-tools::-webkit-scrollbar { display: none; }
+  select { min-width: 112px; }
+}
 </style>

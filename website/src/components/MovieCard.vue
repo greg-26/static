@@ -284,4 +284,17 @@ const posterStyle = computed(() => ({
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+@media (hover: none), (pointer: coarse) {
+  .card:hover {
+    transform: none;
+    z-index: 0;
+  }
+
+  .card:hover .card-overlay { opacity: 0.8; }
+
+  .card-maturity {
+    display: none;
+  }
+}
 </style>

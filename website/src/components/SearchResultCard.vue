@@ -98,6 +98,7 @@ const listLabel = computed(() => {
   outline: none;
   transform: translateY(-1px);
 }
+.search-card:active { transform: translateY(0); }
 .poster {
   width: 86px;
   aspect-ratio: 2 / 3;
@@ -116,5 +117,16 @@ const listLabel = computed(() => {
 h3 { font-size: 18px; line-height: 1.1; color: var(--white); }
 .overview { color: rgba(240,238,232,0.68); font-size: 13px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+@media (hover: none), (pointer: coarse) {
+  .search-card:hover {
+    border-color: rgba(255,255,255,0.08);
+    background: rgba(15,15,26,0.78);
+    transform: none;
+  }
+  .search-card:active {
+    border-color: rgba(232,54,93,0.55);
+    background: rgba(22,22,31,0.92);
+  }
+}
 @media (max-width: 640px) { .search-card { grid-template-columns: 72px minmax(0, 1fr); gap: 11px; padding: 10px; } .poster { width: 72px; } h3 { font-size: 16px; } }
 </style>
