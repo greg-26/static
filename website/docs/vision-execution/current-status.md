@@ -6,7 +6,7 @@ Last reorganized: 2026-07-13.
 - Delivered: primary Discover/Search/Settings IA, route-backed tabs, bottom navigation, Search as vertical retrieval, reusable Search input primitive, Search landing recents, Settings deep links, native profile/list/maturity settings routes, custom maturity profile create/duplicate/rename/delete, Discover list integration, dedicated `/lists/:listId` poster-grid browsing, temporary vs permanent filter separation, compact mobile Discover hierarchy, persisted maturity profile selection/presets, clearer profile-aware suitability/availability/list signals in cards/details, movie-detail maturity hierarchy with raw parental-guide detail secondary, a narrowed shared-list invite modal instead of duplicate broad Settings modal UI, and `UiChip` support for semantic links plus buttons.
 - Partial: manual mobile review is still needed for the new list grid, bottom-nav interaction, movie detail full-screen/close-button behavior, narrowed shared-list invite flow, lightweight structured Search sections/deep links/no-results state, the stacked mobile From your lists row actions, the Search no-mobile-autofocus/recent-chip/touch-card behavior, the flatter Settings subroutes, and the Discover hero after removing the redundant Settings shortcut.
 - CEO feedback status: implemented locally: manage-list share behavior, Settings index two-line density, shorter **Available on …** row titles, duplicate movie-detail availability removal, cross-profile suitability glance, subtle row-title list selector, and Settings → Lists row-open navigation plus clipboard-first **Copied** share feedback. Implemented locally: source-level chip/dropdown color semantics now keep non-destructive selected/hover states teal or neutral, with red reserved for danger/destructive states. Still open: manual phone/touch verification of dropdown behavior and selected-state readability.
-- PM/QA follow-up backlog: visible suitability reasoning for Adults/no-limit profiles, broader Search ranking regression review beyond the fixed exact-title `godfather` case, abstract availability annotations in Search results without provider-name clutter, Settings input labels, list/profile gate copy, and modal-specific QA coverage.
+- PM/QA follow-up backlog: visible suitability reasoning for Adults/no-limit profiles, broader Search ranking regression review beyond the fixed exact-title `godfather` case, abstract availability annotations in Search results without provider-name clutter, non-destructive Search result hover/active colors, Settings input-label verification, list/profile gate copy, and modal-specific QA coverage.
 - Deferred: true backend-backed collection/person search, true Included/Free/Rent/Buy provider groups, list ownership/delete semantics, and backend/scraper data changes.
 
 ## Active sprint
@@ -21,8 +21,8 @@ Recently landed:
 Next useful slices:
 
 1. Movie-detail suitability reasoning for Adults/no-limit profiles: show **No limit set** rows instead of hiding them.
-2. Abstract availability annotations in Search results, without provider names on cards.
-3. Settings-route text input labels/accessibility names.
+2. Abstract availability annotations in Search results, without provider names on cards; while touching Search results, replace the remaining red hover/active border with teal/neutral states because red is reserved for destructive/error feedback.
+3. Settings-route text input label/accessibility-name verification; current visible Settings inputs are wrapped by labels, so this may be a quick audit/test slice rather than a UI rewrite.
 4. No-profile/wrong-profile copy for list-gated surfaces.
 5. Modal QA coverage for movie-detail content, close control, focus/scroll state, suitability, and availability rows.
 

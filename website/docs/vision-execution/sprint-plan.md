@@ -15,8 +15,8 @@ Already landed:
 Open scope:
 
 - Movie-detail suitability reasoning for every active profile, including Adults/no-limit profiles with explicit **No limit set** rows.
-- Abstract availability annotations in Search results, without provider names on cards and without filtering intentional retrieval.
-- Real labels/accessibility names for Settings text inputs flagged by QA.
+- Abstract availability annotations in Search results, without provider names on cards and without filtering intentional retrieval; replace the remaining non-destructive red Search result hover/active border while touching this surface.
+- Real labels/accessibility names for Settings text inputs flagged by QA; current visible Settings inputs appear label-wrapped, so verify before changing UI.
 - Better no-profile vs wrong-profile copy for `/settings/lists`, `/lists/:listId`, and invalid-list states.
 - QA/modal coverage for movie-detail dialog content, close control, focus/scroll state, suitability, and availability rows.
 
@@ -24,8 +24,8 @@ Acceptance criteria:
 
 - Movie details always explain suitability without requiring users to open raw parental-guide details.
 - `/search?q=godfather` puts **The Godfather** (1972) first or clearly first among canonical suggestions; `harry potter` and `james bond` still behave sensibly.
-- Search results annotate availability calmly, do not filter retrieval, and do not show provider-name clutter on cards.
-- Settings-route input probes find no unlabeled visible inputs.
+- Search results annotate availability calmly, do not filter retrieval, do not show provider-name clutter on cards, and use teal/neutral interactive states rather than red for hover/active feedback.
+- Settings-route input probes find no unlabeled visible inputs; if the probe is clean, record verification rather than inventing new labels.
 - `/settings/lists` and `/lists/:bad` explain profile/list state accurately and tersely.
 
 Verification:
