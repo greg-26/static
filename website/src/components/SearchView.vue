@@ -153,6 +153,7 @@ const exactTitleMatches = computed(() => {
   if (query.length < 2) return [];
   return visibleResults.value
     .filter(movie => [movie.t, movie.ts].some(title => normalizeTitle(title) === query))
+    .sort((a, b) => compareExactTitleIntent(a, b, query))
     .slice(0, 6);
 });
 const relatedTitleMatches = computed(() => {
@@ -196,6 +197,25 @@ function normalizeTitle(value = "") {
     .replace(/[^a-z0-9]+/g, " ")
     .replace(/^(the|a|an|el|la|los|las|un|una|unos|unas)\s+/, "")
     .trim();
+}
+
+function compareExactTitleIntent(a, b, query) {
+  return exactTitleIntentScore(b, query) - exactTitleIntentScore(a, query);
+}
+
+function exactTitleIntentScore(movie, query) {
+  const title = normalizeTitle(movie.t);
+  const alternateTitle = normalizeTitle(movie.ts);
+  const ratingScore = (movie.r || 0) * 100;
+  const popularityScore = Math.min(movie.pop || 0, 100);
+  const primaryTitleBoost = title === query ? 500 : 0;
+  const alternateTitleBoost = alternateTitle === query ? 120 : 0;
+  const posterBoost = movie.p ? 20 : 0;
+
+  // Exact-title buckets are already high confidence. Within them, prefer the
+  // canonical, better-known title over obscure same-name noise; this keeps
+  // searches like “godfather” from burying The Godfather under weaker remakes.
+  return primaryTitleBoost + alternateTitleBoost + ratingScore + popularityScore + posterBoost;
 }
 
 function isHighConfidenceRelatedTitle(title, query) {
