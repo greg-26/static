@@ -2,7 +2,16 @@
   <header class="hero">
     <div class="hero-poster-bg" aria-hidden="true">
       <div v-for="(col, ci) in HERO_POSTER_COLS" :key="ci" class="poster-col">
-        <img v-for="(url, i) in col" :key="i" :src="url" loading="lazy" class="poster-bg-img" />
+        <img
+          v-for="(url, i) in col"
+          :key="i"
+          :src="url"
+          alt=""
+          role="presentation"
+          loading="lazy"
+          decoding="async"
+          class="poster-bg-img"
+        />
       </div>
     </div>
     <div class="hero-bg-overlay"></div>

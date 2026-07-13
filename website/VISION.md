@@ -65,6 +65,8 @@ These are concrete constraints from product review. Treat them as acceptance cri
 - Chip text must never wrap to two lines.
 - Long chip labels should truncate, shorten, or move into a menu/detail surface.
 - Controls should be reusable and consistent rather than one-off CSS variants.
+- Chip dropdowns must work reliably; a chip that opens a menu is not decorative.
+- Chips have only clear selected and unselected visual states. Disabled/unavailable may be quiet, but must not turn red. Red is reserved for destructive/error states.
 
 ## Implementation quality
 
@@ -209,6 +211,12 @@ Dropdown:
 - Christmas
 - Shared...
 
+The selector should read as a subtle part of the row title, for example:
+
+**From your lists — All lists ▼**
+
+Do not let the list selector become a separate loud toolbar above the row.
+
 Action:
 
 **Manage lists**
@@ -256,11 +264,14 @@ The remainder of the page consists of curated horizontal rows.
 Examples:
 
 - Recommended for this profile
-- Included with your services
+- Available on Netflix
+- Available on your services
 - Popular now
 - Hidden gems
 - Because you like Comedy
 - Family favourites
+
+Keep row titles short. Avoid long labels such as **Included with your services** when a shorter contextual title like **Available on Netflix** or **Available on your services** communicates the same thing faster.
 
 Each row uses large posters.
 
@@ -325,6 +336,14 @@ Example:
 
 > Compatible with: **With kids**
 
+Movie details should also show suitability across profiles at a glance, using compact scan labels such as:
+
+- Adults ✔
+- Family ✔
+- Kids ❌
+
+This glance must complement, not replace, the active-profile reasoning.
+
 Suitability must help people make informed decisions, not blindly accept a verdict. Summary labels are useful at the filter/poster level, but the detail view must expose the underlying reasons per movie.
 
 Each maturity category shows:
@@ -346,6 +365,8 @@ Categories may include:
 Users understand *why* a title matches instead of seeing only a single score. If the current implementation has lost the previous score/detail presentation, check the original Ohana repo/history and restore the useful parts rather than inventing a new opaque summary.
 
 ### Availability
+
+Availability appears once in movie details. Do not duplicate a shallow availability summary above the fuller provider section unless the shallow summary adds distinct decision value.
 
 Providers grouped by:
 
@@ -472,7 +493,7 @@ This improves navigation while allowing deep links from elsewhere in the applica
 
 ## Settings home
 
-The Settings index should summarize the current state.
+The Settings index should summarize the current state as compact two-line rows: label/category plus current state/title. Do not add routine third-line helper copy; it makes Settings feel loaded and belongs inside the dedicated setting route when needed.
 
 ### Watching
 

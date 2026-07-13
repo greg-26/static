@@ -149,7 +149,7 @@
               <span>{{ list.movies.length }} titles</span>
             </div>
             <button type="button" @click="renameList(list)">Rename</button>
-            <button type="button" @click="copyShareUrl(list.token)">{{ copiedToken === list.token ? 'Copied' : 'Share' }}</button>
+            <button type="button" @click="shareList(list)">{{ copiedToken === list.token ? 'Copied' : 'Share' }}</button>
             <button type="button" class="danger" @click="userStore.removeList(list.token)">Remove</button>
           </div>
           <p v-if="!userStore.lists.length" class="empty-note">No lists yet.</p>
@@ -352,13 +352,25 @@ async function renameList(list) {
   await userStore.renameList(list.token, nextName);
 }
 
-async function copyShareUrl(token) {
+async function shareList(list) {
+  const url = userStore.getShareUrl(list.token);
   try {
-    await navigator.clipboard.writeText(userStore.getShareUrl(token));
-    copiedToken.value = token;
-    setTimeout(() => { if (copiedToken.value === token) copiedToken.value = null; }, 1800);
+    if (navigator.share) {
+      await navigator.share({
+        title: `Ohana list: ${list.name}`,
+        text: `Add “${list.name}” to Ohana TV`,
+        url,
+      });
+      return;
+    }
+
+    await navigator.clipboard.writeText(url);
+    copiedToken.value = list.token;
+    setTimeout(() => { if (copiedToken.value === list.token) copiedToken.value = null; }, 1800);
   } catch (e) {
-    console.warn("Could not copy share URL", e);
+    if (e?.name === "AbortError") return;
+    window.prompt("Copy share link", url);
+    console.warn("Could not share list", e);
   }
 }
 

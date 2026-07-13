@@ -229,9 +229,9 @@ export const useMovieStore = defineStore("movies", () => {
         return { prov, provMovies };
       })
       .filter(({ provMovies }) => provMovies.length >= 4)
-      .map(({ prov, provMovies }) => ({ id: `prov-${prov.id}`, label: selectedProviders.value & prov.bit ? `Included with your services · ${prov.name}` : `On ${prov.name}`, movies: provMovies }));
+      .map(({ prov, provMovies }) => ({ id: `prov-${prov.id}`, label: `Available on ${prov.name}`, movies: provMovies }));
 
-    if (selectedProviders.value) rows.push({ id: "included-services", label: "Included with your services", movies: [...pool].filter((m) => m.prov & selectedProviders.value).sort(byPopRating).slice(0, ROW_MAX) }, ...providerRows);
+    if (selectedProviders.value) rows.push({ id: "included-services", label: "Available on your services", movies: [...pool].filter((m) => m.prov & selectedProviders.value).sort(byPopRating).slice(0, ROW_MAX) }, ...providerRows);
     if (hiddenGems.length >= 4) rows.push({ id: "hidden-gems", label: "Hidden gems", movies: hiddenGems });
 
     for (const [genre, mask] of Object.entries(GENRES)) {

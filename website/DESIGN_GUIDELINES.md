@@ -91,6 +91,10 @@ If a setting, card, label, or paragraph does not change what the user can do, re
 
 Every interactive component needs clear default, hover, pressed, focused, selected, and disabled states. Selected must never be confused with pressed. Color alone should never communicate state.
 
+For chips specifically, the user-facing model is selected vs unselected. Disabled/unavailable chips may be subdued, but they must not look like destructive/error controls. Red is not a disabled-chip color.
+
+Dropdown chips must behave like real controls: tap opens the menu, selected value is visible, and focus/pressed states are obvious.
+
 ### Color has meaning
 
 Reserve accent colors for intentional meaning:
@@ -119,7 +123,7 @@ Discover answers: **What should we watch?**
 - Recommendations are the hero.
 - Discovery controls are temporary and should stay lightweight.
 - Lists support discovery; they should not compete visually with recommendations.
-- The list selector should be lightweight, for example: `Lists · All ▼`.
+- The list selector should be lightweight and integrated into the row title, for example: `From your lists — All lists ▼`.
 - Avoid promotional list banners or explanatory copy when a normal row title is enough.
 
 ### Search
@@ -137,7 +141,8 @@ Search answers: **Help me find something specific.**
 Settings answers: **How does Ohana work for me?**
 
 - Settings is an index, not a form dump.
-- Summarize current configuration.
+- Summarize current configuration in two-line rows: label/category + current state/title.
+- Do not add a third helper line on the Settings home unless it is a warning/error; extra explanation belongs inside the dedicated setting route.
 - Each setting should open its own dedicated route or screen.
 - Avoid long scrolling settings pages.
 - Avoid generic product-note or marketing sections unless explicitly requested.
@@ -161,14 +166,18 @@ Movie details should combine Ohana's differentiators:
 
 Provider/platform names belong in detail surfaces, not poster cards.
 
+Avoid duplicate decision blocks. Movie details should show availability once, in the richest useful location, instead of repeating a shallow summary and then a fuller provider section.
+
+Suitability should support two levels: a quick cross-profile glance (`Adults ✔`, `Kids ❌`) and detailed reasoning for the active profile.
+
 ## Component standards
 
 Implementation rules live in [`CODING_STANDARDS.md`](./CODING_STANDARDS.md). Product intent for common components:
 
 - **Bottom navigation:** icon-only, consistent weight, consistent tap targets.
 - **Chips:** short, one line, reusable, never wrapping.
-- **Settings rows:** compact label, short summary, clear affordance.
-- **Section headers:** quiet structure, not marketing copy.
+- **Settings rows:** compact two-line label + current state/title, clear affordance; no routine third-line helper copy.
+- **Section headers:** quiet structure, not marketing copy. Keep row titles short; prefer `Available on Netflix` / `Available on your services` over long explanatory titles.
 - **Poster cards:** recognition and quick choice, not full metadata.
 - **Metadata badges:** few, meaningful, consistent.
 

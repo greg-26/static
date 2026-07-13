@@ -62,7 +62,7 @@ Do not put the search box inside a decorative wrapper card. Results should be ve
 
 Settings home is an index, not a form dump.
 
-Use compact rows with a label, short summary, and chevron/action affordance. Put editing flows on dedicated routes/screens.
+Use compact two-line rows: label/category plus current state/title, with a chevron/action affordance. Do not render routine third-line helper copy on the Settings home; put explanation inside dedicated routes/screens.
 
 ## Bottom navigation
 

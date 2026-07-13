@@ -32,6 +32,8 @@ Scope: this file is for the `website/` project only inside the Ohana static repo
 - `DESIGN_GUIDELINES.md` — durable design principles, screen intent, visual hierarchy, and UX critique checklist.
 - `VISION_EXECUTION.md` — current execution tracker and immediate fix plan.
 - `CODING_STANDARDS.md` — reusable component and UI implementation standards.
+- `agents/ceo-assistant.md` — CEO feedback intake/coordinator prompt.
+- `agents/pmt.md`, `agents/principal-engineer.md`, `agents/qa.md` — specialist review/planning prompts.
 
 ## Current product model
 
@@ -69,6 +71,7 @@ curl -fL --compressed https://ohana.tv/movies.json -o public/movies.json
 - Before vision implementation, read `README.md`, `VISION.md`, `DESIGN_GUIDELINES.md`, `CODING_STANDARDS.md`, this `AGENTS.md`, and `VISION_EXECUTION.md`.
 - Sequence work according to `VISION.md` and the immediate fix plan in `VISION_EXECUTION.md`; update the tracker before/after each slice.
 - Use subagents for scoped audits, implementation consensus, and separation of concerns; ask them for concise findings, exact file refs, risks, and verification results.
+- For Alex/CEO feedback intake, use `agents/ceo-assistant.md`: capture the feedback in `reports/ceo/`, then coordinate PM/design/principal-engineer updates before implementation.
 - Preserve existing worktree changes: inspect `git status --short` and relevant diffs before editing.
 - After each implementation slice, run the smallest meaningful verification gate, usually `npm run build`, and note manual/mobile checks still needed.
 

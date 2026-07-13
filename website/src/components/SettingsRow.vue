@@ -9,7 +9,6 @@
     <span class="settings-row-main">
       <span class="settings-row-label">{{ label }}</span>
       <strong>{{ title }}</strong>
-      <small>{{ summary }}</small>
     </span>
     <span class="settings-row-chevron" aria-hidden="true">›</span>
   </RouterLink>
@@ -21,7 +20,7 @@ const props = defineProps({
   icon: { type: String, default: "" },
   label: { type: String, required: true },
   title: { type: String, required: true },
-  summary: { type: String, required: true },
+  summary: { type: String, default: "" },
 });
 
 // Material Design icon paths: account-circle-outline, play-circle-outline, shield-account-outline, format-list-bulleted.
@@ -81,7 +80,7 @@ const iconPath = ICON_PATHS[props.icon] || "";
 .settings-row-main {
   min-width: 0;
   display: grid;
-  gap: 2px;
+  gap: 4px;
 }
 
 .settings-row-label {
@@ -102,15 +101,6 @@ const iconPath = ICON_PATHS[props.icon] || "";
   text-overflow: ellipsis;
 }
 
-.settings-row small {
-  min-width: 0;
-  color: rgba(240,238,232,0.58);
-  font-size: 13px;
-  line-height: 1.25;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 
 .settings-row-chevron {
   color: rgba(240,238,232,0.42);

@@ -21,6 +21,16 @@ Deliver the new `VISION.md` direction incrementally: Discover/Search/Settings IA
 6. Improve compatibility language in cards/details using existing maturity limits.
 7. Add a dedicated list route/view where the URL input is the list id (`/lists/:listId`) and the page shows all movies in that list as a poster grid, not a horizontal row; each specific-list row should expose a “See all” link to that route.
 8. Run build after each meaningful slice and keep this file updated.
+9. todo: Principal SDE to include in sprint plans — [QA deep-dive report](reports/qa-deep-dive/2026-07-13-principal-sde-qa-report.md).
+10. todo: Planning agents must review and address — [PM-tech vision/CX report](reports/pmt/2026-07-13-pm-tech-vision-cx-report.md).
+11. todo: CEO feedback process correction and product follow-up — [Manage-list share and Settings density CEO feedback](reports/ceo/2026-07-13-manage-list-share-settings-density-ceo-feedback.md).
+12. todo: Planning agents must review and address — [Principal engineer plan](reports/principal-engineer/2026-07-13-principal-engineer-plan.md).
+
+## Durable agent prompts
+- CEO assistant prompt: [`agents/ceo-assistant.md`](agents/ceo-assistant.md) → captures Alex/CEO feedback in `reports/ceo/`, then routes PM/design/engineering follow-up without implementing ad hoc.
+- PM-tech reviewer prompt: [`agents/pmt.md`](agents/pmt.md) → writes reports to `reports/pmt/` and links new reports here.
+- Principal engineer prompt: [`agents/principal-engineer.md`](agents/principal-engineer.md) → writes reports/plans to `reports/principal-engineer/` and links new reports here.
+- QA/CX prompt: [`agents/qa.md`](agents/qa.md) → uses the global QA/CX harness, writes reports to `reports/qa/`, stores evidence under report folders, and links new reports here.
 
 ## Progress
 - [x] Read `VISION.md`, `README.md`, `AGENTS.md`; `ROADMAP.md`/`ROADMAP_EXECUTION.md` are referenced but absent.
@@ -136,10 +146,24 @@ Deliver the new `VISION.md` direction incrementally: Discover/Search/Settings IA
 - [x] Verification: `npm run build` passed (Vite/PWA, 78 modules, 234.99 kB JS gzip 85.07 kB).
 - [x] Slice 64: fixed the Sprint 6 accessibility watch item by making `UiChip` polymorphic for real router links/anchors as well as buttons, then converting navigation chips in `MovieRow`, `FromYourLists`, and `/lists/:listId` away from custom RouterLink button shims.
 - [x] Verification: `npm run build` passed (Vite/PWA, 78 modules, 234.80 kB JS gzip 85.12 kB); route smoke `/discover`, `/search`, `/search?q=godfather`, `/settings`, `/settings/maturity`, and `/lists/bad-id` returned HTTP 200 on port 5174.
+- [x] Slice 65: cleaned up the Sprint 6 automated mobile/CX audit noise by marking decorative Discover hero poster-background images as presentational (`alt=""`, `role="presentation"`) and async-decodable, so audits and assistive tech do not treat the ambience layer as content.
+- [x] Verification: `npm run build` passed (Vite/PWA, 78 modules, 234.84 kB JS gzip 85.14 kB); route smoke `/discover`, `/search`, `/search?q=godfather`, `/settings`, `/settings/maturity`, and `/lists/bad-id` returned HTTP 200 on port 5175; source audit confirmed all `<img>` usages include `alt`/`:alt`.
+- [x] Slice 66: fixed the QA/P0 movie-detail enrichment bug by making optional `/extra.json` loading defensive. Missing/static-fallback `extra.json` responses now no-op after checking HTTP status and JSON content type instead of attempting to parse HTML and logging a console error.
+- [x] Verification: `npm run build` passed (Vite/PWA, 78 modules, 234.96 kB JS gzip 85.17 kB); route smoke `/discover`, `/search`, `/search?q=godfather`, `/settings`, `/settings/maturity`, `/lists/bad-id`, and `/discover?movie=tt0120737` returned HTTP 200 on port 5173; source grep confirmed the old `Failed to preload extra.json` console error path is gone.
+
+- [x] Captured Alex CEO feedback from 2026-07-13 in `reports/ceo/2026-07-13-alex-ceo-feedback.md`, `VISION.md`, and `DESIGN_GUIDELINES.md`: chip dropdowns must work; chips must not turn red when disabled/unselected; **From your lists — All lists ▼** should be a subtle row-title control; availability row titles should shorten to **Available on …**; movie details should remove duplicate availability and add cross-profile suitability glance.
+- [x] Captured Alex CEO feedback/process correction from 2026-07-13 in `reports/ceo/2026-07-13-manage-list-share-settings-density-ceo-feedback.md`: manage-list Share must visibly work, Settings index rows should be two-line label/value items, and CEO feedback should be reported/linked before team-driving changes.
+- [x] Slice 67: recorded and verified the manage-list/settings-density CEO feedback hotfix stack. `SettingsRow` now renders the Settings index as two-line label/title rows while keeping `summary` optional, and the Settings list Share action now uses native Web Share with clipboard/manual fallbacks.
+- [x] Verification: `npm run build` passed (Vite/PWA, 78 modules, 236.42 kB JS gzip 85.74 kB); route smoke `/discover`, `/search`, `/search?q=godfather`, `/settings`, `/settings/profile`, `/settings/lists`, `/settings/maturity`, `/lists/bad-id`, and `/discover?movie=tt0120737` returned HTTP 200 on port 5174; source checks confirmed the stale `copyShareUrl`, Settings-row third line, and old `/extra.json` console error path are gone.
+- [x] Principal engineer review linked the CEO, PM-tech, QA, CX, vision, and worktree findings into a concrete plan: [Principal engineer plan](reports/principal-engineer/2026-07-13-principal-engineer-plan.md).
+- [x] Slice 68: started Sprint 7 copy cleanup by shortening provider discovery row labels from `Included with your services · <provider>` / `On <provider>` to `Available on <provider>`, and the combined configured-services row to `Available on your services`.
+- [x] Verification: `npm run build` passed (Vite/PWA, 78 modules, 236.37 kB JS gzip 85.73 kB); route smoke `/discover`, `/search`, `/search?q=godfather`, `/settings`, `/settings/profile`, `/settings/lists`, `/settings/maturity`, `/lists/bad-id`, and `/discover?movie=tt0120737` returned HTTP 200 on port 5174; source grep confirmed the old long provider-row labels are gone from `src/stores/movies.js`.
 
 ## Current CX vs Vision status
 - Delivered: primary Discover/Search/Settings IA, route-backed tabs, bottom navigation, Search as vertical retrieval, reusable Search input primitive, Search landing recents, Settings deep links, native profile/list/maturity settings routes, custom maturity profile create/duplicate/rename/delete, Discover list integration, dedicated `/lists/:listId` poster-grid browsing, temporary vs permanent filter separation, compact mobile Discover hierarchy, persisted maturity profile selection/presets, clearer profile-aware suitability/availability/list signals in cards/details, movie-detail maturity hierarchy with raw parental-guide detail secondary, a narrowed shared-list invite modal instead of duplicate broad Settings modal UI, and `UiChip` support for semantic links plus buttons.
 - Partial: manual mobile review is still needed for the new list grid, bottom-nav interaction, movie detail full-screen/close-button behavior, narrowed shared-list invite flow, lightweight structured Search sections/deep links/no-results state, the stacked mobile From your lists row actions, the Search no-mobile-autofocus/recent-chip/touch-card behavior, the flatter Settings subroutes, and the Discover hero after removing the redundant Settings shortcut.
+- New CEO feedback backlog: chip dropdown functionality, chip selected/unselected state cleanup, subtle row-title list selector, duplicate movie-detail availability removal, and cross-profile suitability glance. Implemented and build/route-smoke verified locally: manage-list share behavior, Settings index two-line density, and shorter **Available on …** row titles.
+- PM/QA follow-up backlog: visible suitability reasoning for Adults/no-limit profiles, canonical Search ranking for obvious title intent (`godfather`), abstract availability annotations in Search/cards without provider-name clutter, profile-aware first-row labeling, one-language primary controls, Settings input labels, list/profile gate copy, and modal-specific QA coverage.
 - Deferred: true backend-backed collection/person search, true Included/Free/Rent/Buy provider groups, list ownership/delete semantics, and backend/scraper data changes.
 
 ## Steering review — 2026-07-13 06:11
@@ -153,6 +177,18 @@ Deliver the new `VISION.md` direction incrementally: Discover/Search/Settings IA
 - Plan-vs-implementation alignment remains solid: routes include `/discover`, `/search`, `/settings/:section`, `/lists/:listId`, and `/roadmap`; Search uses `SearchBox`, query-backed results, exact/related/more sections, recents, and a no-results state; Discover list integration uses the normal **From your lists** row plus selector/action slot; the saved-list page is a poster grid; Settings and movie detail have continued reusable-chip consolidation.
 - Steering adjustment: Sprint 6 should now bias toward verification, visual QA, and stabilization rather than more primitive extraction. The next implementation slice should be a phone-sized manual review pass that records concrete findings before further code polish.
 - Watch items for the next agent: confirm `/lists/:listId` intentionally shows complete list contents and does not silently inherit Discover filters; verify the full-screen mobile movie-detail close button and category reasoning with real catalog data.
+
+## Steering review — 2026-07-13 09:51
+- Conflict check: only the steering cron job is visible and no active processes are running, but the worktree is not clean (`HeroSection.vue`, `VISION_EXECUTION.md`, plus `reports/` and `temp/`). Treat the current uncommitted stack as an in-progress Sprint 6 verification/polish batch; do not start a separate broad implementation thread until it is reviewed and committed or deliberately split.
+- The latest Slice 65 code change is aligned with the vision and design guidance: decorative Discover hero poster images are now presentational, while real poster/detail images already carry title/brand alt text. Do not overreact to stale automated alt reports without checking source semantics first.
+- Plan-vs-code alignment remains good: the router has the intended Discover/Search/Settings/list/roadmap surfaces; Discover list previews respect active filters while `/lists/:listId` remains a complete saved-list grid; Search keeps retrieval separate from Discover filters; Settings is route-backed and compact.
+- Key steering decision: Sprint 6 should now move from micro-polish to consolidation — verify mobile screenshots/manual phone behavior, resolve or archive the generated audit reports, run one build/route-smoke pass, then commit the batch. Next code should be only concrete QA findings, not more generic primitive extraction.
+
+## Steering review — 2026-07-13 10:46
+- Conflict check: only this steering cron job is scheduled and no active processes are running. The worktree is still dirty with app-code and doc changes, so preserve the current local stack and avoid concurrent broad implementation.
+- Recent diffs show three local implementation themes already in flight: presentational Discover hero background images, defensive optional `/extra.json` loading in movie details, and CEO hotfixes for list Share plus two-line Settings rows. These are aligned with `VISION.md`/`DESIGN_GUIDELINES.md`, but the hotfix stack still needs build and route-smoke verification before commit.
+- Plan-vs-code alignment remains strong for IA: routes include Discover/Search/Settings/list/roadmap; Search stays separate from Discover filters; list previews respect Discover filters while `/lists/:listId` remains complete; Settings remains route-backed.
+- Key steering decision: keep the next engineering focus narrow. Finish verifying/committing the current stack, then address Sprint 7 control-state/dropdown/list-header fixes before Sprint 8 movie-detail hierarchy and Sprint 9 retrieval/trust follow-ups. Do not add backend availability groups, person search, ownership semantics, or persistence rewrites.
 
 ## Sprint plan
 
@@ -311,6 +347,72 @@ Verification:
 - Manual searches: `godfather`, `james bond`, `harry potter`, typo query, and empty query recents.
 - Record findings and any follow-up slices in this file before starting more implementation.
 
+### Sprint 7 — CEO feedback: control states and row headers
+Goal: fix the visible control/state problems Alex flagged without broad redesign.
+
+Scope:
+- Fix chip dropdown interaction failures in Discover/list controls.
+- Normalize chip selected/unselected/disabled visuals so disabled/unselected chips never turn red.
+- Integrate the list selector into the row-title/header pattern: **From your lists — All lists ▼**.
+- Shorten availability row copy from long explanatory phrasing to **Available on <service>** or **Available on your services**.
+
+Acceptance criteria:
+- Every dropdown chip opens and applies its selection on touch/mobile and desktop.
+- Chips have clear selected and unselected states; disabled/unavailable is quiet, not red.
+- The list selector reads as part of the **From your lists** row header, not as a separate loud toolbar.
+- Availability row headers are short enough to scan on mobile.
+
+Verification:
+- `npm run build`.
+- Manual mobile check of `/discover` controls, list selector, and all chip states.
+- Source/CSS grep or visual review confirms no disabled chip style uses red/destructive treatment.
+
+### Sprint 8 — CEO feedback: movie-detail decision hierarchy
+Goal: make movie details more decisive by removing duplication and adding cross-profile suitability.
+
+Scope:
+- Remove the duplicate/first movie-detail availability block that does not add information beyond the fuller provider section.
+- Keep one clear availability section with provider detail/value.
+- Add a compact suitability glance across configured/built-in profiles, e.g. **Adults ✔**, **Family ✔**, **Kids ❌**.
+- Preserve detailed active-profile suitability reasoning and category scores.
+
+Acceptance criteria:
+- Movie detail shows availability once.
+- The user can scan which profiles a title suits without changing the active profile.
+- Active-profile reasoning remains visible and understandable.
+- No new backend availability/profile model is required; use existing local profile/provider data.
+
+Verification:
+- `npm run build`.
+- Manual movie-detail checks for permissive Adults profile, restrictive kids/family profile, and custom profile when available.
+- Confirm no duplicate availability copy remains in the modal/page.
+
+### Sprint 9 — PM/QA trust, retrieval, and accessibility follow-ups
+Goal: cover the remaining product-vision and QA findings that are not generic chrome polish.
+
+Scope:
+- Make movie-detail suitability reasoning visible for every active profile, including Adults/no-limit profiles where rows should show **No limit set** instead of disappearing.
+- Tune Search exact/near-exact ranking so canonical/high-confidence user intent wins over weak exact-title noise, starting with `godfather`.
+- Add abstract availability annotations to Search results first; evaluate poster cards only if it stays visually calm and never reintroduces provider names on cards.
+- Rename the first Discover row with active profile context, e.g. **Recommended for Adults**.
+- Normalize primary Discover control language to one locale; default to English until real i18n is planned.
+- Add real labels/accessibility names to Settings text inputs flagged by QA.
+- Improve no-profile vs wrong-profile copy for list-gated surfaces.
+- Extend QA/modal coverage so future reports inspect the movie-detail dialog content, close control, focus/scroll state, suitability, and availability rows.
+
+Acceptance criteria:
+- Movie details always explain suitability without requiring users to open raw parental-guide details.
+- `/search?q=godfather` puts `The Godfather` 1972 first or clearly first among canonical suggestions; `harry potter` and `james bond` still behave sensibly.
+- Search results annotate availability without filtering intentional retrieval and without provider-name clutter.
+- Discover first row communicates the active maturity profile.
+- Primary controls do not mix English and Spanish chrome.
+- Settings-route input probes find no unlabeled visible inputs.
+- `/settings/lists` and `/lists/:bad` explain profile/list state accurately and tersely.
+
+Verification:
+- `npm run build`.
+- Manual checks: `/discover`, `/search?q=godfather`, `/search?q=harry%20potter`, `/search?q=james%20bond`, typo query, `/settings/profile`, `/settings/maturity`, `/settings/lists`, `/lists/bad-id`, and a movie-detail deep link.
+
 ## Do not do yet
 - Do not implement true Included/Free/Rent/Buy provider grouping until backend/scraper data supports it.
 - Do not implement real person/studio search without backend data.
@@ -326,4 +428,4 @@ Verification:
 - Settings is now first-class as an index, and core profile/list/maturity edit flows have route-backed pages; any remaining `ConfigModal.vue` dependency should be audited before removal.
 - Provider subscriptions now live visually in Settings, but still reuse the existing `selectedProviders` persistence path for compatibility.
 - Named maturity profiles now persist as profile presets in `filterPrefs.maturityProfiles`; custom create/duplicate/rename/delete UI exists in `/settings/maturity`.
-- Latest Alex feedback remaining priority: movie-detail mobile/full-screen behavior and suitability-detail reasoning, then reusable component consolidation and mobile visual review/polish.
+- Latest Alex feedback remaining priority: broken chip dropdowns and chip state semantics first; then row-header/list-selector and availability-title cleanup; then movie-detail duplicate availability removal plus cross-profile suitability glance.

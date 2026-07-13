@@ -385,15 +385,23 @@ const extraLoaded = ref(false);
 async function loadExtraJsonData() {
   if (extraLoaded.value) return; // Prevent multiple global fetches
   try {
-    // Assuming extra.json is placed inside your public directory alongside movies.json
-    const res = await fetch("/extra.json");
-    if (res.ok) {
-      const data = await res.json();
-      extraTable.value = data || {};
+    // extra.json is optional enrichment. Static hosts may serve index.html for
+    // missing files, so verify the response before attempting JSON parsing.
+    const res = await fetch("/extra.json", { headers: { Accept: "application/json" } });
+    const contentType = res.headers.get("content-type") || "";
+
+    if (!res.ok || !contentType.includes("application/json")) {
+      extraTable.value = {};
       extraLoaded.value = true;
+      return;
     }
-  } catch (error) {
-    console.error("Failed to preload extra.json table:", error);
+
+    const data = await res.json();
+    extraTable.value = data && typeof data === "object" ? data : {};
+  } catch {
+    extraTable.value = {};
+  } finally {
+    extraLoaded.value = true;
   }
 }
 
