@@ -11,16 +11,19 @@
       <slot name="label">{{ label }}</slot>
     </UiChip>
 
-    <div
-      v-if="open"
-      ref="menuEl"
-      class="filter-menu"
-      :class="menuClass"
-      :style="menuStyle"
-      role="menu"
-    >
-      <slot />
-    </div>
+    <Teleport to="body">
+      <div
+        v-if="open"
+        ref="menuEl"
+        class="filter-menu"
+        :class="menuClass"
+        :style="menuStyle"
+        role="menu"
+        @pointerdown.stop
+      >
+        <slot />
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -39,16 +42,33 @@ const props = defineProps({
 const emit = defineEmits(["toggle"]);
 const wrapEl = ref(null);
 const menuEl = ref(null);
+const menuLeft = ref(0);
+const menuTop = ref(0);
+const menuMinWidth = ref(168);
 const xOffset = ref(0);
 
 const menuStyle = computed(() => ({
+  left: `${menuLeft.value}px`,
+  top: `${menuTop.value}px`,
+  minWidth: `${menuMinWidth.value}px`,
   transform: xOffset.value ? `translateX(${xOffset.value}px)` : undefined,
 }));
+
+function positionMenu() {
+  if (!props.open || !wrapEl.value) return;
+
+  const rect = wrapEl.value.getBoundingClientRect();
+  menuLeft.value = Math.round(rect.left);
+  menuTop.value = Math.round(rect.bottom + 8);
+  menuMinWidth.value = Math.max(Math.round(rect.width), 168);
+  xOffset.value = 0;
+}
 
 function fitMenuToViewport() {
   if (!props.open || !menuEl.value) return;
 
-  xOffset.value = 0;
+  positionMenu();
+
   nextTick(() => {
     const menu = menuEl.value;
     if (!menu) return;
@@ -73,8 +93,14 @@ watch(() => props.open, open => {
   else xOffset.value = 0;
 });
 
-onMounted(() => window.addEventListener("resize", fitMenuToViewport));
-onBeforeUnmount(() => window.removeEventListener("resize", fitMenuToViewport));
+onMounted(() => {
+  window.addEventListener("resize", fitMenuToViewport);
+  window.addEventListener("scroll", fitMenuToViewport, true);
+});
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", fitMenuToViewport);
+  window.removeEventListener("scroll", fitMenuToViewport, true);
+});
 </script>
 
 <style scoped>
@@ -96,12 +122,9 @@ onBeforeUnmount(() => window.removeEventListener("resize", fitMenuToViewport));
 }
 
 .filter-menu {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  z-index: 100;
+  position: fixed;
+  z-index: 1000;
   width: max-content;
-  min-width: max(100%, 168px);
   max-width: calc(100vw - 24px);
   display: grid;
   gap: 10px;
