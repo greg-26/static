@@ -15,11 +15,12 @@ Already landed:
 - Movie-detail suitability reasoning for every active profile, including Adults/no-limit profiles with explicit **No limit set** rows.
 - Search result cards annotate abstract availability from existing provider bitmasks only, and Search result hover/active borders use teal/neutral states rather than red.
 - Settings-route visible inputs were verified as label-wrapped; non-destructive focus indicators in `SearchBox`, Settings form inputs, and Settings row focus/chevron now use teal/neutral states rather than red.
+- No-profile vs wrong-profile list-gate copy now distinguishes setup needs from missing/list-not-attached states on Settings → Lists and `/lists/:listId`.
 
 Open scope:
 
-- Better no-profile vs wrong-profile copy for `/settings/lists`, `/lists/:listId`, and invalid-list states.
 - QA/modal coverage for movie-detail dialog content, close control, focus/scroll state, suitability, and availability rows.
+- Manual phone/touch verification for the new list/profile gate copy and existing dropdown selected-state readability.
 
 Acceptance criteria:
 

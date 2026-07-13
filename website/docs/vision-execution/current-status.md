@@ -20,11 +20,12 @@ Recently landed:
 - Slice 75: Movie-detail suitability reasoning stays visible for Adults/no-limit profiles with explicit **No limit set** category rows.
 - Slice 76: Search result cards show abstract availability annotations from existing provider bitmasks only, and Search result hover/active borders now use teal/neutral feedback instead of red.
 - Slice 77: Settings-route visible text inputs were verified as label-wrapped, and remaining non-destructive focus affordances in `SearchBox`, Settings form inputs, and `SettingsRow` chevrons/outlines now use teal instead of red.
+- Slice 78: list/profile gate copy now distinguishes no-profile setup from wrong-profile/list-not-attached states on Settings → Lists and `/lists/:listId`.
 
 Next useful slices:
 
-1. No-profile/wrong-profile copy for list-gated surfaces.
-2. Modal QA coverage for movie-detail content, close control, focus/scroll state, suitability, and availability rows.
+1. Modal QA coverage for movie-detail content, close control, focus/scroll state, suitability, and availability rows.
+2. Manual phone/touch verification for list/profile gate copy and existing dropdown selected-state readability.
 
 ## Do not do yet
 - Do not implement true Included/Free/Rent/Buy provider grouping until backend/scraper data supports it.
@@ -41,4 +42,4 @@ Next useful slices:
 - Settings is now first-class as an index, and core profile/list/maturity edit flows have route-backed pages; any remaining `ConfigModal.vue` dependency should be audited before removal.
 - Provider subscriptions now live visually in Settings, but still reuse the existing `selectedProviders` persistence path for compatibility.
 - Named maturity profiles now persist as profile presets in `filterPrefs.maturityProfiles`; custom create/duplicate/rename/delete UI exists in `/settings/maturity`.
-- Latest remaining priority: Sprint 9 trust/accessibility items above. Code review confirms the next implementation should start with Settings input-label/focus-color audit or list/profile gate copy; avoid reopening completed CEO layout/dropdown changes unless manual phone QA finds a regression.
+- Latest remaining priority: Sprint 9 modal QA coverage. Avoid reopening completed CEO layout/dropdown/list-gate changes unless manual phone QA finds a regression.

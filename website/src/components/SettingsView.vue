@@ -181,7 +181,11 @@
             <p v-if="listError" class="form-error">{{ listError }}</p>
           </div>
         </div>
-        <RouterLink v-else class="card-action" to="/settings/profile">Create profile to use lists</RouterLink>
+        <section v-else class="empty-state empty-state--inline" aria-label="Lists need a profile">
+          <p class="empty-title">Create or restore a profile first</p>
+          <p class="empty-copy">Lists are saved to your Ohana profile, so this device needs a profile before it can create or import shared lists.</p>
+          <UiChip to="/settings/profile" size="sm" tone="safe">Go to Profile</UiChip>
+        </section>
       </template>
 
     </div>
@@ -438,6 +442,10 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .action-row { display: flex; flex-wrap: wrap; gap: 8px; }
 .form-error { color: #fca5a5; font-size: 13px; }
 .empty-note { padding: 12px; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; background: rgba(255,255,255,0.035); color: var(--muted); font-size: 14px; }
+.empty-state { display: grid; gap: 10px; justify-items: start; color: var(--muted); }
+.empty-state--inline { padding: 10px 0; max-width: 520px; }
+.empty-title { margin: 0; color: var(--white); font-size: 20px; font-weight: 650; }
+.empty-copy { margin: 0; font-size: 14px; line-height: 1.5; }
 .provider-grid, .profile-grid { display: flex; flex-wrap: wrap; gap: 8px; }
 .profile-actions-panel { display: grid; gap: 10px; padding: 12px 0; }
 .maturity-editor { display: grid; gap: 14px; }

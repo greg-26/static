@@ -27,11 +27,12 @@ Recently landed:
 - Movie-detail suitability reasoning now stays visible for Adults/no-limit profiles with explicit **No limit set** category rows.
 - Search result cards now annotate abstract availability from existing provider bitmasks only, and their non-destructive hover/active border feedback uses teal/neutral instead of red.
 - Settings-route visible inputs were audited as label-wrapped, and non-destructive focus indicators in Search/Settings now use teal instead of red.
+- List/profile gate copy now distinguishes no-profile setup from wrong-profile/list-not-attached states on Settings → Lists and `/lists/:listId`.
 
 Next useful slices:
 
-1. Improve no-profile/wrong-profile copy for list-gated surfaces.
-2. Extend QA/modal coverage for movie-detail content, close control, focus/scroll state, suitability, and availability rows.
+1. Extend QA/modal coverage for movie-detail content, close control, focus/scroll state, suitability, and availability rows.
+2. Manual phone/touch verification for list/profile gate copy and existing dropdown selected states.
 
 ## Durable agent prompts
 

@@ -36,11 +36,11 @@
     </template>
 
     <section v-else class="empty-state">
-      <p class="empty-title">List not found</p>
-      <p class="empty-copy">This list is not attached to the current profile.</p>
+      <p class="empty-title">{{ missingListTitle }}</p>
+      <p class="empty-copy">{{ missingListCopy }}</p>
       <div class="empty-actions">
         <UiChip to="/discover" size="sm">Back to Discover</UiChip>
-        <UiChip to="/settings/lists" size="sm" tone="safe">Manage lists</UiChip>
+        <UiChip :to="missingListActionTo" size="sm" tone="safe">{{ missingListActionLabel }}</UiChip>
       </div>
     </section>
   </main>
@@ -66,10 +66,21 @@ const movieById = computed(() => {
   return map;
 });
 
-const list = computed(() => {
-  const id = Array.isArray(route.params.listId) ? route.params.listId[0] : route.params.listId;
-  return userStore.lists.find(candidate => candidate.token === id) || null;
+const listId = computed(() => {
+  const id = route.params.listId;
+  return Array.isArray(id) ? id[0] : id;
 });
+
+const list = computed(() => userStore.lists.find(candidate => candidate.token === listId.value) || null);
+
+const missingListTitle = computed(() => userStore.isLoggedIn ? "List not in this profile" : "Profile needed");
+const missingListCopy = computed(() => {
+  if (!userStore.isLoggedIn) return "Lists are attached to profiles. Create or restore a profile to open saved or shared lists.";
+  const profileName = userStore.userData?.name || "this profile";
+  return `This list is not attached to ${profileName}. Switch profiles, or import a shared-list link in Settings.`;
+});
+const missingListActionTo = computed(() => userStore.isLoggedIn ? "/settings/lists" : "/settings/profile");
+const missingListActionLabel = computed(() => userStore.isLoggedIn ? "Manage lists" : "Go to Profile");
 
 const movies = computed(() => {
   if (!list.value) return [];
