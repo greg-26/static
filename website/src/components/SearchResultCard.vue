@@ -15,6 +15,7 @@
       <p class="overview">{{ synopsis }}</p>
       <div class="chips">
         <UiBadge :tone="compatTone">{{ compatibilityLabel }}</UiBadge>
+        <UiBadge :tone="availabilityTone">{{ availabilityLabel }}</UiBadge>
         <UiBadge v-if="listLabel" tone="gold">{{ listLabel }}</UiBadge>
       </div>
     </div>
@@ -67,6 +68,14 @@ const compatTone = computed(() => {
   return compatibilityLabel.value.startsWith("Fits") ? "success" : "warning";
 });
 
+const availabilityLabel = computed(() => {
+  if (!props.movie.prov) return "Availability unknown";
+  if (store.selectedProviders && (props.movie.prov & store.selectedProviders)) return "Available on your services";
+  return "Available elsewhere";
+});
+
+const availabilityTone = computed(() => availabilityLabel.value === "Available on your services" ? "gold" : "neutral");
+
 const listLabel = computed(() => {
   if (!userStore.isLoggedIn) return "";
   const lists = userStore.lists.filter(list => list.movies.includes(props.movie.id)).map(list => list.name);
@@ -93,7 +102,7 @@ const listLabel = computed(() => {
 }
 .search-card:hover,
 .search-card:focus-visible {
-  border-color: rgba(232,54,93,0.55);
+  border-color: rgba(45,212,191,0.45);
   background: rgba(22,22,31,0.92);
   outline: none;
   transform: translateY(-1px);
@@ -124,7 +133,7 @@ h3 { font-size: 18px; line-height: 1.1; color: var(--white); }
     transform: none;
   }
   .search-card:active {
-    border-color: rgba(232,54,93,0.55);
+    border-color: rgba(45,212,191,0.42);
     background: rgba(22,22,31,0.92);
   }
 }
