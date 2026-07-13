@@ -80,15 +80,21 @@
               <strong>{{ suitabilitySummary.label }}</strong>
               <RouterLink v-if="suitabilitySummary.action" to="/settings/maturity">Adjust profile</RouterLink>
             </div>
-            <div class="watch-summary-item" :class="availabilitySummary.className">
-              <span>Availability</span>
-              <strong>{{ availabilitySummary.label }}</strong>
-              <RouterLink v-if="availabilitySummary.action" to="/settings/streaming">Set services</RouterLink>
-            </div>
             <div v-if="listSummary" class="watch-summary-item watch-summary-item--list">
               <span>Lists</span>
               <strong>{{ listSummary }}</strong>
             </div>
+          </div>
+
+          <div v-if="profileCompatibilityGlance.length" class="profile-glance" aria-label="Suitability across profiles">
+            <span
+              v-for="profile in profileCompatibilityGlance"
+              :key="profile.id"
+              class="profile-glance-pill"
+              :class="profile.fits ? 'profile-glance-pill--ok' : 'profile-glance-pill--warn'"
+            >
+              {{ profile.label }} {{ profile.fits ? '✓' : '!' }}
+            </span>
           </div>
 
           <div v-if="compatibilityRows.length" class="compatibility-summary">
@@ -235,9 +241,13 @@
           </details>
 
           <div class="modal-providers" v-if="providerNames.length || userStore.isLoggedIn">
-            <p class="modal-section-label">Included</p>
+            <div class="providers-head">
+              <p class="modal-section-label">Where to watch</p>
+              <RouterLink v-if="availabilityDetail.action" to="/settings/streaming">Set services</RouterLink>
+            </div>
+            <p v-if="availabilityDetail.label" class="availability-note" :class="availabilityDetail.className">{{ availabilityDetail.label }}</p>
             <div class="provider-list">
-              <a v-for="p in providerNames" target="_blank" rel="noopener" :key="p" :href="extraDetails?.tmdbUrl+'/watch'" class="provider-chip">{{ p }}</a>
+              <a v-for="p in providerNames" target="_blank" rel="noopener" :key="p" :href="providerWatchUrl" class="provider-chip">{{ p }}</a>
 
               <!-- Custom provider chips -->
               <span
@@ -345,13 +355,27 @@ const suitabilitySummary = computed(() => {
     ? { label: `Fits ${activeProfileName.value}`, className: "watch-summary-item--ok" }
     : { label: `Review for ${activeProfileName.value}`, className: "watch-summary-item--warn", action: true };
 });
-const availabilitySummary = computed(() => {
-  if (!props.movie?.prov) return { label: "Availability unknown", className: "", action: true };
-  if (!movieStore.selectedProviders) return { label: providerNames.value.slice(0, 2).join(" · ") || "Set your services", className: "", action: true };
-  const configured = providerNames.value.filter(name => selectedProviderNames.value.includes(name));
-  if (configured.length) return { label: configured.slice(0, 2).join(" · ") + (configured.length > 2 ? ` +${configured.length - 2}` : ""), className: "watch-summary-item--ok" };
-  return { label: "Not in your services", className: "watch-summary-item--warn", action: true };
+function profileFitsMovie(profile) {
+  if (!profile?.values?.some(v => v >= 0)) return true;
+  if (props.movie?.mat === undefined) return false;
+  return profile.values.every((allowed, i) => {
+    if (allowed < 0) return true;
+    const rawScore = getScore(props.movie.mat, MATURITY_CATEGORIES[i].shift);
+    const movieScore = Number.isFinite(rawScore) ? Math.round(rawScore) : 6;
+    return movieScore <= allowed;
+  });
+}
+
+const profileCompatibilityGlance = computed(() => {
+  return movieStore.maturityProfiles
+    .slice(0, 5)
+    .map(profile => ({
+      id: profile.id,
+      label: profile.label,
+      fits: profileFitsMovie(profile),
+    }));
 });
+
 const listSummary = computed(() => {
   if (!props.movie || !userStore.isLoggedIn) return "";
   const labels = userStore.lists.filter(list => list.movies.includes(props.movie.id)).map(list => list.name);
@@ -485,17 +509,24 @@ const genreLabels = computed(() => {
     .map(([name]) => name);
 });
 
-const selectedProviderNames = computed(() => PROVIDERS
-  .filter(p => movieStore.selectedProviders & p.bit)
-  .map(p => p.name)
-);
-
 const providerNames = computed(() => {
   if (!props.movie) return [];
   return PROVIDERS
     .filter(p => props.movie.prov & p.bit)
     .sort((a, b) => Number(Boolean(movieStore.selectedProviders & b.bit)) - Number(Boolean(movieStore.selectedProviders & a.bit)))
     .map(p => p.name);
+});
+const providerWatchUrl = computed(() => extraDetails.value?.tmdbUrl ? `${extraDetails.value.tmdbUrl}/watch` : `https://www.themoviedb.org/search?query=${encodeURIComponent(props.movie?.t || "")}`);
+
+const availabilityDetail = computed(() => {
+  if (!props.movie?.prov && !resolvedCustomProviders.value.length) return { label: "Availability unknown.", className: "", action: true };
+  if (!movieStore.selectedProviders) return { label: "Set your services to put them first.", className: "", action: true };
+  const selectedNames = PROVIDERS
+    .filter(p => movieStore.selectedProviders & p.bit)
+    .map(p => p.name);
+  const configured = providerNames.value.filter(name => selectedNames.includes(name));
+  if (configured.length) return { label: `Available on ${configured.slice(0, 2).join(" · ")}${configured.length > 2 ? ` +${configured.length - 2}` : ""}.`, className: "availability-note--ok" };
+  return { label: "Not available on your selected services.", className: "availability-note--warn", action: true };
 });
 
 // ─── Custom providers ─────────────────────────────────────────────────────────
@@ -780,6 +811,25 @@ onUnmounted(() => {
 
 /* ── Providers ── */
 .modal-providers { margin-bottom: 18px; }
+.providers-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.providers-head a {
+  color: var(--teal);
+  font-size: 11px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.availability-note {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.availability-note--ok { color: var(--teal); }
+.availability-note--warn { color: #fca5a5; }
 .provider-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .provider-chip {
   padding: 4px 12px;
@@ -1059,9 +1109,9 @@ onUnmounted(() => {
 /* ── Watch summary ── */
 .watch-summary {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
-  margin: 12px 0 18px;
+  margin: 12px 0 12px;
 }
 .watch-summary-item {
   min-width: 0;
@@ -1091,6 +1141,29 @@ onUnmounted(() => {
 .watch-summary-item--ok { border-color: rgba(45,212,191,0.24); background: rgba(45,212,191,0.08); }
 .watch-summary-item--warn { border-color: rgba(248,113,113,0.22); background: rgba(248,113,113,0.08); }
 .watch-summary-item--list { border-color: rgba(245,200,66,0.22); background: rgba(245,200,66,0.08); }
+
+.profile-glance {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin: 0 0 14px;
+  padding-bottom: 2px;
+}
+.profile-glance::-webkit-scrollbar { display: none; }
+.profile-glance-pill {
+  flex: 0 0 auto;
+  max-width: 128px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 750;
+}
+.profile-glance-pill--ok { color: var(--teal); background: rgba(45,212,191,0.1); }
+.profile-glance-pill--warn { color: #fca5a5; background: rgba(248,113,113,0.11); }
 
 /* ── Compatibility summary ── */
 .compatibility-summary {
