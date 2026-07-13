@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import { ref, computed, shallowRef } from "vue";
 import Fuse from "fuse.js";
 import { MATURITY_CATEGORIES, getScore } from "@/maturity.js";
-import { DEFAULT_MATURITY_PROFILES, normalizeMaturityProfiles, normalizeMaturityValues, profileById } from "@/lib/maturityProfiles.js";
+import { DEFAULT_MATURITY_PROFILES, normalizeMaturityProfiles, normalizeMaturityValues, profileById, profileLabel } from "@/lib/maturityProfiles.js";
 
 // ── Genres: exact IMDb strings as keys, bitmask values ───────────────────────
 export const GENRES = {
@@ -206,9 +206,11 @@ export const useMovieStore = defineStore("movies", () => {
 
     const ROW_MAX = 500;
 
+    const activeProfileLabel = profileLabel(maturityProfiles.value, activeMaturityProfileId.value);
+
     const topRated = [...pool].sort( byRated ).slice(0, ROW_MAX);
     if (topRated.length >= 4)
-      rows.push({ id: "recommended", label: "Recommended for this profile", movies: topRated });
+      rows.push({ id: "recommended", label: `Recommended for ${activeProfileLabel}`, movies: topRated });
 
     const hiddenGems = [...pool]
       .filter((m) => (m.r || 0) >= 7 && (m.pop || 0) < 30)

@@ -103,7 +103,7 @@
             :active="store.titleType === 'tv'"
             @click="toggleTitleType('tv', $event)"
           >
-            <span>Series</span>
+            <span>TV Shows</span>
             <span v-if="store.titleType === 'tv'" class="chip-remove" aria-hidden="true">×</span>
           </UiChip>
 
@@ -112,7 +112,7 @@
             :active="store.titleType === 'movies'"
             @click="toggleTitleType('movies', $event)"
           >
-            <span>Películas</span>
+            <span>Movies</span>
             <span v-if="store.titleType === 'movies'" class="chip-remove" aria-hidden="true">×</span>
           </UiChip>
 
@@ -130,7 +130,7 @@
               </span>
             </template>
             <div class="filter-heading">
-              <p class="filter-label">Categorías</p>
+              <p class="filter-label">Genre</p>
               <span>{{ selectedGenreSummary }}</span>
             </div>
             <div class="menu-options menu-options--grid">
@@ -233,15 +233,15 @@ const selectedProviderNames = computed(() =>
 
 const genreChipLabel = computed(() => {
   const count = store.selectedGenres.size;
-  if (count === 0) return "Categorías";
+  if (count === 0) return "Genre";
   if (count === 1) return [...store.selectedGenres][0];
-  return `${count} categorías`;
+  return `${count} genres`;
 });
 
 const selectedGenreSummary = computed(() => {
   const count = store.selectedGenres.size;
-  if (count === 0) return "Cualquiera";
-  return `${count} ${count === 1 ? "seleccionada" : "seleccionadas"}`;
+  if (count === 0) return "Any genre";
+  return `${count} selected`;
 });
 
 const availabilityChipLabel = computed(() => {
