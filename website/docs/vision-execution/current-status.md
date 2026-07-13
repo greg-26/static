@@ -17,14 +17,14 @@ Recently landed:
 
 - Slice 73: exact-title search ranking now prefers canonical intent; `/search?q=godfather` ranks **The Godfather** (1972) first.
 - Slice 74: Discover first row is profile-aware and primary Discover controls are normalized to English.
+- Slice 75: Movie-detail suitability reasoning stays visible for Adults/no-limit profiles with explicit **No limit set** category rows.
 
 Next useful slices:
 
-1. Movie-detail suitability reasoning for Adults/no-limit profiles: show **No limit set** rows instead of hiding them.
-2. Abstract availability annotations in Search results, without provider names on cards; while touching Search results, replace the remaining red hover/active border with teal/neutral states because red is reserved for destructive/error feedback. Keep this limited to existing provider-bitmask facts: selected-service match, available elsewhere, or unknown.
-3. Settings-route text input label/accessibility-name verification; current visible Settings inputs are wrapped by labels, so this should be a quick audit/test slice rather than a UI rewrite. If labels pass, use the slice to mop up non-destructive red focus indicators (`SearchBox`, Settings form inputs, Settings row focus) instead of changing copy or layout.
-4. No-profile/wrong-profile copy for list-gated surfaces.
-5. Modal QA coverage for movie-detail content, close control, focus/scroll state, suitability, and availability rows.
+1. Abstract availability annotations in Search results, without provider names on cards; while touching Search results, replace the remaining red hover/active border with teal/neutral states because red is reserved for destructive/error feedback. Keep this limited to existing provider-bitmask facts: selected-service match, available elsewhere, or unknown.
+2. Settings-route text input label/accessibility-name verification; current visible Settings inputs are wrapped by labels, so this should be a quick audit/test slice rather than a UI rewrite. If labels pass, use the slice to mop up non-destructive red focus indicators (`SearchBox`, Settings form inputs, Settings row focus) instead of changing copy or layout.
+3. No-profile/wrong-profile copy for list-gated surfaces.
+4. Modal QA coverage for movie-detail content, close control, focus/scroll state, suitability, and availability rows.
 
 ## Do not do yet
 - Do not implement true Included/Free/Rent/Buy provider grouping until backend/scraper data supports it.
@@ -41,4 +41,4 @@ Next useful slices:
 - Settings is now first-class as an index, and core profile/list/maturity edit flows have route-backed pages; any remaining `ConfigModal.vue` dependency should be audited before removal.
 - Provider subscriptions now live visually in Settings, but still reuse the existing `selectedProviders` persistence path for compatibility.
 - Named maturity profiles now persist as profile presets in `filterPrefs.maturityProfiles`; custom create/duplicate/rename/delete UI exists in `/settings/maturity`.
-- Latest remaining priority: Sprint 9 trust/accessibility items above. Code review confirms the next implementation should start with `MovieModal.vue` no-limit suitability rows or `SearchResultCard.vue` availability/color-state cleanup; avoid reopening completed CEO layout changes unless manual phone QA finds a regression.
+- Latest remaining priority: Sprint 9 trust/accessibility items above. Code review confirms the next implementation should start with `SearchResultCard.vue` availability/color-state cleanup or Settings input-label/focus-color audit; avoid reopening completed CEO layout changes unless manual phone QA finds a regression.

@@ -23,14 +23,14 @@ Recently landed:
 - Exact-title Search ranking now prefers canonical user intent; `/search?q=godfather` puts **The Godfather** (1972) first.
 - Discover’s first recommendation row is profile-aware.
 - Primary Discover control chrome is normalized to English.
+- Movie-detail suitability reasoning now stays visible for Adults/no-limit profiles with explicit **No limit set** category rows.
 
 Next useful slices:
 
-1. Movie-detail suitability reasoning for Adults/no-limit profiles: show **No limit set** instead of hiding category rows.
-2. Add calm abstract availability annotations to Search results without provider-name clutter on cards, and replace the remaining red Search result hover/active border with teal/neutral feedback. Use existing provider bitmask data only: e.g. “Available on your services”, “Available elsewhere”, or “Availability unknown”; do not add provider-name chips to Search cards.
-3. Treat Settings-route input labels/accessibility names as an audit-first slice. Visible Settings inputs are label-wrapped; if verification stays clean, record it and spend remaining color-state cleanup on non-destructive red focus indicators rather than inventing new labels.
-4. Improve no-profile/wrong-profile copy for list-gated surfaces.
-5. Extend QA/modal coverage for movie-detail content, close control, focus/scroll state, suitability, and availability rows.
+1. Add calm abstract availability annotations to Search results without provider-name clutter on cards, and replace the remaining red Search result hover/active border with teal/neutral feedback. Use existing provider bitmask data only: e.g. “Available on your services”, “Available elsewhere”, or “Availability unknown”; do not add provider-name chips to Search cards.
+2. Treat Settings-route input labels/accessibility names as an audit-first slice. Visible Settings inputs are label-wrapped; if verification stays clean, record it and spend remaining color-state cleanup on non-destructive red focus indicators rather than inventing new labels.
+3. Improve no-profile/wrong-profile copy for list-gated surfaces.
+4. Extend QA/modal coverage for movie-detail content, close control, focus/scroll state, suitability, and availability rows.
 
 ## Durable agent prompts
 

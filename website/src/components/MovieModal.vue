@@ -101,17 +101,17 @@
             <div class="compatibility-summary-head">
               <p class="modal-section-label">Compatible with: <strong>{{ activeProfileName }}</strong></p>
               <span class="compatibility-pill" :class="compatibilityOk ? 'compatibility-pill--ok' : 'compatibility-pill--warn'">
-                {{ compatibilityOk ? 'Fits current limits' : 'Review before watching' }}
+                {{ hasActiveMaturityLimits ? (compatibilityOk ? 'Fits current limits' : 'Review before watching') : 'No limit set' }}
               </span>
             </div>
             <div class="compatibility-grid">
               <div v-for="row in compatibilityRows" :key="row.key" class="compatibility-row" :class="{ exceeded: row.exceeded }">
                 <div class="compatibility-row-main">
                   <span>{{ row.label }}</span>
-                  <strong>{{ row.exceeded ? 'Exceeds profile' : 'Fits profile' }}</strong>
+                  <strong>{{ row.statusLabel }}</strong>
                 </div>
                 <div class="compatibility-row-detail">
-                  <small>{{ row.movieLabel }} ({{ row.movieScore }}/5) · allowed {{ row.allowedLabel }}</small>
+                  <small>{{ row.detailLabel }}</small>
                   <div v-if="row.supportTags.length" class="compatibility-tags" :aria-label="`${row.label} details`">
                     <span v-for="tag in row.supportTags" :key="tag">{{ tag }}</span>
                   </div>
@@ -324,32 +324,37 @@ let bodyLocked = false;
 
 const titleId = computed(() => props.movie?.id ? `movie-dialog-title-${props.movie.id}` : "movie-dialog-title");
 const activeProfileName = computed(() => profileLabel(movieStore.maturityProfiles, movieStore.activeMaturityProfileId));
+const hasActiveMaturityLimits = computed(() => movieStore.maxMaturityCat.some(v => v >= 0));
 const compatibilityRows = computed(() => {
-  if (props.movie?.mat === undefined || !movieStore.maxMaturityCat.some(v => v >= 0)) return [];
-  return MATURITY_CATEGORIES
-    .map((cat, i) => {
-      const allowed = movieStore.maxMaturityCat[i];
-      if (allowed < 0) return null;
-      const rawScore = getScore(props.movie.mat, cat.shift);
-      const movieScore = Number.isFinite(rawScore) ? Math.round(rawScore) : 6;
-      const supportTags = (extraDetails.value?.tags?.[TAG_KEYS[cat.key]] || [])
-        .slice(0, 4)
-        .map(tag => tag.replaceAll('_', ' ').toLowerCase());
-      return {
-        key: cat.key,
-        label: cat.label,
-        movieScore,
-        movieLabel: SEVERITY_LABELS[movieScore] || "Unknown",
-        allowedLabel: SEVERITY_LABELS[allowed] || "Any",
-        supportTags,
-        exceeded: movieScore > allowed,
-      };
-    })
-    .filter(Boolean);
+  if (props.movie?.mat === undefined) return [];
+  return MATURITY_CATEGORIES.map((cat, i) => {
+    const allowed = movieStore.maxMaturityCat[i];
+    const noLimit = allowed < 0;
+    const rawScore = getScore(props.movie.mat, cat.shift);
+    const hasMovieScore = Number.isFinite(rawScore);
+    const movieScore = hasMovieScore ? Math.round(rawScore) : null;
+    const movieLabel = hasMovieScore ? SEVERITY_LABELS[movieScore] || "Unknown" : "Unknown";
+    const scoreDetail = hasMovieScore ? `${movieLabel} (${movieScore}/5)` : movieLabel;
+    const supportTags = (extraDetails.value?.tags?.[TAG_KEYS[cat.key]] || [])
+      .slice(0, 4)
+      .map(tag => tag.replaceAll('_', ' ').toLowerCase());
+    const exceeded = !noLimit && (!hasMovieScore || movieScore > allowed);
+    return {
+      key: cat.key,
+      label: cat.label,
+      movieScore,
+      movieLabel,
+      allowedLabel: noLimit ? "No limit set" : SEVERITY_LABELS[allowed] || "Any",
+      statusLabel: noLimit ? "No limit set" : exceeded ? "Exceeds profile" : "Fits profile",
+      detailLabel: noLimit ? `${scoreDetail} · No limit set` : `${scoreDetail} · allowed ${SEVERITY_LABELS[allowed] || "Any"}`,
+      supportTags,
+      exceeded,
+    };
+  });
 });
 const compatibilityOk = computed(() => compatibilityRows.value.length > 0 && compatibilityRows.value.every(row => !row.exceeded));
 const suitabilitySummary = computed(() => {
-  if (!movieStore.maxMaturityCat.some(v => v >= 0)) return { label: "Adults / no limits", className: "" };
+  if (!hasActiveMaturityLimits.value) return { label: "Adults / no limits", className: "" };
   if (props.movie?.mat === undefined) return { label: "Unknown", className: "watch-summary-item--warn", action: true };
   return compatibilityOk.value
     ? { label: `Fits ${activeProfileName.value}`, className: "watch-summary-item--ok" }

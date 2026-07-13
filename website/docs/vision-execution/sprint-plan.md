@@ -11,10 +11,10 @@ Already landed:
 - Exact/near-exact Search ranking: `godfather` now surfaces **The Godfather** (1972) first.
 - Discover first-row active-profile naming.
 - English primary Discover controls.
+- Movie-detail suitability reasoning for every active profile, including Adults/no-limit profiles with explicit **No limit set** rows.
 
 Open scope:
 
-- Movie-detail suitability reasoning for every active profile, including Adults/no-limit profiles with explicit **No limit set** rows.
 - Abstract availability annotations in Search results, without provider names on cards and without filtering intentional retrieval; replace the remaining non-destructive red Search result hover/active border while touching this surface. Annotation should derive only from existing provider bitmask/configured-service state: selected-service match, available elsewhere, or unknown.
 - Real labels/accessibility names for Settings text inputs flagged by QA; current visible Settings inputs appear label-wrapped, so verify before changing UI. If verified clean, keep scope useful by replacing non-destructive red focus indicators with teal/neutral states; do not rewrite Settings forms just to create work.
 - Better no-profile vs wrong-profile copy for `/settings/lists`, `/lists/:listId`, and invalid-list states.
