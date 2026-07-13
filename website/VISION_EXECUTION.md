@@ -27,8 +27,8 @@ Recently landed:
 Next useful slices:
 
 1. Movie-detail suitability reasoning for Adults/no-limit profiles: show **No limit set** instead of hiding category rows.
-2. Add calm abstract availability annotations to Search results without provider-name clutter on cards, and replace the remaining red Search result hover/active border with teal/neutral feedback.
-3. Verify Settings-route input labels/accessibility names before changing UI; visible Settings inputs appear label-wrapped already.
+2. Add calm abstract availability annotations to Search results without provider-name clutter on cards, and replace the remaining red Search result hover/active border with teal/neutral feedback. Use existing provider bitmask data only: e.g. “Available on your services”, “Available elsewhere”, or “Availability unknown”; do not add provider-name chips to Search cards.
+3. Treat Settings-route input labels/accessibility names as an audit-first slice. Visible Settings inputs are label-wrapped; if verification stays clean, record it and spend remaining color-state cleanup on non-destructive red focus indicators rather than inventing new labels.
 4. Improve no-profile/wrong-profile copy for list-gated surfaces.
 5. Extend QA/modal coverage for movie-detail content, close control, focus/scroll state, suitability, and availability rows.
 
