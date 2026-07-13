@@ -160,11 +160,13 @@ Deliver the new `VISION.md` direction incrementally: Discover/Search/Settings IA
 - [x] Verification: `npm run build` passed (Vite/PWA, 78 modules, 236.37 kB JS gzip 85.73 kB); route smoke `/discover`, `/search`, `/search?q=godfather`, `/settings`, `/settings/profile`, `/settings/lists`, `/settings/maturity`, `/lists/bad-id`, and `/discover?movie=tt0120737` returned HTTP 200 on port 5174; source grep confirmed the old long provider-row labels are gone from `src/stores/movies.js`.
 - [x] Slice 69: started Sprint 8 movie-detail hierarchy cleanup by removing the duplicate top-level Availability summary card, keeping availability in the provider detail section as **Where to watch**, adding a cross-profile suitability glance, and giving provider chips a safe TMDB-search fallback URL when the enrichment URL is absent.
 - [x] Verification: `npm run build` passed (Vite/PWA, 78 modules, 237.18 kB JS gzip 86.02 kB); route smoke `/discover`, `/discover?movie=tt0120737`, `/search`, `/search?q=godfather`, `/settings`, `/settings/maturity`, and `/lists/bad-id` returned HTTP 200 on port 5174; source grep confirmed the old `availabilitySummary`, top-level `Availability` summary label, and `Included` provider section label are gone from `MovieModal.vue`.
+- [x] Slice 70: closed the remaining Sprint 7 row-header gap by moving the **From your lists** list picker out of a separate native `<select>` controls strip and into the row title as a subtle reusable `FilterMenu`/`UiChip` dropdown; `MovieRow` now exposes a label action slot for row-title controls without custom row markup.
+- [x] Verification: `npm run build` passed (Vite/PWA, 78 modules, 237.19 kB JS gzip 85.91 kB); route smoke `/discover`, `/search`, `/search?q=godfather`, `/settings`, `/settings/maturity`, and `/lists/bad-id` returned HTTP 200 on port 5173; source grep confirmed `FromYourLists.vue` no longer uses a native `<select>` and the new list dropdown active state uses non-red teal/neutral styling.
 
 ## Current CX vs Vision status
 - Delivered: primary Discover/Search/Settings IA, route-backed tabs, bottom navigation, Search as vertical retrieval, reusable Search input primitive, Search landing recents, Settings deep links, native profile/list/maturity settings routes, custom maturity profile create/duplicate/rename/delete, Discover list integration, dedicated `/lists/:listId` poster-grid browsing, temporary vs permanent filter separation, compact mobile Discover hierarchy, persisted maturity profile selection/presets, clearer profile-aware suitability/availability/list signals in cards/details, movie-detail maturity hierarchy with raw parental-guide detail secondary, a narrowed shared-list invite modal instead of duplicate broad Settings modal UI, and `UiChip` support for semantic links plus buttons.
 - Partial: manual mobile review is still needed for the new list grid, bottom-nav interaction, movie detail full-screen/close-button behavior, narrowed shared-list invite flow, lightweight structured Search sections/deep links/no-results state, the stacked mobile From your lists row actions, the Search no-mobile-autofocus/recent-chip/touch-card behavior, the flatter Settings subroutes, and the Discover hero after removing the redundant Settings shortcut.
-- New CEO feedback backlog: chip dropdown functionality, chip selected/unselected state cleanup, and subtle row-title list selector. Implemented and build/route-smoke verified locally: manage-list share behavior, Settings index two-line density, shorter **Available on …** row titles, duplicate movie-detail availability removal, and cross-profile suitability glance.
+- CEO feedback status: implemented and build/route-smoke verified locally: manage-list share behavior, Settings index two-line density, shorter **Available on …** row titles, duplicate movie-detail availability removal, cross-profile suitability glance, and the subtle row-title list selector. Still needs manual phone review for chip/dropdown state semantics.
 - PM/QA follow-up backlog: visible suitability reasoning for Adults/no-limit profiles, canonical Search ranking for obvious title intent (`godfather`), abstract availability annotations in Search/cards without provider-name clutter, profile-aware first-row labeling, one-language primary controls, Settings input labels, list/profile gate copy, and modal-specific QA coverage.
 - Deferred: true backend-backed collection/person search, true Included/Free/Rent/Buy provider groups, list ownership/delete semantics, and backend/scraper data changes.
 
@@ -192,9 +194,16 @@ Deliver the new `VISION.md` direction incrementally: Discover/Search/Settings IA
 - Plan-vs-code alignment remains strong for IA: routes include Discover/Search/Settings/list/roadmap; Search stays separate from Discover filters; list previews respect Discover filters while `/lists/:listId` remains complete; Settings remains route-backed.
 - Key steering decision: keep the next engineering focus narrow. Finish verifying/committing the current stack, then address Sprint 7 control-state/dropdown/list-header fixes before Sprint 8 movie-detail hierarchy and Sprint 9 retrieval/trust follow-ups. Do not add backend availability groups, person search, ownership semantics, or persistence rewrites.
 
+## Steering review — 2026-07-13 11:41
+- Conflict check: only this steering cron job is scheduled, no active processes are running, and the worktree is clean at `d28200e` after Slice 69. Safe for documentation-only steering updates.
+- Plan-vs-code alignment remains good: `/discover`, `/search`, `/settings/:section`, `/lists/:listId`, and `/roadmap` are present; Search is query-backed and separate from Discover filters; Settings is route-backed; saved-list preview rows respect active Discover filters while full `/lists/:listId` pages show complete attached-list contents.
+- Latest implementation state has effectively completed the Sprint 8 movie-detail hierarchy slice: availability appears once under **Where to watch**, cross-profile suitability glance exists, and active-profile category reasoning is still present.
+- Remaining drift is now more specific than “mobile polish”: Sprint 7 is only partially closed because the list selector is still a separate `<select>` in `FromYourLists.vue` rather than a subtle row-title control, and chip/dropdown states still deserve a focused source/phone pass. Sprint 9 should follow with trust/retrieval/accessibility fixes, especially mixed English/Spanish Discover controls and canonical Search ranking for `godfather`.
+- Key steering decision: do not keep extending Sprint 6. Treat Sprints 1–8 as implemented/pending manual QA, close the remaining Sprint 7 control/header gaps next, then move to Sprint 9 PM/QA trust fixes. No backend provider grouping, person search, list ownership/delete semantics, or persistence rewrites.
+
 ## Sprint plan
 
-Current sprint: **Sprint 6 — Mobile CX review and polish**.
+Current sprint: **Sprint 7 — CEO feedback: control states and row headers**. Sprint 8’s core movie-detail hierarchy changes are implemented in Slice 69; Sprint 9 is next after the remaining Sprint 7 control/list-header cleanup.
 
 ### Sprint 1 — Finish list-first Discover integration
 Goal: make lists support discovery without becoming a competing promo surface.
@@ -350,6 +359,8 @@ Verification:
 - Record findings and any follow-up slices in this file before starting more implementation.
 
 ### Sprint 7 — CEO feedback: control states and row headers
+Status: current / partial. Availability row copy is implemented; remaining focus is the row-title list selector plus chip/dropdown state verification.
+
 Goal: fix the visible control/state problems Alex flagged without broad redesign.
 
 Scope:
@@ -370,6 +381,8 @@ Verification:
 - Source/CSS grep or visual review confirms no disabled chip style uses red/destructive treatment.
 
 ### Sprint 8 — CEO feedback: movie-detail decision hierarchy
+Status: implemented in Slice 69; pending manual phone/profile QA.
+
 Goal: make movie details more decisive by removing duplication and adding cross-profile suitability.
 
 Scope:

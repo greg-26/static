@@ -1,7 +1,10 @@
 <template>
   <section class="row" v-if="row.movies.length" ref="rowEl">
     <div class="row-header" :class="{ 'row-header--slot-actions': $slots.actions }">
-      <h2 class="row-label">{{ row.label }}</h2>
+      <div class="row-title">
+        <h2 class="row-label">{{ row.label }}</h2>
+        <slot name="label-actions" :row="row" />
+      </div>
       <div class="row-actions" v-if="$slots.actions || row.seeAllTo">
         <slot name="actions" :row="row">
           <UiChip v-if="row.seeAllTo" :to="row.seeAllTo" size="sm" tone="safe">See all</UiChip>
@@ -164,7 +167,15 @@ onUnmounted(() => {
   margin-bottom: 8px;
 }
 
+.row-title {
+  min-width: 0;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
 .row-label {
+  min-width: 0;
   font-family: var(--font-display);
   font-size: 21px;
   letter-spacing: 0.06em;
@@ -251,6 +262,7 @@ onUnmounted(() => {
 
 @media (max-width: 640px) {
   .row-header { padding: 0 16px; align-items: center; gap: 10px; }
+  .row-title { max-width: 100%; flex-wrap: wrap; row-gap: 4px; }
   .row-header--slot-actions {
     align-items: flex-start;
     flex-direction: column;
