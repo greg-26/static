@@ -67,6 +67,7 @@ These are concrete constraints from product review. Treat them as acceptance cri
 - Controls should be reusable and consistent rather than one-off CSS variants.
 - Chip dropdowns must work reliably; a chip that opens a menu is not decorative.
 - Chips have only clear selected and unselected visual states. Disabled/unavailable may be quiet, but must not turn red. Red is reserved for destructive/error states.
+- On touch/mobile, chips must not rely on hover color changes that can stick after tapping. Use stable selected/open/pressed states instead.
 
 ## Implementation quality
 
@@ -134,6 +135,8 @@ Options:
 
 Initially only "Included with my services" may be supported until backend capabilities expand.
 
+The availability/platform dropdown should include a clear path to edit configured platforms in Settings. This is navigation to configuration, not a change to backend provider semantics.
+
 ### Maturity profile
 
 Single-select dropdown.
@@ -148,6 +151,8 @@ Examples:
 The selected profile becomes the active viewing context for the application.
 
 Compatibility shown throughout the app uses this profile.
+
+When a maturity filter is active, poster/card fit labels should not merely restate the filter, such as **Fits Adults** on a screen where every visible title already fits Adults. Keep poster suitability signals only when they add distinction.
 
 ### Content type
 
@@ -346,12 +351,14 @@ Movie details should also show suitability across profiles at a glance, using co
 
 This glance must complement, not replace, the active-profile reasoning.
 
+These profile chips are interactive drill-down controls for the current movie only. Tapping a profile chip should reveal why the title fits or fails that profile, especially to answer “why is this not suitable with my kids?”, without changing the active Discover maturity filter.
+
 Suitability must help people make informed decisions, not blindly accept a verdict. Summary labels are useful at the filter/poster level, but the detail view must expose the underlying reasons per movie.
 
 Each maturity category shows:
 
 - Movie intensity / score
-- Allowed level for the active profile
+- Allowed level for the selected profile, using numeric-first copy such as **Allowed 1 (mild)** rather than label-only copy such as **Allowed mild**
 - Compatible or exceeds
 - Specific supporting details/tags when available
 
@@ -365,6 +372,8 @@ Categories may include:
 - Alcohol
 
 Users understand *why* a title matches instead of seeing only a single score. If the current implementation has lost the previous score/detail presentation, check the original Ohana repo/history and restore the useful parts rather than inventing a new opaque summary.
+
+Avoid generic wrapper boxes that add labels without decisions. A box titled **Suitability** before the profile/chips, or a separate list box that duplicates list chips/actions, should be removed rather than polished.
 
 ### Availability
 

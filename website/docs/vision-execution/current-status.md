@@ -5,7 +5,7 @@ Last reorganized: 2026-07-13.
 ## Current CX vs Vision status
 - Delivered: primary Discover/Search/Settings IA, route-backed tabs, bottom navigation, Search as vertical retrieval, reusable Search input primitive, Search landing recents, Settings deep links, native profile/list/maturity settings routes, custom maturity profile create/duplicate/rename/delete, Discover list integration, dedicated `/lists/:listId` poster-grid browsing, temporary vs permanent filter separation, compact mobile Discover hierarchy, persisted maturity profile selection/presets, clearer profile-aware suitability/availability/list signals in cards/details, movie-detail maturity hierarchy with raw parental-guide detail secondary, a narrowed shared-list invite modal instead of duplicate broad Settings modal UI, and `UiChip` support for semantic links plus buttons.
 - Partial: manual mobile review is still needed for the new list grid, bottom-nav interaction, movie detail full-screen/close-button behavior, narrowed shared-list invite flow, lightweight structured Search sections/deep links/no-results state, the stacked mobile From your lists row actions, the Search no-mobile-autofocus/recent-chip/touch-card behavior, the flatter Settings subroutes, and the Discover hero after removing the redundant Settings shortcut.
-- CEO feedback status: implemented locally: manage-list share behavior, Settings index two-line density, shorter **Available on …** row titles, duplicate movie-detail availability removal, cross-profile suitability glance, subtle row-title list selector, Settings → Lists row-open navigation plus clipboard-first **Copied** share feedback, and restored Discover dropdown menu options. Implemented locally: source-level chip/dropdown color semantics now keep non-destructive selected/hover states teal or neutral, with red reserved for danger/destructive states. Still open: manual phone/touch verification of dropdown behavior and selected-state readability.
+- CEO feedback status: implemented locally: manage-list share behavior, Settings index two-line density, shorter **Available on …** row titles, duplicate movie-detail availability removal, cross-profile suitability glance, subtle row-title list selector, Settings → Lists row-open navigation plus clipboard-first **Copied** share feedback, and restored Discover dropdown menu options. Implemented locally: source-level chip/dropdown color semantics now keep non-destructive selected/hover states teal or neutral, with red reserved for danger/destructive states. Newly routed for principal SDE review: tappable movie-detail suitability chips that reveal per-profile details, removal of redundant Suitability/list boxes, touch-safe chip hover behavior, an edit-platforms link in the platforms dropdown, **Allowed n (label)** maturity copy, and suppression of tautological poster fit labels under active maturity filters. Still open: manual phone/touch verification of dropdown behavior and selected-state readability.
 - PM/QA follow-up backlog: visible suitability reasoning for Adults/no-limit profiles, broader Search ranking regression review beyond the fixed exact-title `godfather` case, abstract availability annotations in Search results without provider-name clutter, non-destructive Search result hover/active colors, Settings input-label verification, list/profile gate copy, and modal-specific QA coverage.
 - Deferred: true backend-backed collection/person search, true Included/Free/Rent/Buy provider groups, list ownership/delete semantics, and backend/scraper data changes.
 
@@ -24,8 +24,9 @@ Recently landed:
 
 Next useful slices:
 
-1. Modal QA coverage for movie-detail content, close control, focus/scroll state, suitability, and availability rows.
-2. Manual phone/touch verification for list/profile gate copy and existing dropdown selected-state readability.
+1. CEO quick-fix slice for movie-detail suitability/profile chips and filter-chip copy/state issues.
+2. Modal QA coverage for movie-detail content, close control, focus/scroll state, suitability, and availability rows.
+3. Manual phone/touch verification for list/profile gate copy and existing dropdown selected-state readability.
 
 ## Do not do yet
 - Do not implement true Included/Free/Rent/Buy provider grouping until backend/scraper data supports it.
@@ -42,4 +43,4 @@ Next useful slices:
 - Settings is now first-class as an index, and core profile/list/maturity edit flows have route-backed pages; any remaining `ConfigModal.vue` dependency should be audited before removal.
 - Provider subscriptions now live visually in Settings, but still reuse the existing `selectedProviders` persistence path for compatibility.
 - Named maturity profiles now persist as profile presets in `filterPrefs.maturityProfiles`; custom create/duplicate/rename/delete UI exists in `/settings/maturity`.
-- Latest remaining priority: Sprint 9 modal QA coverage. Avoid reopening completed CEO layout/dropdown/list-gate changes unless manual phone QA finds a regression.
+- Latest remaining priority: route the 2026-07-14 CEO quick-fix slice first, then resume Sprint 9 modal QA coverage. Avoid reopening completed CEO layout/dropdown/list-gate changes unless manual phone QA finds a regression.

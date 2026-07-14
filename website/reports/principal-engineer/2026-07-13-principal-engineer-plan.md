@@ -25,6 +25,37 @@ Current worktree changes must be preserved. I did not implement app code.
 
 ## Recommended slice order
 
+### 2026-07-14 CEO addendum — prioritize before broad modal QA
+
+New CEO report: [`reports/ceo/2026-07-14-movie-detail-filter-chips-ceo-feedback.md`](../ceo/2026-07-14-movie-detail-filter-chips-ceo-feedback.md).
+
+**Goal**
+Convert the latest CEO feedback into a quick trust slice before expanding generic modal QA.
+
+**Files likely touched**
+- `src/components/MovieModal.vue`
+- `src/components/UiChip.vue` / shared chip CSS
+- `src/components/HeroSection.vue` or the current provider/platform filter dropdown component
+- `src/components/MovieCard.vue`
+- `src/maturity.js` or existing maturity copy helpers only if needed
+
+**Implementation notes**
+- Make movie-detail suitability/profile chips interactive: tapping a chip reveals per-profile reasoning for the current title and does **not** mutate the Discover maturity filter.
+- Remove redundant generic **Suitability** and list wrapper boxes where chips/actions already communicate the state.
+- Disable or neutralize sticky hover color changes under coarse/touch pointers while preserving desktop focus/hover and selected/open states.
+- Add a Settings/platform edit link in the platforms dropdown without changing provider filtering semantics.
+- Change label-only allowed-level copy to numeric-first copy such as **Allowed 1 (mild)**.
+- Hide or reword poster fit labels such as **Fits Adults** when the active maturity filter already guarantees that every displayed title fits.
+
+**Risks**
+- Do not accidentally turn detail-chip taps into global profile/filter changes.
+- Do not reintroduce provider names on poster cards or invent Included/Free/Rent/Buy data.
+- Keep the slice surgical; defer broader modal coverage until this CEO trust issue is closed.
+
+**Verification**
+- `npm run build`
+- Manual/touch checks: `/discover` with active maturity filter, platform dropdown edit link, a movie-detail deep link with multiple profile chips, and at least one restrictive/kids profile scenario.
+
 ### Slice 67 — Record the hotfix stack before more work
 
 **Goal**

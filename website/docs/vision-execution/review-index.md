@@ -7,6 +7,7 @@ Read the linked report only when the current task explicitly touches that feedba
 - [`reports/ceo/2026-07-13-alex-ceo-feedback.md`](../../reports/ceo/2026-07-13-alex-ceo-feedback.md) — chip dropdowns/state color, From-your-lists row-title control, availability row titles, movie-detail hierarchy.
 - [`reports/ceo/2026-07-13-manage-list-share-settings-density-ceo-feedback.md`](../../reports/ceo/2026-07-13-manage-list-share-settings-density-ceo-feedback.md) — manage-list Share behavior, Settings index density, CEO feedback routing.
 - [`reports/ceo/2026-07-13-settings-lists-open-copy-share-ceo-feedback.md`](../../reports/ceo/2026-07-13-settings-lists-open-copy-share-ceo-feedback.md) — Settings → Lists row navigation and clipboard-first copy feedback.
+- [`reports/ceo/2026-07-14-movie-detail-filter-chips-ceo-feedback.md`](../../reports/ceo/2026-07-14-movie-detail-filter-chips-ceo-feedback.md) — tappable movie-detail suitability chips, redundant detail boxes, mobile chip hover, platform-edit link, numeric maturity copy, and tautological poster fit labels.
 
 ## Planning and QA
 

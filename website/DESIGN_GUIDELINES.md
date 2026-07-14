@@ -95,6 +95,8 @@ For chips specifically, the user-facing model is selected vs unselected. Disable
 
 Dropdown chips must behave like real controls: tap opens the menu, selected value is visible, and focus/pressed states are obvious.
 
+On touch/mobile, chips should not change color on hover in a way that sticks after tapping. Prefer stable selected/open/pressed feedback over desktop hover affordances.
+
 ### Color has meaning
 
 Reserve accent colors for intentional meaning:
@@ -122,6 +124,7 @@ Discover answers: **What should we watch?**
 
 - Recommendations are the hero.
 - Discovery controls are temporary and should stay lightweight.
+- Provider/platform controls should offer a lightweight path to edit configured platforms in Settings when the user discovers the setup is wrong.
 - Lists support discovery; they should not compete visually with recommendations.
 - The list selector should be lightweight and integrated into the row title, for example: `From your lists — All lists ▼`.
 - Avoid promotional list banners or explanatory copy when a normal row title is enough.
@@ -171,6 +174,10 @@ Provider/platform names belong in detail surfaces, not poster cards.
 Avoid duplicate decision blocks. Movie details should show availability once, in the richest useful location, instead of repeating a shallow summary and then a fuller provider section.
 
 Suitability should support two levels: a quick cross-profile glance (`Adults ✔`, `Kids ❌`) and detailed reasoning for the active profile.
+
+Cross-profile suitability chips in movie details should be tappable drill-down controls for the current title. They must explain why a title fits or fails a profile without mutating the Discover filter.
+
+Do not wrap obvious detail sections in extra boxes that repeat the heading instead of adding a decision. If chips/actions already communicate suitability or list state, remove the redundant container.
 
 ## Component standards
 

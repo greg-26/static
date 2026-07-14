@@ -6,6 +6,8 @@ Current planning surface only. Completed sprint detail is archived in [`archive/
 
 Goal: cover remaining product-vision and QA findings that are not generic chrome polish.
 
+New CEO priority before broader modal QA: [`reports/ceo/2026-07-14-movie-detail-filter-chips-ceo-feedback.md`](../../reports/ceo/2026-07-14-movie-detail-filter-chips-ceo-feedback.md). Keep it as a quick, reviewable slice rather than another broad redesign.
+
 Already landed:
 
 - Discover dropdown menu options restored after CEO feedback; remaining dropdown work is manual phone/touch verification, not another implementation pass.
@@ -19,11 +21,18 @@ Already landed:
 
 Open scope:
 
+- CEO quick-fix slice: movie-detail suitability chips are tappable drill-down controls per maturity profile; redundant Suitability/list wrapper boxes are removed; touch/mobile chip hover color changes are disabled or made non-sticky; the platforms dropdown links to Settings/platform edits; maturity copy says **Allowed n (label)**; poster fit labels do not repeat the active maturity filter.
 - QA/modal coverage for movie-detail dialog content, close control, focus/scroll state, suitability, and availability rows.
 - Manual phone/touch verification for the new list/profile gate copy and existing dropdown selected-state readability.
 
 Acceptance criteria:
 
+- Tapping a movie-detail suitability/profile chip reveals why that title fits or fails that profile without changing the Discover maturity filter.
+- Movie details do not render generic Suitability/list boxes that duplicate chip/action information.
+- Touch/mobile chips do not rely on sticky hover color changes for state feedback.
+- Platform filtering gives users a direct path to edit configured platforms from the platforms dropdown.
+- Maturity allowed-level copy pairs the number with the label, e.g. **Allowed 1 (mild)**.
+- Poster fit labels are hidden or reworded when they merely restate the active maturity filter.
 - Movie details always explain suitability without requiring users to open raw parental-guide details.
 - `/search?q=godfather` puts **The Godfather** (1972) first or clearly first among canonical suggestions; `harry potter` and `james bond` still behave sensibly.
 - Search results annotate availability calmly from current data, do not filter retrieval, do not show provider-name clutter on cards, and use teal/neutral interactive states rather than red for hover/active feedback.
@@ -33,7 +42,7 @@ Acceptance criteria:
 Verification:
 
 - `npm run build`.
-- Manual checks: `/discover`, `/search?q=godfather`, `/search?q=harry%20potter`, `/search?q=james%20bond`, typo query, `/settings/profile`, `/settings/maturity`, `/settings/lists`, `/lists/bad-id`, and a movie-detail deep link.
+- Manual checks: `/discover` with a maturity filter, platform dropdown, `/search?q=godfather`, `/search?q=harry%20potter`, `/search?q=james%20bond`, typo query, `/settings/profile`, `/settings/maturity`, `/settings/lists`, `/lists/bad-id`, and a movie-detail deep link on touch/mobile.
 
 ## Closed or manual-QA-only sprints
 
