@@ -29,10 +29,18 @@
           <FilterMenu
             :open="activePanel === 'availability'"
             :active="store.availabilityMode !== 'my-services' || Boolean(selectedProviderCount)"
+            :highlight-active="false"
             :label="availabilityChipLabel"
             menu-class="filter-menu--picker"
+            button-class="control-chip--dropdown"
             @toggle="togglePanel('availability')"
           >
+            <template #label>
+              <span class="chip-label-with-icon">
+                <span>{{ availabilityChipLabel }}</span>
+                <span class="chip-chevron" aria-hidden="true">⌄</span>
+              </span>
+            </template>
             <div class="filter-heading">
               <p class="filter-label">Availability</p>
               <span>Configure services in Settings</span>
@@ -46,7 +54,16 @@
                 :aria-checked="store.availabilityMode === 'my-services'"
                 @click="selectAvailability('my-services')"
               >
-                Included with my services
+                Flatrate
+              </button>
+              <button class="menu-option" type="button" role="menuitemradio" aria-checked="false" disabled>
+                Free with ads
+              </button>
+              <button class="menu-option" type="button" role="menuitemradio" aria-checked="false" disabled>
+                Rent
+              </button>
+              <button class="menu-option" type="button" role="menuitemradio" aria-checked="false" disabled>
+                Buy
               </button>
               <button
                 class="menu-option"
@@ -56,7 +73,11 @@
                 :aria-checked="store.availabilityMode === 'any'"
                 @click="selectAvailability('any')"
               >
-                Any availability
+                Any
+              </button>
+              <p class="menu-note">Free/rent/buy modes are not tracked yet.</p>
+              <button class="menu-option menu-option--settings" type="button" @click="openStreamingSettings">
+                Edit services in Settings
               </button>
             </div>
           </FilterMenu>
@@ -104,7 +125,6 @@
             @click="toggleTitleType('tv', $event)"
           >
             <span>TV Shows</span>
-            <span v-if="store.titleType === 'tv'" class="chip-remove" aria-hidden="true">×</span>
           </UiChip>
 
           <UiChip
@@ -113,7 +133,6 @@
             @click="toggleTitleType('movies', $event)"
           >
             <span>Movies</span>
-            <span v-if="store.titleType === 'movies'" class="chip-remove" aria-hidden="true">×</span>
           </UiChip>
 
           <FilterMenu
@@ -182,7 +201,7 @@
               </div>
           </FilterMenu>
 
-          <button v-if="hasFilters" class="clear-btn" type="button" @click="store.clearFilters">Clear</button>
+          <button v-if="hasFilters" class="clear-btn clear-btn--icon" type="button" aria-label="Clear Discover filters" title="Clear filters" @click="store.clearFilters">×</button>
         </div>
       </div>
 
@@ -245,11 +264,8 @@ const selectedGenreSummary = computed(() => {
 });
 
 const availabilityChipLabel = computed(() => {
-  if (store.availabilityMode === "any") return "Any availability";
-  if (!selectedProviderCount.value) return "Included with my services";
-  const names = selectedProviderNames.value.split(", ").filter(Boolean);
-  if (names.length === 1) return `On ${names[0]}`;
-  return `On ${names.length} services`;
+  if (store.availabilityMode === "any") return "Any";
+  return "Flatrate";
 });
 
 const maturityProfiles = computed(() => store.maturityProfiles);
@@ -282,6 +298,11 @@ function selectMaturityProfile(profile) {
 function openMaturitySettings() {
   activePanel.value = null;
   emit("open-settings", "maturity");
+}
+
+function openStreamingSettings() {
+  activePanel.value = null;
+  emit("open-settings", "streaming");
 }
 
 function togglePanel(panel) {
@@ -362,11 +383,11 @@ const hasFilters = computed(() =>
 .control-chip:hover, .clear-btn:hover, .control-chip.active, .control-chip.is-active { border-color: rgba(45,212,191,0.42); color: var(--white); background: rgba(45,212,191,0.1); }
 .control-chip--primary:hover { border-color: rgba(255,255,255,0.26); background: rgba(255,255,255,0.06); color: var(--white); }
 .control-chip--primary.active, .control-chip--primary.is-active { border-color: rgba(45,212,191,0.42); background: rgba(45,212,191,0.12); color: var(--teal); }
-.chip-remove { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; background: rgba(255,255,255,0.18); color: rgba(255,255,255,0.9); font-size: 14px; line-height: 1; }
 .control-chip--safe.active { border-color: rgba(45,212,191,0.42); background: rgba(45,212,191,0.12); color: var(--teal); }
 .chip-label-with-icon { display: inline-flex; align-items: center; gap: 8px; }
 .chip-chevron { font-size: 17px; line-height: 0.8; transform: translateY(-1px); }
 .clear-btn { margin-left: auto; }
+.clear-btn--icon { display: inline-flex; align-items: center; justify-content: center; width: 38px; padding: 0; font-size: 20px; line-height: 1; }
 
 .filter-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; color: var(--muted); font-size: 12px; }
 .filter-heading span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -374,10 +395,11 @@ const hasFilters = computed(() =>
 .menu-options { display: grid; align-content: start; gap: 8px; width: max-content; max-width: calc(100vw - 56px); max-height: min(210px, 31vh); overflow: auto; padding-right: 2px; overscroll-behavior: contain; }
 .menu-options--grid { grid-template-columns: repeat(2, minmax(max-content, 1fr)); }
 .menu-options--single { grid-template-columns: minmax(128px, 1fr); width: 100%; }
-.menu-option { display: flex; align-items: center; width: 100%; min-width: 112px; min-height: 40px; max-width: 180px; padding: 9px 11px; background: rgba(30,30,42,0.86); border: 1px solid rgba(255,255,255,0.16); border-radius: 11px; color: rgba(255,255,255,0.78); font: inherit; font-size: 12px; line-height: 1.2; text-align: left; white-space: normal; overflow-wrap: anywhere; cursor: pointer; transition: border-color 0.15s, color 0.15s, background 0.15s; }
+.menu-option { display: flex; align-items: center; width: 100%; min-width: 112px; min-height: 40px; max-width: 180px; padding: 9px 11px; background: rgba(30,30,42,0.86); border: 1px solid rgba(255,255,255,0.16); border-radius: 11px; color: rgba(255,255,255,0.78); font: inherit; font-size: 12px; line-height: 1.2; text-align: left; white-space: nowrap; cursor: pointer; transition: border-color 0.15s, color 0.15s, background 0.15s; }
 .menu-option:hover { border-color: rgba(45,212,191,0.42); color: var(--white); }
 .menu-option.active { background: rgba(45,212,191,0.15); border-color: var(--teal); color: var(--teal); }
-.menu-option:disabled { opacity: 0.45; cursor: not-allowed; }
+.menu-option:disabled, .menu-option:disabled:hover { opacity: 0.45; cursor: not-allowed; border-color: rgba(255,255,255,0.16); color: rgba(255,255,255,0.78); background: rgba(30,30,42,0.86); }
+.menu-note { max-width: 180px; margin: 0; color: rgba(255,255,255,0.48); font-size: 11px; line-height: 1.35; }
 .menu-option--provider.active { background: rgba(45,212,191,0.15); border-color: var(--teal); color: var(--teal); }
 .menu-option--profile { flex-direction: column; align-items: flex-start; gap: 3px; max-width: 220px; }
 .menu-option--profile small { color: rgba(255,255,255,0.52); font-size: 11px; }

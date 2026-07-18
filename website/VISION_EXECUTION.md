@@ -36,12 +36,13 @@ Recently landed:
 - Search result cards now annotate abstract availability from existing provider bitmasks only, and their non-destructive hover/active border feedback uses teal/neutral instead of red.
 - Settings-route visible inputs were audited as label-wrapped, and non-destructive focus indicators in Search/Settings now use teal instead of red.
 - List/profile gate copy now distinguishes no-profile setup from wrong-profile/list-not-attached states on Settings → Lists and `/lists/:listId`.
+- Discover availability/filter-chip semantics now use `Flatrate`/`Any`, disabled future availability modes, a Settings streaming link, icon-only clear, no selected-chip × glyphs, and suppressed tautological Discover poster fit badges.
 
 Next useful slices:
 
-1. CEO quick-fix slice for movie-detail suitability/profile chips and filter-chip copy/state issues.
+1. Movie-detail suitability/profile chips become tappable drill-down controls without changing the active Discover profile.
 2. Extend QA/modal coverage for movie-detail content, close control, focus/scroll state, suitability, and availability rows.
-3. Manual phone/touch verification for list/profile gate copy and existing dropdown selected states.
+3. Manual phone/touch verification for Discover availability/dropdown selected-state readability and list/profile gate copy.
 
 ## Durable agent prompts
 

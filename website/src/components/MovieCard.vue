@@ -69,14 +69,14 @@ const activeLimits = computed(() => store.maxMaturityCat
 const activeProfileName = computed(() => profileLabel(store.maturityProfiles, store.activeMaturityProfileId));
 const compatibilityLabel = computed(() => {
   if (props.movie.mat === undefined) return `Unknown fit`;
-  if (!activeLimits.value.length) return `Fits ${activeProfileName.value}`;
+  if (!activeLimits.value.length) return null;
   const exceeded = activeLimits.value.some(({ level, category }) => {
     const score = getScore(props.movie.mat, category.shift);
     return (Number.isFinite(score) ? Math.round(score) : 6) > level;
   });
-  return exceeded ? `Review for ${activeProfileName.value}` : `Fits ${activeProfileName.value}`;
+  return exceeded ? `Review for ${activeProfileName.value}` : null;
 });
-const compatibilityTone = computed(() => compatibilityLabel.value.startsWith("Fits") ? "success" : "warning");
+const compatibilityTone = computed(() => compatibilityLabel.value?.startsWith("Fits") ? "success" : "warning");
 const listCount = computed(() => userStore.isLoggedIn ? userStore.lists.filter(list => list.movies.includes(props.movie.id)).length : 0);
 const statusLabels = computed(() => {
   if (!userStore.isLoggedIn) return [];

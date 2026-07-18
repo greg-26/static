@@ -18,12 +18,13 @@ Already landed:
 - Search result cards annotate abstract availability from existing provider bitmasks only, and Search result hover/active borders use teal/neutral states rather than red.
 - Settings-route visible inputs were verified as label-wrapped; non-destructive focus indicators in `SearchBox`, Settings form inputs, and Settings row focus/chevron now use teal/neutral states rather than red.
 - No-profile vs wrong-profile list-gate copy now distinguishes setup needs from missing/list-not-attached states on Settings → Lists and `/lists/:listId`.
+- Discover availability/filter-chip semantics now use `Flatrate`/`Any`, disabled future availability modes, a Settings streaming link, icon-only clear, no selected-chip × glyphs, and suppressed tautological Discover poster fit badges.
 
 Open scope:
 
-- CEO quick-fix slice: movie-detail suitability chips are tappable drill-down controls per maturity profile; redundant Suitability/list wrapper boxes are removed; touch/mobile chip hover color changes are disabled or made non-sticky; the platforms dropdown links to Settings/platform edits; maturity copy says **Allowed n (label)**; poster fit labels do not repeat the active maturity filter.
+- CEO quick-fix slice: movie-detail suitability chips are tappable drill-down controls per maturity profile; redundant Suitability/list wrapper boxes are removed; maturity copy says **Allowed n (label)**.
 - QA/modal coverage for movie-detail dialog content, close control, focus/scroll state, suitability, and availability rows.
-- Manual phone/touch verification for the new list/profile gate copy and existing dropdown selected-state readability.
+- Manual phone/touch verification for Discover availability/dropdown selected-state readability and list/profile gate copy.
 
 Acceptance criteria:
 

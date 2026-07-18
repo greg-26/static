@@ -3,7 +3,7 @@
     <UiChip
       class="control-chip"
       :class="buttonClass"
-      :active="open || active"
+      :active="open || (highlightActive && active)"
       :aria-expanded="open"
       aria-haspopup="menu"
       @click="emit('toggle')"
@@ -37,6 +37,7 @@ const props = defineProps({
   label: { type: String, default: "" },
   menuClass: { type: [String, Array, Object], default: "" },
   buttonClass: { type: [String, Array, Object], default: "" },
+  highlightActive: { type: Boolean, default: true },
 });
 
 const emit = defineEmits(["toggle"]);
