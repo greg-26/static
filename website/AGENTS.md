@@ -75,6 +75,7 @@ curl -fL --compressed https://ohana.tv/movies.json -o public/movies.json
 - For Alex/CEO feedback intake, use `agents/ceo-assistant.md`: capture the feedback in `reports/ceo/`, then coordinate PM/design/principal-engineer updates before implementation.
 - Preserve existing worktree changes: inspect `git status --short` and relevant diffs before editing.
 - After each implementation slice, run the smallest meaningful verification gate, usually `npm run build`, and note manual/mobile checks still needed.
+- When making changes, verify the Vite dev server is running and reachable before handing back to Alex. If it is not running, start it with `npm run dev -- --host 0.0.0.0` and confirm `http://100.85.92.106:5173/` responds.
 
 ## Guardrails
 

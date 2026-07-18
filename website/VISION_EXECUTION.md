@@ -14,6 +14,10 @@ Deliver `VISION.md` incrementally: Discover/Search/Settings IA, discovery-first 
 4. Read [`docs/vision-execution/review-index.md`](docs/vision-execution/review-index.md) only when the task touches CEO/PM/QA feedback.
 5. Do **not** read archived logs unless auditing history or debugging a regression.
 
+## Sprint completion contract
+
+Each sprint must end with a working website version: implementation complete, verification passed, Vite dev server reachable at `http://100.85.92.106:5173/`, execution docs updated so completed items and next steps are clear, and changes committed and pushed to the origin `main` branch.
+
 ## Current focus
 
 Current sprint: **Sprint 9 — PM/QA trust, retrieval, and accessibility follow-ups**.
