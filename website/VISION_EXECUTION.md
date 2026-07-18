@@ -18,7 +18,9 @@ Deliver `VISION.md` incrementally: Discover/Search/Settings IA, discovery-first 
 
 Current sprint: **Sprint 9 — PM/QA trust, retrieval, and accessibility follow-ups**.
 
-New CEO feedback routed for principal SDE review: [`reports/ceo/2026-07-14-movie-detail-filter-chips-ceo-feedback.md`](reports/ceo/2026-07-14-movie-detail-filter-chips-ceo-feedback.md). Prioritize the quick fixes before broad modal QA: tappable movie-detail suitability profile chips, remove redundant Suitability/list boxes, disable sticky mobile chip hover color changes, add an edit-platforms link in the platforms dropdown, use **Allowed n (label)** maturity copy, and hide tautological poster fit labels when the active maturity filter already guarantees fit.
+Latest CEO walk-the-store feedback is routed through the independent principal engineer plan: [`reports/principal-engineer/2026-07-18-ceo-walk-store-execution-plan.md`](reports/principal-engineer/2026-07-18-ceo-walk-store-execution-plan.md). Prioritize its slices before broad modal QA: Discover chip semantics/poster-card redundancy, movie-detail suitability profile chips, maturity evidence/provider cleanup, and Settings → Lists row affordance.
+
+Prior CEO feedback routed for principal SDE review: [`reports/ceo/2026-07-14-movie-detail-filter-chips-ceo-feedback.md`](reports/ceo/2026-07-14-movie-detail-filter-chips-ceo-feedback.md). Its quick fixes are subsumed by the latest walk-the-store plan where overlapping.
 
 Recently landed:
 
