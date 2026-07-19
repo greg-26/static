@@ -1,4 +1,4 @@
-# CEO feedback report — Dropdown filters
+# human/PMT feedback report — Dropdown filters
 
 Date: 2026-07-13 19:32 Europe/Madrid
 Source: Alex product review, Telegram message 2601

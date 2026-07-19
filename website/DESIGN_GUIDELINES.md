@@ -192,6 +192,12 @@ Implementation rules live in [`CODING_STANDARDS.md`](./CODING_STANDARDS.md). Pro
 
 Cards may show abstract availability status if useful, but not streaming provider/platform names. Provider choices belong in movie details.
 
+## UX review loop
+
+The UX designer periodically reviews QA/CX evidence and real-device findings. Durable feedback, questions, or misses that should shape future work belong in this file; sprint-specific implementation goes in `docs/sprints/` via PE prioritization.
+
+When a design issue needs engineering work, link the QA/UX evidence from `docs/vision-execution/review-index.md` and ask PE to prioritize it in a focused sprint.
+
 ## Pre-ship UX critique checklist
 
 Before presenting or shipping a design, review it for:

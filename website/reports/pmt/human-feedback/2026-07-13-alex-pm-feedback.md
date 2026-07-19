@@ -1,4 +1,4 @@
-# CEO feedback report — Ohana TV
+# human/PMT feedback report — Ohana TV
 
 Date: 2026-07-13  
 Source: Alex product review, Telegram message #2515  

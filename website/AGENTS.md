@@ -30,10 +30,12 @@ Scope: this file is for the `website/` project only inside the Ohana static repo
 - `src/maturity.js` — maturity category definitions and score helpers.
 - `VISION.md` — product/CX source of truth; specifics section is acceptance criteria.
 - `DESIGN_GUIDELINES.md` — durable design principles, screen intent, visual hierarchy, and UX critique checklist.
-- `VISION_EXECUTION.md` — thin execution index and current next-step pointer. Deeper execution docs live under `docs/vision-execution/`; archived logs are not part of routine context.
+- `VISION_EXECUTION.md` — thin execution index and current next-step pointer. Current sprint work lives under `docs/sprints/`; team cadence lives in `docs/working-style.md`.
 - `CODING_STANDARDS.md` — reusable component and UI implementation standards.
-- `agents/ceo-assistant.md` — CEO feedback intake/coordinator prompt.
-- `agents/pmt.md`, `agents/principal-engineer.md`, `agents/qa.md` — specialist review/planning prompts.
+- `docs/working-style.md` — team operating model: PMT feedback intake, PE planning, SDE execution, UX/QA review cadence, and git/push policy.
+- `docs/sprints/INDEX.md` — focused sprint index; each sprint has its own file.
+- `agents/pmt.md`, `agents/principal-engineer.md`, `agents/sde.md`, `agents/ux-designer.md`, `agents/qa.md` — specialist prompts.
+- `agents/ceo-assistant.md` — deprecated shim; use PMT for human/product feedback.
 
 ## Current product model
 
@@ -67,15 +69,17 @@ curl -fL --compressed https://ohana.tv/movies.json -o public/movies.json
 ## Roadmap execution protocol
 
 - For roadmap execution, work in small, reviewable slices; do not do a massive lift unless Alex explicitly asks.
-- Use progressive disclosure for execution docs: read `VISION_EXECUTION.md` first, then `docs/vision-execution/current-status.md`; read `docs/vision-execution/sprint-plan.md` only for planning/scope selection; read archived logs only for auditing history or debugging a regression.
-- Do not turn `VISION_EXECUTION.md` back into a long rolling log. Keep it as the durable current-state router; move completed/stale detail into `docs/vision-execution/archive/`.
-- Before vision implementation, read `README.md`, `VISION.md`, `DESIGN_GUIDELINES.md`, `CODING_STANDARDS.md`, this `AGENTS.md`, `VISION_EXECUTION.md`, and only the focused execution sub-docs needed for the task.
-- Sequence work according to `VISION.md` and the current focus in `VISION_EXECUTION.md` / `docs/vision-execution/current-status.md`; update the tracker before/after each slice.
+- Use progressive disclosure for execution docs: read `VISION_EXECUTION.md` first, then `docs/working-style.md`, then `docs/sprints/INDEX.md`, then only the current sprint file. Read archived logs only for auditing history or debugging a regression.
+- Do not turn `VISION_EXECUTION.md` back into a long rolling log. Keep it as the durable current-state router; put sprint detail in `docs/sprints/` and stale detail in `docs/vision-execution/archive/`.
+- Before vision implementation, read `README.md`, `VISION.md`, `DESIGN_GUIDELINES.md`, `CODING_STANDARDS.md`, this `AGENTS.md`, `VISION_EXECUTION.md`, and the current sprint file.
+- Sequence work according to `VISION.md`, `VISION_EXECUTION.md`, and the current sprint. Update the sprint file before/after each slice.
+- Human/product feedback is PMT-owned: capture new feedback in `reports/pmt/`, update vision/design/planning as needed, then have PE link the sprint(s) that address it. Do not create new `reports/ceo/` reports; `reports/pmt/human-feedback/` is historical.
+- Developers may add concise notes to the next sprint file when useful. If sprint details are unclear and material assumptions are required, ask PMT, UX designer, or PE to validate before coding.
 - Use subagents for scoped audits, implementation consensus, and separation of concerns; ask them for concise findings, exact file refs, risks, and verification results.
-- For Alex/CEO feedback intake, use `agents/ceo-assistant.md`: capture the feedback in `reports/ceo/`, then coordinate PM/design/principal-engineer updates before implementation.
 - Preserve existing worktree changes: inspect `git status --short` and relevant diffs before editing.
 - After each implementation slice, run the smallest meaningful verification gate, usually `npm run build`, and note manual/mobile checks still needed.
 - When making changes, verify the Vite dev server is running and reachable before handing back to Alex. If it is not running, start it with `npm run dev -- --host 0.0.0.0` and confirm `http://100.85.92.106:5173/` responds.
+- Commit coherent slices locally. Push to the working review remote when Alex asks or a coherent slice is ready; do not push every commit to the original/upstream repo before dev-server verification.
 
 ## Guardrails
 

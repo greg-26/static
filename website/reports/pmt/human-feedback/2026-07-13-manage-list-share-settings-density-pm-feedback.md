@@ -1,8 +1,8 @@
-# CEO feedback report — Manage-list share and Settings density
+# human/PMT feedback report — Manage-list share and Settings density
 
 Date: 2026-07-13 10:38 Europe/Madrid
 Source: Alex product review, Telegram messages #2523/#2526
-Status: Documented after direct implementation. Future CEO/product feedback should route through this report/planning path before implementation unless Alex explicitly asks for a hotfix.
+Status: Documented after direct implementation. Future human/product feedback should route through this report/planning path before implementation unless Alex explicitly asks for a hotfix.
 
 ## Raw feedback
 
@@ -17,7 +17,7 @@ This is partly a product bug and partly a team-process bug.
 
 Product-wise, the lists surface violated trust: a visible **Share** action that appears inert teaches users not to trust list collaboration. Settings also drifted back toward over-explaining; the index should be a fast routing surface, not a miniature report per row.
 
-Process-wise, CEO/product review needs to be captured as durable team input first, then routed into PM/design/engineering docs. Direct fixes are acceptable only for explicit hotfixes or tiny P0s, and even then the report should exist so the team can audit why the change happened.
+Process-wise, human/product review needs to be captured as durable team input first, then routed into PM/design/engineering docs. Direct fixes are acceptable only for explicit hotfixes or tiny P0s, and even then the report should exist so the team can audit why the change happened.
 
 ## Required PM/vision response
 
@@ -48,7 +48,7 @@ Process-wise, CEO/product review needs to be captured as durable team input firs
 
 - P0 — Share button appears broken/inert on manage-list surface.
 - P1 — Settings index density: remove third line and preserve compact routing-list behavior.
-- P1 — Process correction: CEO feedback must be reported and linked before team-driving changes.
+- P1 — Process correction: human/PMT feedback must be reported and linked before team-driving changes.
 
 ## Non-goals
 

@@ -1,11 +1,11 @@
-# Principal engineer priority execution plan — CEO walk-the-store
+# Principal engineer priority execution plan — PMT walk-the-store
 
 Date: 2026-07-18 14:22 Europe/Madrid
-Scope: latest CEO report `reports/ceo/20260718-ceo-walk-the-store.md`; product docs `README.md`, `VISION.md`, `DESIGN_GUIDELINES.md`, `CODING_STANDARDS.md`, `VISION_EXECUTION.md`; agent prompts `agents/principal-engineer.md`, `agents/pmt.md`; implementation inspection of `src/components/HeroSection.vue`, `src/components/FilterMenu.vue`, `src/components/UiChip.vue`, `src/components/MovieCard.vue`, `src/components/MovieModal.vue`, `src/components/SettingsView.vue`, `src/components/SettingsRow.vue`, `src/components/FromYourLists.vue`, `src/views/ListView.vue`, `src/components/MovieRow.vue`, `src/components/SearchResultCard.vue`, `src/stores/movies.js`, and `src/router/index.js`.
+Scope: latest PMT feedback report `reports/pmt/human-feedback/20260718-pm-walk-the-store.md`; product docs `README.md`, `VISION.md`, `DESIGN_GUIDELINES.md`, `CODING_STANDARDS.md`, `VISION_EXECUTION.md`; agent prompts `agents/principal-engineer.md`, `agents/pmt.md`; implementation inspection of `src/components/HeroSection.vue`, `src/components/FilterMenu.vue`, `src/components/UiChip.vue`, `src/components/MovieCard.vue`, `src/components/MovieModal.vue`, `src/components/SettingsView.vue`, `src/components/SettingsRow.vue`, `src/components/FromYourLists.vue`, `src/views/ListView.vue`, `src/components/MovieRow.vue`, `src/components/SearchResultCard.vue`, `src/stores/movies.js`, and `src/router/index.js`.
 
 ## Executive verdict
 
-The CEO report is a high-signal polish and trust pass, not a reason to reopen information architecture. The work should be executed as four small UI/UX slices, in this order:
+The PMT feedback report is a high-signal polish and trust pass, not a reason to reopen information architecture. The work should be executed as four small UI/UX slices, in this order:
 
 1. Discover chip semantics and poster-card redundancy.
 2. Movie-detail trust surface: profile chips drive suitability reasoning, with redundant containers removed.
@@ -18,14 +18,14 @@ Do **not** implement app code as part of this planning artifact. During implemen
 
 - `src/components/MovieCard.vue` always computes and displays `Fits <profile>` / `Review for <profile>` badges on poster cards. On Discover, this is redundant when active maturity filters already guarantee visible titles fit; on Search, the same signal remains useful via `src/components/SearchResultCard.vue`.
 - `src/components/HeroSection.vue` exposes only `my-services` and `any` availability modes, labels the active chip as `On n services`, uses active coloring for dropdown filters, and renders the clear action as text. The report asks for a commerce-mode label (`Flatrate`), readonly unsupported modes (`free with ads`, `rent`, `buy`), `Any`, a clear chevron, and a Settings link to streaming services.
-- `src/components/FilterMenu.vue` makes `open || active` look active at the shared `UiChip` layer. This is correct for selectable chips but overstates dropdown chips, matching the CEO concern that selected-state color is confused.
+- `src/components/FilterMenu.vue` makes `open || active` look active at the shared `UiChip` layer. This is correct for selectable chips but overstates dropdown chips, matching the PMT concern that selected-state color is confused.
 - `src/components/HeroSection.vue` shows an `×` inside selected Movie/TV chips even though selected state already communicates toggleability.
 - `src/components/MovieModal.vue` renders external IMDb/TMDb/FilmAffinity logos with `.imdb-logo { height: 12px; }`, too small for comfortable mobile tapping.
 - `src/components/MovieModal.vue` has a redundant `.watch-summary` Suitability card before the per-profile glance chips. The per-profile chips are spans and are not selectable, so they cannot drive the reasoning panel yet.
 - `src/components/MovieModal.vue` builds `compatibilityRows` only from `movieStore.maxMaturityCat`, so the suitability table is locked to the active Discover profile instead of a selected detail-profile chip.
 - `src/components/MovieModal.vue` currently duplicates maturity information across `compatibility-summary` and collapsed `Parental-guide details`; the latter has progress bars and useful external links, while the former has better allowed/exceeded reasoning. These should be merged rather than maintained as competing tables.
-- `src/components/MovieModal.vue` uses integer-rounded maturity scores in `compatibilityRows` but one-decimal display in parental details. CEO feedback prefers the one-decimal number and stronger visual prominence.
-- `src/components/MovieModal.vue` shows an availability sentence like `Available on Netflix` above provider chips. The CEO report calls this redundant when the provider chips immediately follow.
+- `src/components/MovieModal.vue` uses integer-rounded maturity scores in `compatibilityRows` but one-decimal display in parental details. human/PMT feedback prefers the one-decimal number and stronger visual prominence.
+- `src/components/MovieModal.vue` shows an availability sentence like `Available on Netflix` above provider chips. The PMT feedback report calls this redundant when the provider chips immediately follow.
 - `src/components/SettingsView.vue` already makes list rows clickable and route to `/lists/:listId`, but styling is very low-contrast (`padding: 14px 0`, thin separators, actions inline), making starts/ends and clickability weak.
 
 ## Recommended sprint / slice order
@@ -38,7 +38,7 @@ Do **not** implement app code as part of this planning artifact. During implemen
 Make Discover controls read as lightweight controls, not noisy status claims, and remove tautological suitability badges from Discover poster cards while preserving compatibility annotations in Search.
 
 **Files to read before coding**
-- `reports/ceo/20260718-ceo-walk-the-store.md`
+- `reports/pmt/human-feedback/20260718-pm-walk-the-store.md`
 - `VISION.md` sections: Discover controls, Movie cards, Chips and compact controls
 - `DESIGN_GUIDELINES.md` sections: Discover, Components, Interaction and visual standards
 - `CODING_STANDARDS.md` sections: Cards/posters, Chips
@@ -107,7 +107,7 @@ The first Discover screen becomes calmer and more truthful: controls read as con
 Make movie-detail suitability understandable and interactive by letting profile chips select the detail profile and refresh the reasoning panel, while removing redundant wrapper cards.
 
 **Files to read before coding**
-- `reports/ceo/20260718-ceo-walk-the-store.md`
+- `reports/pmt/human-feedback/20260718-pm-walk-the-store.md`
 - `VISION.md` section: Movie details → Suitability
 - `DESIGN_GUIDELINES.md` section: Movie details
 - `CODING_STANDARDS.md` sections: Reusable UI first, Chips
@@ -170,7 +170,7 @@ Movie details become an interactive appropriateness explanation instead of a pas
 Turn the selected-profile reasoning into a compact, scannable maturity table that uses horizontal space well, highlights the score, keeps one decimal, preserves evidence links, and removes redundant availability copy.
 
 **Files to read before coding**
-- `reports/ceo/20260718-ceo-walk-the-store.md`
+- `reports/pmt/human-feedback/20260718-pm-walk-the-store.md`
 - `VISION.md` sections: Movie details → Suitability, Availability
 - `DESIGN_GUIDELINES.md` section: Movie details
 - `src/components/MovieModal.vue`
@@ -235,7 +235,7 @@ The detail page feels more credible and easier to scan: the important number and
 Make the list-management screen clearly show where each list starts/ends and that tapping a row opens its movies.
 
 **Files to read before coding**
-- `reports/ceo/20260718-ceo-walk-the-store.md`
+- `reports/pmt/human-feedback/20260718-pm-walk-the-store.md`
 - `VISION.md` sections: Settings → My Lists, List view
 - `DESIGN_GUIDELINES.md` sections: Settings, Lists
 - `CODING_STANDARDS.md` sections: Settings, Reusable UI first
@@ -309,7 +309,7 @@ Settings → Lists becomes legible as a navigation-and-management list instead o
 
 ## Cross-functional signoff
 
-- **Principal Engineer**: Aligned. The plan is sequenced by risk and dependency, keeps the CEO fixes independent from older execution plans, and avoids persistence/backend churn. Main engineering risk is shared chip styling; mitigate with prop-scoped behavior and manual checks for every dropdown.
+- **Principal Engineer**: Aligned. The plan is sequenced by risk and dependency, keeps the PMT fixes independent from older execution plans, and avoids persistence/backend churn. Main engineering risk is shared chip styling; mitigate with prop-scoped behavior and manual checks for every dropdown.
 - **PM-Technical**: Aligned after tightening exact availability labels, disabled semantics, `/settings/streaming` routing acceptance, modal profile-chip accessibility, sparse maturity states, and mobile/keyboard regression checks. Sprint 1 and Sprint 2 remain true P0s; Sprint 3 must not delay selectable profile chips; Sprint 4 remains contained polish.
 - **UX Designer**: Aligned after adding explicit keyboard/screen-reader semantics, touch-width checks, no-horizontal-overflow criteria, and clearer Settings list affordance criteria. The plan removes noise before adding UI, separates dropdown/toggle/selection states, improves mobile tap targets, and makes list rows navigable without violating the no-heavy-boxes principle.
 
@@ -321,4 +321,4 @@ Settings → Lists becomes legible as a navigation-and-management list instead o
 
 ## Documentation/linkage update
 
-Add a concise pointer in `VISION_EXECUTION.md` under Current focus / Next useful slices so future planning agents review this dated CEO walk-store execution plan before continuing implementation.
+Add a concise pointer in `VISION_EXECUTION.md` under Current focus / Next useful slices so future planning agents review this dated PMT walk-store execution plan before continuing implementation.

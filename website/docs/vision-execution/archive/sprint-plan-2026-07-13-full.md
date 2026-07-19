@@ -159,7 +159,7 @@ Verification:
 - Manual searches: `godfather`, `james bond`, `harry potter`, typo query, and empty query recents.
 - Record findings and any follow-up slices in this file before starting more implementation.
 
-### Sprint 7 — CEO feedback: control states and row headers
+### Sprint 7 — human/PMT feedback: control states and row headers
 Status: current / nearly closed. Availability row copy and row-title list selector are implemented; remaining focus is chip/dropdown state semantics and touch verification.
 
 Goal: fix the visible control/state problems Alex flagged without broad redesign.
@@ -182,7 +182,7 @@ Verification:
 - Manual mobile check of `/discover` controls, list selector, and all chip states.
 - Source/CSS grep or visual review confirms no generic chip/menu selected, hover, active, or disabled style uses red/destructive treatment.
 
-### Sprint 8 — CEO feedback: movie-detail decision hierarchy
+### Sprint 8 — human/PMT feedback: movie-detail decision hierarchy
 Status: implemented in Slice 69; pending manual phone/profile QA.
 
 Goal: make movie details more decisive by removing duplication and adding cross-profile suitability.
@@ -230,7 +230,7 @@ Verification:
 - `npm run build`.
 - Manual checks: `/discover`, `/search?q=godfather`, `/search?q=harry%20potter`, `/search?q=james%20bond`, typo query, `/settings/profile`, `/settings/maturity`, `/settings/lists`, `/lists/bad-id`, and a movie-detail deep link.
 
-### Sprint 10 — CEO feedback: Settings list navigation and copy-share behavior
+### Sprint 10 — human/PMT feedback: Settings list navigation and copy-share behavior
 Status: implemented and build/route-smoke verified in Slice 71.
 
 Goal: make Settings → Lists behave like a useful list hub, not an admin table or raw-link copier.

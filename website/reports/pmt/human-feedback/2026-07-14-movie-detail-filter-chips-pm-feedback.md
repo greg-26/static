@@ -1,4 +1,4 @@
-# CEO feedback report — movie-detail suitability and filter chips
+# human/PMT feedback report — movie-detail suitability and filter chips
 
 Date: 2026-07-14 02:10 Europe/Madrid
 Source: Alex product review, Telegram message #2614
@@ -35,7 +35,7 @@ This is a decision-confidence refinement, not a new filtering model. Discover fi
 
 ## Required principal-engineer response
 
-- Add a quick CEO-priority slice before broader modal QA: make movie-detail suitability chips tappable and remove redundant Suitability/list boxes.
+- Add a quick PMT-priority slice before broader modal QA: make movie-detail suitability chips tappable and remove redundant Suitability/list boxes.
 - Add a touch CSS audit for chip hover states under coarse pointers.
 - Add the platforms-dropdown Settings link without changing provider filtering semantics or backend availability groups.
 - Normalize maturity-level copy to **Allowed n (label)**.

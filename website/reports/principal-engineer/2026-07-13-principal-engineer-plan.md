@@ -1,21 +1,21 @@
-# Principal engineer plan — CEO feedback, PM/QA gaps, and vision alignment
+# Principal engineer plan — human/PMT feedback, PM/QA gaps, and vision alignment
 
 Date: 2026-07-13 10:44 Europe/Madrid
-Scope: `VISION.md`, `DESIGN_GUIDELINES.md`, `CODING_STANDARDS.md`, `VISION_EXECUTION.md`, `agents/principal-engineer.md`, CEO reports in `reports/ceo/`, PM report in `reports/pmt/`, QA deep-dive in `reports/qa-deep-dive/`, latest CX review in `reports/cx-review/`, current `git status --short`, and targeted source refs.
+Scope: `VISION.md`, `DESIGN_GUIDELINES.md`, `CODING_STANDARDS.md`, `VISION_EXECUTION.md`, `agents/principal-engineer.md`, PMT feedback reports in `reports/pmt/human-feedback/`, PM report in `reports/pmt/`, QA deep-dive in `reports/qa-deep-dive/`, latest CX review in `reports/cx-review/`, current `git status --short`, and targeted source refs.
 
 ## Executive verdict
 
-The execution plan now captures the main CEO feedback and the core product vision, but it still needed one principal-engineering pass to separate what is already in the worktree from what remains. The plan should not start another broad polish sprint. Next engineering should be narrow trust/retrieval/accessibility slices: finish CEO control/detail issues, then address PM/QA findings that directly support confidence in choosing a title.
+The execution plan now captures the main human/PMT feedback and the core product vision, but it still needed one principal-engineering pass to separate what is already in the worktree from what remains. The plan should not start another broad polish sprint. Next engineering should be narrow trust/retrieval/accessibility slices: finish PMT control/detail issues, then address PM/QA findings that directly support confidence in choosing a title.
 
 Current worktree changes must be preserved. I did not implement app code.
 
 ## Source findings
 
-- `VISION_EXECUTION.md` already links the QA deep-dive, PM-tech report, and the latest manage-list/settings-density CEO report in the top implementation plan, and already added Sprint 7/Sprint 8 for the first CEO report.
+- `VISION_EXECUTION.md` already links the QA deep-dive, PM-tech report, and the latest manage-list/settings-density PMT feedback report in the top implementation plan, and already added Sprint 7/Sprint 8 for the first PMT feedback report.
 - `src/components/SettingsView.vue:149` and `src/components/SettingsView.vue:352` show the manage-list **Share** action has already been changed in the current worktree to use `navigator.share`, clipboard fallback, and prompt fallback.
 - `src/components/SettingsRow.vue:9` no longer renders the third summary line, and `summary` is now optional, matching the two-line Settings index feedback.
 - `src/components/MovieModal.vue:385` already has defensive optional `/extra.json` loading, resolving the QA/PM P0 enrichment noise.
-- `src/components/MovieModal.vue:78` still renders a shallow availability summary while the provider section remains later in the same detail surface, so the CEO duplicate-availability feedback is still open.
+- `src/components/MovieModal.vue:78` still renders a shallow availability summary while the provider section remains later in the same detail surface, so the PMT duplicate-availability feedback is still open.
 - `src/components/MovieModal.vue:94` and `src/components/MovieModal.vue:317` still hide the active-profile compatibility table when all limits are `-1`; Adults/no-limit users do not get visible suitability reasoning by default.
 - `src/components/MovieModal.vue` does not yet show the cross-profile suitability glance requested in `VISION.md`.
 - `src/components/SearchView.vue:151` preserves visible Fuse order for exact title matches; PM/QA evidence says `/search?q=godfather` ranks weaker exact-title noise above `The Godfather` 1972.
@@ -25,12 +25,12 @@ Current worktree changes must be preserved. I did not implement app code.
 
 ## Recommended slice order
 
-### 2026-07-14 CEO addendum — prioritize before broad modal QA
+### 2026-07-14 PMT addendum — prioritize before broad modal QA
 
-New CEO report: [`reports/ceo/2026-07-14-movie-detail-filter-chips-ceo-feedback.md`](../ceo/2026-07-14-movie-detail-filter-chips-ceo-feedback.md).
+New PMT feedback report: [`reports/pmt/human-feedback/2026-07-14-movie-detail-filter-chips-pm-feedback.md`](../pmt/human-feedback/2026-07-14-movie-detail-filter-chips-pm-feedback.md).
 
 **Goal**
-Convert the latest CEO feedback into a quick trust slice before expanding generic modal QA.
+Convert the latest human/PMT feedback into a quick trust slice before expanding generic modal QA.
 
 **Files likely touched**
 - `src/components/MovieModal.vue`
@@ -50,7 +50,7 @@ Convert the latest CEO feedback into a quick trust slice before expanding generi
 **Risks**
 - Do not accidentally turn detail-chip taps into global profile/filter changes.
 - Do not reintroduce provider names on poster cards or invent Included/Free/Rent/Buy data.
-- Keep the slice surgical; defer broader modal coverage until this CEO trust issue is closed.
+- Keep the slice surgical; defer broader modal coverage until this PMT trust issue is closed.
 
 **Verification**
 - `npm run build`
@@ -76,7 +76,7 @@ Make the tracker reflect the current worktree: manage-list share fallback and Se
 - Lightweight source inspection now.
 - Later implementation owner should run `npm run build` and route smoke checks before commit.
 
-### Slice 68 — CEO control states and row-header correction
+### Slice 68 — PMT control states and row-header correction
 
 **Goal**
 Fix the visible control trust issues Alex flagged without redesigning Discover.
@@ -103,7 +103,7 @@ Fix the visible control trust issues Alex flagged without redesigning Discover.
 - Manual `/discover` mobile and desktop check for availability/profile/genre/rating dropdowns, list selector, selected/unselected/disabled chip states.
 - Source/CSS grep for red/destructive chip styling outside true destructive/error states.
 
-### Slice 69 — CEO movie-detail decision hierarchy
+### Slice 69 — PMT movie-detail decision hierarchy
 
 **Goal**
 Make movie detail decisive: one availability section, cross-profile suitability glance, and visible active-profile reasoning.

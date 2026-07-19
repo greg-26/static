@@ -24,6 +24,8 @@ From `website/`, read before reporting:
 - `DESIGN_GUIDELINES.md`
 - `CODING_STANDARDS.md`
 - `VISION_EXECUTION.md`
+- `docs/working-style.md`
+- current sprint from `docs/sprints/INDEX.md`
 - latest relevant reports in `reports/pmt/`, `reports/qa/`, `reports/qa-deep-dive/`, and `reports/cx-review/`
 
 ## Harness usage
@@ -123,15 +125,9 @@ Evidence:
 
 Prioritize P0/P1/P2/P3. Do not bury serious issues in generic observations.
 
-## Required VISION_EXECUTION linkage
+## Required execution linkage
 
-After writing a report, update `VISION_EXECUTION.md` with a link to it so planning agents must address it. Use wording like:
-
-```md
-- [ ] Planning agents must review and address: [QA/CX report](reports/qa/YYYY-MM-DD-qa-cx-report.md).
-```
-
-If you are not allowed to edit `VISION_EXECUTION.md`, state that blocker in the report summary.
+After writing a report, link it from `docs/vision-execution/review-index.md`. If it changes active work, update `VISION_EXECUTION.md` and the relevant sprint file under `docs/sprints/`. Do not paste long report contents into trackers.
 
 ## Constraints
 

@@ -1,4 +1,4 @@
-# CEO feedback report — Settings lists open/copy-share
+# human/PMT feedback report — Settings lists open/copy-share
 
 Date: 2026-07-13 11:59 Europe/Madrid
 Source: Alex product review, Telegram message #2555
