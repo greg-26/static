@@ -17,7 +17,7 @@ Close remaining product-vision and QA findings that affect trust, retrieval, acc
 
 ## Current state
 
-Implementation slices 73–87 have landed. The remaining valuable work is real-device validation, not another speculative polish pass.
+Implementation slices 73–87 have landed. Automated readiness is green against the reachable Vite dev server; the remaining valuable work is real-device validation, not another speculative polish pass.
 
 Landed coverage:
 
@@ -25,24 +25,23 @@ Landed coverage:
 - `npm run qa:sprint9`
 - `npm run qa:mobile-touch`
 - `npm run qa:dev-routes`
-- `npm run qa:phone-touch`
+- `npm run qa:phone-touch` against `http://100.85.92.106:5173/`
 - `npm run build`
 
 ## Open scope
 
-1. Run `npm run qa:phone-touch` against the reachable Vite dev server.
-2. On a real phone at `http://100.85.92.106:5173/`, record pass/fail findings for:
+1. On a real phone at `http://100.85.92.106:5173/`, record pass/fail findings for:
    - Discover availability/dropdown selected-state readability.
    - Movie-detail profile chips.
    - Maturity evidence rows.
    - Provider chips.
    - List/profile gate copy.
    - Settings → Lists row scanability.
-3. Convert concrete failures into the next sprint or a focused fix sprint. Do not reopen completed work without evidence.
+2. Convert concrete failures into Sprint 10 or a focused fix sprint. Do not reopen completed work without evidence.
 
 ## Acceptance
 
-- Phone checklist has a dated report or PMT note with pass/fail evidence.
+- Real-phone checklist has a dated report or PMT note with pass/fail evidence.
 - Any failure has a linked next sprint or explicit defer decision.
 - Dev server remains reviewable by Alex.
 
