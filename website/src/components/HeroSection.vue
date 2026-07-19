@@ -384,8 +384,18 @@ const hasFilters = computed(() =>
 .control-chip--primary:hover { border-color: rgba(255,255,255,0.26); background: rgba(255,255,255,0.06); color: var(--white); }
 .control-chip--primary.active, .control-chip--primary.is-active { border-color: rgba(45,212,191,0.42); background: rgba(45,212,191,0.12); color: var(--teal); }
 .control-chip--safe.active { border-color: rgba(45,212,191,0.42); background: rgba(45,212,191,0.12); color: var(--teal); }
-.chip-label-with-icon { display: inline-flex; align-items: center; gap: 8px; }
-.chip-chevron { font-size: 17px; line-height: 0.8; transform: translateY(-1px); }
+.chip-label-with-icon { display: inline-flex; align-items: center; gap: 8px; line-height: 1; white-space: nowrap; }
+.chip-chevron {
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  margin-top: -3px;
+  font-size: 0;
+  border-right: 1.8px solid currentColor;
+  border-bottom: 1.8px solid currentColor;
+  transform: rotate(45deg);
+  opacity: 0.85;
+}
 .clear-btn { margin-left: auto; }
 .clear-btn--icon { display: inline-flex; align-items: center; justify-content: center; width: 38px; padding: 0; font-size: 20px; line-height: 1; }
 
@@ -401,8 +411,11 @@ const hasFilters = computed(() =>
 .menu-option:disabled, .menu-option:disabled:hover { opacity: 0.45; cursor: not-allowed; border-color: rgba(255,255,255,0.16); color: rgba(255,255,255,0.78); background: rgba(30,30,42,0.86); }
 .menu-note { max-width: 180px; margin: 0; color: rgba(255,255,255,0.48); font-size: 11px; line-height: 1.35; }
 .menu-option--provider.active { background: rgba(45,212,191,0.15); border-color: var(--teal); color: var(--teal); }
-.menu-option--profile { flex-direction: column; align-items: flex-start; gap: 3px; max-width: 220px; }
-.menu-option--profile small { color: rgba(255,255,255,0.52); font-size: 11px; }
+.menu-option--profile { flex-direction: column; align-items: flex-start; gap: 4px; min-height: 56px; max-width: 220px; padding-block: 10px; }
+.menu-option--profile span,
+.menu-option--profile small { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.menu-option--profile span { line-height: 1.15; }
+.menu-option--profile small { color: rgba(255,255,255,0.52); font-size: 11px; line-height: 1.25; }
 .menu-option--profile.active { background: rgba(45,212,191,0.15); border-color: var(--teal); color: var(--teal); }
 .menu-option--profile.active small { color: rgba(45,212,191,0.76); }
 .menu-option--settings { color: var(--teal); }

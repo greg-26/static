@@ -44,6 +44,8 @@ const checks = [
       && /emit\("open-settings", "streaming"\)/.test(hero)
       && /white-space: nowrap/.test(hero)
       && /overflow-x: auto/.test(hero)
+      && /\.chip-chevron\s*\{[\s\S]*border-right: 1\.8px solid currentColor[\s\S]*transform: rotate\(45deg\)/.test(hero)
+      && /\.menu-option--profile\s*\{[\s\S]*min-height: 56px[\s\S]*padding-block: 10px/.test(hero)
       && /:highlight-active="false"/.test(hero)
       && /control-chip--dropdown\.is-active/.test(filterMenu),
   },
@@ -54,7 +56,7 @@ const checks = [
       && /:aria-pressed="profile\.id === selectedDetailProfileId/.test(modal)
       && /@click="selectedDetailProfileId = profile\.id"/.test(modal)
       && /Compatible with: <strong>{{ selectedDetailProfileName }}<\/strong>/.test(modal)
-      && /scoreLabel: hasMovieScore \? `\$\{formatScore\(rawScore\)\}\/5` : "Unknown"/.test(modal)
+      && /scoreCurrent: hasMovieScore \? formatScore\(rawScore\) : null/.test(modal)
       && /class="mat-ext-link"/.test(modal)
       && /class="provider-chip"/.test(modal)
       && /\.profile-glance[\s\S]*overflow-x: auto/.test(modal)

@@ -27,6 +27,9 @@ const checks = [
     pass: /\.chip-row\s*\{[\s\S]*overflow-x: auto/.test(heroMobileCss)
       && /\.control-chip, \.clear-btn\s*\{[\s\S]*min-height: 36px[\s\S]*white-space: nowrap/.test(heroMobileCss)
       && /\.chip-label-with-icon\s*\{[\s\S]*white-space: nowrap/.test(hero)
+      && /\.chip-chevron\s*\{[\s\S]*border-right: 1\.8px solid currentColor[\s\S]*transform: rotate\(45deg\)/.test(hero)
+      && /\.menu-option--profile\s*\{[\s\S]*min-height: 56px[\s\S]*padding-block: 10px/.test(hero)
+      && /\.menu-option--profile span,[\s\S]*\.menu-option--profile small\s*\{[\s\S]*white-space: nowrap/.test(hero)
       && /\.clear-btn--icon\s*\{[\s\S]*width: 38px/.test(hero),
   },
   {
