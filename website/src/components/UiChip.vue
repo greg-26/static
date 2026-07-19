@@ -77,7 +77,13 @@ const pressed = computed(() => props.active ? "true" : "false");
   white-space: nowrap;
 }
 
-.ui-chip:hover,
+@media (hover: hover) {
+  .ui-chip:hover {
+    border-color: rgba(45,212,191,0.42);
+    color: var(--white);
+  }
+}
+
 .ui-chip:focus-visible {
   border-color: rgba(45,212,191,0.42);
   color: var(--white);
@@ -102,7 +108,14 @@ const pressed = computed(() => props.active ? "true" : "false");
   color: var(--teal);
 }
 
-.ui-chip--danger:hover,
+@media (hover: hover) {
+  .ui-chip--danger:hover {
+    border-color: rgba(248,113,113,0.45);
+    background: rgba(248,113,113,0.12);
+    color: #fca5a5;
+  }
+}
+
 .ui-chip--danger:focus-visible,
 .ui-chip--danger.is-active {
   border-color: rgba(248,113,113,0.45);

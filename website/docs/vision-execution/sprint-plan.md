@@ -24,10 +24,11 @@ Already landed:
 - Movie-detail modal QA coverage is available via `npm run qa:modal`, covering dialog semantics, close controls, focus/scroll lifecycle, suitability profile chips/reasoning, maturity evidence links, provider availability rows, and mobile full-screen behavior.
 - Settings → Lists row affordance/scanability is implemented with clearer row boundaries, compact open affordance, separated management actions, and mobile wrapping.
 - Sprint 9 trust/source QA coverage is available via `npm run qa:sprint9`, covering Discover availability/chip semantics, tautological poster-fit suppression vs Search annotations, Settings → Lists navigation affordance/action isolation, and list/profile gate copy.
+- Mobile/touch source QA coverage is available via `npm run qa:mobile-touch`, covering Discover chip nowrap/dropdown settings paths, non-sticky hover semantics, movie-detail full-screen close/profile/evidence/provider tap targets, Settings → Lists mobile rows, and list/profile recovery paths.
 
 Open scope:
 
-- Manual phone/touch verification for Discover availability/dropdown selected-state readability, movie-detail profile chips, maturity evidence rows, provider chips, list/profile gate copy, and Settings → Lists row scanability.
+- Manual phone/touch verification on a real device for Discover availability/dropdown selected-state readability, movie-detail profile chips, maturity evidence rows, provider chips, list/profile gate copy, and Settings → Lists row scanability.
 
 Acceptance criteria:
 
@@ -46,6 +47,7 @@ Acceptance criteria:
 Verification:
 
 - `npm run qa:sprint9` for source-level Sprint 9 trust regressions.
+- `npm run qa:mobile-touch` for source-level mobile/touch safeguards.
 - `npm run build`.
 - Manual checks: `/discover` with a maturity filter, platform dropdown, `/search?q=godfather`, `/search?q=harry%20potter`, `/search?q=james%20bond`, typo query, `/settings/profile`, `/settings/maturity`, `/settings/lists`, `/lists/bad-id`, and a movie-detail deep link on touch/mobile.
 

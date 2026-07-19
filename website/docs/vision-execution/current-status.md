@@ -27,10 +27,11 @@ Recently landed:
 - Slice 82: Added `npm run qa:modal` source-level coverage for movie-detail dialog semantics, close controls, focus/scroll lifecycle, local suitability profile chips/reasoning, maturity evidence links, provider availability rows, and mobile full-screen behavior.
 - Slice 83: Settings → Lists rows now have clearer navigational affordance, row boundaries, focus/hover states, separated management actions, compact open affordance, and mobile action wrapping.
 - Slice 84: Added `npm run qa:sprint9` source-level coverage for Discover availability/chip semantics, tautological poster-fit suppression vs Search annotations, Settings → Lists navigation affordance/action isolation, and list/profile gate copy.
+- Slice 85: Added `npm run qa:mobile-touch` source-level coverage for mobile/touch safeguards across Discover chips/dropdowns, non-sticky hover semantics, movie-detail full-screen close/profile/evidence/provider tap targets, Settings → Lists mobile rows, and list/profile gate recovery paths. Also increased key movie-detail mobile tap targets.
 
 Next useful slices:
 
-1. Manual phone/touch verification for Discover availability/dropdown selected-state readability, movie-detail profile chips, maturity evidence rows, provider chips, list/profile gate copy, and Settings → Lists row scanability.
+1. Manual phone/touch verification on a real device for Discover availability/dropdown selected-state readability, movie-detail profile chips, maturity evidence rows, provider chips, list/profile gate copy, and Settings → Lists row scanability.
 
 ## Do not do yet
 - Do not implement true Included/Free/Rent/Buy provider grouping until backend/scraper data supports it.

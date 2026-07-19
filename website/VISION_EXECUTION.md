@@ -42,10 +42,11 @@ Recently landed:
 - Movie-detail modal QA coverage now has `npm run qa:modal`, checking dialog semantics, close controls, focus/scroll lifecycle, suitability profile chips/reasoning, maturity evidence links, availability rows, and mobile full-screen behavior.
 - Settings → Lists rows now have clearer boundaries, navigational affordance, separated management actions, focus/hover states, and mobile wrapping.
 - Sprint 9 trust/source QA coverage now has `npm run qa:sprint9`, checking Discover availability/chip semantics, tautological poster-fit suppression vs Search annotations, Settings → Lists navigation affordance/action isolation, and list/profile gate copy.
+- Mobile/touch source QA coverage now has `npm run qa:mobile-touch`, checking Discover chip/dropdown touch safeguards, non-sticky hover semantics, movie-detail full-screen/tap-target safeguards, Settings → Lists mobile rows, and list/profile recovery paths.
 
 Next useful slices:
 
-1. Manual phone/touch verification for Discover availability/dropdown selected-state readability, movie-detail profile chips, maturity evidence rows, provider chips, list/profile gate copy, and Settings → Lists row scanability.
+1. Manual phone/touch verification on a real device for Discover availability/dropdown selected-state readability, movie-detail profile chips, maturity evidence rows, provider chips, list/profile gate copy, and Settings → Lists row scanability.
 
 ## Durable agent prompts
 

@@ -770,8 +770,9 @@ onUnmounted(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 28px;
-  padding: 4px 2px;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 5px 4px;
   text-decoration: none;
 }
 .imdb-logo { height: 18px; width: auto; border-radius: 2px; }
@@ -844,7 +845,10 @@ onUnmounted(() => {
 .availability-note--warn { color: #fca5a5; }
 .provider-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .provider-chip {
-  padding: 4px 12px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 6px 12px;
   background: rgba(45,212,191,0.12);
   border: 1px solid rgba(45,212,191,0.25);
   border-radius: 6px;
@@ -859,20 +863,25 @@ onUnmounted(() => {
   display: inline-flex;
 }
 .provider-chip--custom {
-  padding-right: 22px;
+  padding-right: 32px;
 }
 .provider-chip-remove {
   position: absolute;
-  right: 4px;
+  right: 2px;
   top: 50%;
   transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  min-height: 26px;
   background: none;
   border: none;
   color: var(--muted);
   font-size: 13px;
   line-height: 1;
   cursor: pointer;
-  padding: 0 2px;
+  padding: 0;
   border-radius: 99px;
   transition: color 0.12s;
 }
@@ -1135,11 +1144,12 @@ onUnmounted(() => {
   font-family: var(--font-body);
   cursor: pointer;
   flex: 0 0 auto;
+  min-height: 34px;
   max-width: 128px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  padding: 4px 8px;
+  padding: 5px 10px;
   border-radius: 999px;
   font-size: 11px;
   font-weight: 750;
@@ -1282,8 +1292,8 @@ onUnmounted(() => {
     left: 12px;
     z-index: 120;
     display: flex;
-    width: 38px;
-    height: 38px;
+    width: 44px;
+    height: 44px;
     background: rgba(8,8,16,0.82);
     box-shadow: 0 8px 24px rgba(0,0,0,0.32);
   }
