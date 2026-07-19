@@ -134,7 +134,10 @@
               >
                 <div class="compatibility-row-title">
                   <span>{{ row.label }}</span>
-                  <strong>{{ row.scoreLabel }}</strong>
+                  <strong v-if="row.hasMovieScore" class="score-fraction" :aria-label="`${row.scoreCurrent} out of 5`">
+                    <span class="score-current">{{ row.scoreCurrent }}</span><span class="score-slash">/</span><span class="score-max">5</span>
+                  </strong>
+                  <strong v-else>Unknown</strong>
                 </div>
                 <div class="compatibility-row-meter" aria-hidden="true">
                   <div class="mat-score-bar-wrap">
@@ -143,6 +146,12 @@
                       class="mat-score-bar"
                       :class="row.scoreClass"
                       :style="{ width: row.scoreWidth }"
+                    ></div>
+                    <div
+                      v-if="row.hasLimit"
+                      class="mat-limit-marker"
+                      :style="{ left: row.limitPosition }"
+                      :title="row.limitLabel"
                     ></div>
                   </div>
                 </div>
@@ -347,17 +356,21 @@ const compatibilityRows = computed(() => {
     const unknown = !hasMovieScore;
     const exceeded = !noLimit && hasMovieScore && roundedScore > allowed;
     const allowedLabel = noLimit ? "No limit set" : `Allowed ${allowed} (${(SEVERITY_LABELS[allowed] || "Any").toLowerCase()})`;
+    const limitPosition = noLimit ? null : `${Math.max(0, Math.min(100, (allowed / 5) * 100))}%`;
     return {
       key: cat.key,
       label: cat.label,
       hasMovieScore,
       movieScore,
-      scoreLabel: hasMovieScore ? `${formatScore(rawScore)}/5` : "Unknown",
+      scoreCurrent: hasMovieScore ? formatScore(rawScore) : null,
       scoreWidth: hasMovieScore ? `${Math.max(5, Math.min(100, (rawScore / 5) * 95 + 5))}%` : "0%",
       scoreClass: hasMovieScore ? scoreCssClass(roundedScore) : "sev-nan",
       movieLabel,
       allowedLabel,
       allowedDetail: noLimit ? `${movieLabel} · No limit set` : `${movieLabel} · ${allowedLabel}`,
+      limitLabel: noLimit ? "No limit set" : `Profile limit: ${allowed}/5`,
+      limitPosition,
+      hasLimit: !noLimit,
       statusLabel: unknown ? "Unknown" : noLimit ? "No limit set" : exceeded ? "Exceeds profile" : "Fits profile",
       supportTags,
       unknown,
@@ -1022,17 +1035,30 @@ onUnmounted(() => {
 }
 
 .mat-score-bar-wrap {
+  position: relative;
   flex: 1;
   height: 4px;
   background: var(--surface3);
   border-radius: 99px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .mat-score-bar {
   height: 100%;
   border-radius: 99px;
   transition: width 0.4s ease;
+}
+
+.mat-limit-marker {
+  position: absolute;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  border: 2px solid rgba(8,8,16,0.92);
+  border-radius: 999px;
+  background: var(--white);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.52), 0 2px 8px rgba(0,0,0,0.42);
+  transform: translate(-50%, -50%);
 }
 
 /* Score bar & label colours keyed to 0–5 integer */
@@ -1225,6 +1251,21 @@ onUnmounted(() => {
   font-family: var(--font-display);
   font-size: 16px;
   letter-spacing: 0.02em;
+}
+.score-fraction {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 1px;
+  justify-self: end;
+  line-height: 1;
+}
+.score-current {
+  font-size: 20px;
+}
+.score-slash,
+.score-max {
+  color: rgba(255,255,255,0.72);
+  font-size: 13px;
 }
 .compatibility-row-detail strong { color: var(--teal); font-size: 11px; }
 .compatibility-row.exceeded .compatibility-row-detail strong { color: #f5c842; }
