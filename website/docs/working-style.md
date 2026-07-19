@@ -34,11 +34,19 @@ Human feedback takes priority over routine cron-driven work.
 
 ## Automation cadence
 
-These are role wake-ups, not permission to spam commits.
+These are role wake-ups, not permission to spam commits. Cadences should be staggered so roles do not race each other or produce overlapping planning/implementation commits.
 
-- **PE every 4 hours:** review latest PMT/SDE/QA/UX feedback and update execution plan/sprint pointers.
 - **SDE every 2 hours:** take the next ready sprint or add a blocker note if no sprint is actionable.
+- **PE every 4 hours, offset between SDE runs:** review latest PMT/SDE/QA/UX feedback and update execution plan/sprint pointers. PE should run after SDE has had time to leave evidence, not at the same minute.
 - **UX designer every 36 hours:** use QA/CX evidence to review design, update style guidelines with durable feedback/questions/misses, and ask PE to prioritize if needed.
+
+## Team dynamics
+
+- Human feedback interrupts automation; agents should converge on Alex's latest direction before continuing routine work.
+- SDE produces implementation evidence; PE synthesizes and sequences it. PE should not rewrite or second-guess active SDE work unless it is clearly unsafe, blocked, or off-plan.
+- When two agents touch the same sprint, the later agent must read the earlier agent's committed note/report first, then make the smallest follow-up change needed.
+- If timing causes stale assumptions, leave a concise blocker/planning note instead of forcing a commit.
+- QA/CX and UX findings are inputs to PE prioritization, not parallel product roadmaps.
 
 ## Git/push policy
 
