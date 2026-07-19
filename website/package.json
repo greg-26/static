@@ -6,7 +6,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "qa:modal": "node scripts/qa-movie-modal.mjs"
+    "qa:modal": "node scripts/qa-movie-modal.mjs",
+    "qa:sprint9": "node scripts/qa-sprint9-trust.mjs"
   },
   "dependencies": {
     "fuse.js": "^7.0.0",

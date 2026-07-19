@@ -41,6 +41,7 @@ Recently landed:
 - Movie-detail maturity evidence/progress rows now merge into the selected-profile reasoning table, external parental-guide links are easier to tap, and the redundant provider summary sentence is gone.
 - Movie-detail modal QA coverage now has `npm run qa:modal`, checking dialog semantics, close controls, focus/scroll lifecycle, suitability profile chips/reasoning, maturity evidence links, availability rows, and mobile full-screen behavior.
 - Settings → Lists rows now have clearer boundaries, navigational affordance, separated management actions, focus/hover states, and mobile wrapping.
+- Sprint 9 trust/source QA coverage now has `npm run qa:sprint9`, checking Discover availability/chip semantics, tautological poster-fit suppression vs Search annotations, Settings → Lists navigation affordance/action isolation, and list/profile gate copy.
 
 Next useful slices:
 

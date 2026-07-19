@@ -26,6 +26,7 @@ Recently landed:
 - Slice 81: Movie-detail maturity evidence/progress rows now live in the selected-profile reasoning table with one-decimal scores, allowed-level copy, tags, parental-guide links, larger external-link tap targets, and no redundant provider summary sentence above provider chips.
 - Slice 82: Added `npm run qa:modal` source-level coverage for movie-detail dialog semantics, close controls, focus/scroll lifecycle, local suitability profile chips/reasoning, maturity evidence links, provider availability rows, and mobile full-screen behavior.
 - Slice 83: Settings → Lists rows now have clearer navigational affordance, row boundaries, focus/hover states, separated management actions, compact open affordance, and mobile action wrapping.
+- Slice 84: Added `npm run qa:sprint9` source-level coverage for Discover availability/chip semantics, tautological poster-fit suppression vs Search annotations, Settings → Lists navigation affordance/action isolation, and list/profile gate copy.
 
 Next useful slices:
 
@@ -46,4 +47,4 @@ Next useful slices:
 - Settings is now first-class as an index, and core profile/list/maturity edit flows have route-backed pages; any remaining `ConfigModal.vue` dependency should be audited before removal.
 - Provider subscriptions now live visually in Settings, but still reuse the existing `selectedProviders` persistence path for compatibility.
 - Named maturity profiles now persist as profile presets in `filterPrefs.maturityProfiles`; custom create/duplicate/rename/delete UI exists in `/settings/maturity`.
-- Latest remaining priority: resume Sprint 9 modal QA coverage, with manual phone/touch checks for the new maturity evidence rows and provider-chip cleanup. Avoid reopening completed CEO layout/dropdown/list-gate/detail changes unless manual QA finds a regression.
+- Latest remaining priority: run manual phone/touch checks for Discover dropdown selected-state readability, movie-detail profile chips/maturity evidence/provider chips, list/profile gate copy, and Settings → Lists scanability. Avoid reopening completed CEO layout/dropdown/list-gate/detail changes unless manual QA finds a regression.
