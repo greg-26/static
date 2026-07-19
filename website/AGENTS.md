@@ -30,7 +30,7 @@ Scope: this file is for the `website/` project only inside the Ohana static repo
 - `src/maturity.js` — maturity category definitions and score helpers.
 - `VISION.md` — product/CX source of truth; specifics section is acceptance criteria.
 - `DESIGN_GUIDELINES.md` — durable design principles, screen intent, visual hierarchy, and UX critique checklist.
-- `VISION_EXECUTION.md` — thin execution index and current next-step pointer. Current sprint work lives under `docs/sprints/`; team cadence lives in `docs/working-style.md`.
+- `VISION_EXECUTION.md` — thin execution front door. It must not duplicate sprint status; current sprint work lives under `docs/sprints/`, and team cadence lives in `docs/working-style.md`.
 - `CODING_STANDARDS.md` — reusable component and UI implementation standards.
 - `docs/working-style.md` — team operating model: PMT feedback intake, PE planning, SDE execution, UX/QA review cadence, and git/push policy.
 - `docs/sprints/INDEX.md` — focused sprint index; each sprint has its own file.
@@ -69,10 +69,10 @@ curl -fL --compressed https://ohana.tv/movies.json -o public/movies.json
 ## Roadmap execution protocol
 
 - For roadmap execution, work in small, reviewable slices; do not do a massive lift unless Alex explicitly asks.
-- Use progressive disclosure for execution docs: read `VISION_EXECUTION.md` first, then `docs/working-style.md`, then `docs/sprints/INDEX.md`, then only the current sprint file. Read archived logs only for auditing history or debugging a regression.
-- Do not turn `VISION_EXECUTION.md` back into a long rolling log. Keep it as the durable current-state router; put sprint detail in `docs/sprints/` and stale detail in `docs/vision-execution/archive/`.
+- Use progressive disclosure for execution docs: read `VISION_EXECUTION.md` for routing, then `docs/working-style.md`, then `docs/sprints/INDEX.md`, then only the current sprint file. Read archived logs only for auditing history or debugging a regression.
+- Do not turn `VISION_EXECUTION.md` back into a long rolling log. Keep it as the durable execution front door; put sprint detail in `docs/sprints/` and stale detail in `docs/vision-execution/archive/`.
 - Before vision implementation, read `README.md`, `VISION.md`, `DESIGN_GUIDELINES.md`, `CODING_STANDARDS.md`, this `AGENTS.md`, `VISION_EXECUTION.md`, and the current sprint file.
-- Sequence work according to `VISION.md`, `VISION_EXECUTION.md`, and the current sprint. Update the sprint file before/after each slice.
+- Sequence work according to `VISION.md` and the current sprint file. Update the sprint file before/after each slice; do not duplicate active sprint status in `VISION_EXECUTION.md`.
 - Human/product feedback is PMT-owned: capture new feedback in `reports/pmt/`, update vision/design/planning as needed, then have PE link the sprint(s) that address it. Do not create new `reports/ceo/` reports; `reports/pmt/human-feedback/` is historical.
 - Developers may add concise notes to the next sprint file when useful. If sprint details are unclear and material assumptions are required, ask PMT, UX designer, or PE to validate before coding.
 - Use subagents for scoped audits, implementation consensus, and separation of concerns; ask them for concise findings, exact file refs, risks, and verification results.
@@ -96,7 +96,7 @@ curl -fL --compressed https://ohana.tv/movies.json -o public/movies.json
 
 ## Current explicit product feedback
 
-Do not duplicate a stale feedback checklist here. Current acceptance criteria live in `VISION.md`; active execution follow-ups live in `VISION_EXECUTION.md` and `docs/vision-execution/current-status.md`.
+Do not duplicate a stale feedback checklist here. Current acceptance criteria live in `VISION.md`; active execution follow-ups live in `docs/sprints/INDEX.md` and the current sprint file.
 
 Standing reminders that remain broadly relevant:
 

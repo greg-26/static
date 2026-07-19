@@ -1,11 +1,11 @@
 # Sprint index
 
-Focused sprint files live here so agents read only the slice they are working on.
+Focused sprint files live here so agents read only the slice they are working on. This file is the single source of truth for active/next sprint status.
 
 ## How to use this folder
 
-1. Start from [`../../VISION_EXECUTION.md`](../../VISION_EXECUTION.md).
-2. Open only the sprint file named as current there.
+1. Use this index to identify the active sprint.
+2. Open only that sprint file.
 3. Developers may add brief notes to the **next sprint** file when they discover useful follow-up context.
 4. Keep implementation evidence in reports or PR/commit notes; link it from the sprint instead of pasting long logs.
 
