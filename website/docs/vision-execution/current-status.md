@@ -29,10 +29,11 @@ Recently landed:
 - Slice 84: Added `npm run qa:sprint9` source-level coverage for Discover availability/chip semantics, tautological poster-fit suppression vs Search annotations, Settings → Lists navigation affordance/action isolation, and list/profile gate copy.
 - Slice 85: Added `npm run qa:mobile-touch` source-level coverage for mobile/touch safeguards across Discover chips/dropdowns, non-sticky hover semantics, movie-detail full-screen close/profile/evidence/provider tap targets, Settings → Lists mobile rows, and list/profile gate recovery paths. Also increased key movie-detail mobile tap targets.
 - Slice 86: Added `npm run qa:dev-routes` dev-server smoke coverage for the Vite/static shell on Discover, Search query deep links, Settings subroutes, missing-list recovery, and `movies.json` runtime data.
+- Slice 87: Added `npm run qa:phone-touch` phone/touch readiness coverage for the reachable phone-review routes, Discover dropdown semantics, movie-detail profile/evidence/provider tap targets, full-screen modal safeguards, Settings → Lists scanability, and list-gate copy. Also increased maturity evidence link tap targets to 34px.
 
 Next useful slices:
 
-1. Manual phone/touch verification on a real device for Discover availability/dropdown selected-state readability, movie-detail profile chips, maturity evidence rows, provider chips, list/profile gate copy, and Settings → Lists row scanability.
+1. Run the `npm run qa:phone-touch` checklist on a real phone via `http://100.85.92.106:5173/` and record pass/fail findings for Discover availability/dropdown selected-state readability, movie-detail profile chips, maturity evidence rows, provider chips, list/profile gate copy, and Settings → Lists row scanability.
 
 ## Do not do yet
 - Do not implement true Included/Free/Rent/Buy provider grouping until backend/scraper data supports it.
@@ -49,4 +50,4 @@ Next useful slices:
 - Settings is now first-class as an index, and core profile/list/maturity edit flows have route-backed pages; any remaining `ConfigModal.vue` dependency should be audited before removal.
 - Provider subscriptions now live visually in Settings, but still reuse the existing `selectedProviders` persistence path for compatibility.
 - Named maturity profiles now persist as profile presets in `filterPrefs.maturityProfiles`; custom create/duplicate/rename/delete UI exists in `/settings/maturity`.
-- Latest remaining priority: run manual phone/touch checks for Discover dropdown selected-state readability, movie-detail profile chips/maturity evidence/provider chips, list/profile gate copy, and Settings → Lists scanability. Avoid reopening completed CEO layout/dropdown/list-gate/detail changes unless manual QA finds a regression.
+- Latest remaining priority: use `npm run qa:phone-touch` as the real-device phone checklist, then record any concrete pass/fail findings. Avoid reopening completed CEO layout/dropdown/list-gate/detail changes unless manual QA finds a regression.

@@ -9,7 +9,8 @@
     "qa:modal": "node scripts/qa-movie-modal.mjs",
     "qa:sprint9": "node scripts/qa-sprint9-trust.mjs",
     "qa:mobile-touch": "node scripts/qa-mobile-touch.mjs",
-    "qa:dev-routes": "node scripts/qa-dev-routes.mjs"
+    "qa:dev-routes": "node scripts/qa-dev-routes.mjs",
+    "qa:phone-touch": "node scripts/qa-phone-touch.mjs"
   },
   "dependencies": {
     "fuse.js": "^7.0.0",

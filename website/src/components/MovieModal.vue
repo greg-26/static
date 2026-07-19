@@ -957,11 +957,11 @@ onUnmounted(() => {
 .mat-ext-link {
   display: inline-flex;
   align-items: center;
-  min-height: 28px;
+  min-height: 34px;
   font-size: 11px;
   color: var(--muted);
   text-decoration: none;
-  padding: 4px 9px;
+  padding: 6px 10px;
   border: 1px solid var(--border);
   border-radius: 99px;
   transition: color 0.15s, border-color 0.15s;

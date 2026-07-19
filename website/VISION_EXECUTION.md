@@ -44,10 +44,11 @@ Recently landed:
 - Sprint 9 trust/source QA coverage now has `npm run qa:sprint9`, checking Discover availability/chip semantics, tautological poster-fit suppression vs Search annotations, Settings → Lists navigation affordance/action isolation, and list/profile gate copy.
 - Mobile/touch source QA coverage now has `npm run qa:mobile-touch`, checking Discover chip/dropdown touch safeguards, non-sticky hover semantics, movie-detail full-screen/tap-target safeguards, Settings → Lists mobile rows, and list/profile recovery paths.
 - Dev route smoke coverage now has `npm run qa:dev-routes`, checking the reachable Vite/static shell for Discover, Search deep links, Settings subroutes, list recovery, and runtime catalog data.
+- Phone/touch readiness coverage now has `npm run qa:phone-touch`, checking the reachable phone-review routes plus source safeguards for Discover dropdowns, movie-detail profile/evidence/provider tap targets, full-screen modal behavior, Settings → Lists scanability, and list-gate copy; it prints the remaining real-device checklist.
 
 Next useful slices:
 
-1. Manual phone/touch verification on a real device for Discover availability/dropdown selected-state readability, movie-detail profile chips, maturity evidence rows, provider chips, list/profile gate copy, and Settings → Lists row scanability.
+1. Run the `npm run qa:phone-touch` checklist on a real phone via `http://100.85.92.106:5173/` and record pass/fail findings for Discover availability/dropdown selected-state readability, movie-detail profile chips, maturity evidence rows, provider chips, list/profile gate copy, and Settings → Lists row scanability.
 
 ## Durable agent prompts
 

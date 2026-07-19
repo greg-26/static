@@ -26,10 +26,11 @@ Already landed:
 - Sprint 9 trust/source QA coverage is available via `npm run qa:sprint9`, covering Discover availability/chip semantics, tautological poster-fit suppression vs Search annotations, Settings → Lists navigation affordance/action isolation, and list/profile gate copy.
 - Mobile/touch source QA coverage is available via `npm run qa:mobile-touch`, covering Discover chip nowrap/dropdown settings paths, non-sticky hover semantics, movie-detail full-screen close/profile/evidence/provider tap targets, Settings → Lists mobile rows, and list/profile recovery paths.
 - Dev route smoke coverage is available via `npm run qa:dev-routes`, covering the reachable Vite/static shell for Discover, Search query deep links, Settings subroutes, missing-list recovery, and runtime catalog data.
+- Phone/touch readiness coverage is available via `npm run qa:phone-touch`, covering reachable phone-review routes plus source safeguards for Discover dropdown semantics, movie-detail profile/evidence/provider tap targets, full-screen modal behavior, Settings → Lists scanability, and list-gate copy. It prints the remaining real-device checklist.
 
 Open scope:
 
-- Manual phone/touch verification on a real device for Discover availability/dropdown selected-state readability, movie-detail profile chips, maturity evidence rows, provider chips, list/profile gate copy, and Settings → Lists row scanability.
+- Run the `npm run qa:phone-touch` checklist on a real phone via `http://100.85.92.106:5173/` and record pass/fail findings for Discover availability/dropdown selected-state readability, movie-detail profile chips, maturity evidence rows, provider chips, list/profile gate copy, and Settings → Lists row scanability.
 
 Acceptance criteria:
 
@@ -50,6 +51,7 @@ Verification:
 - `npm run qa:sprint9` for source-level Sprint 9 trust regressions.
 - `npm run qa:mobile-touch` for source-level mobile/touch safeguards.
 - `npm run qa:dev-routes` against the reachable Vite dev server for route/data smoke coverage.
+- `npm run qa:phone-touch` against the reachable Vite dev server for phone/touch readiness and the real-device checklist.
 - `npm run build`.
 - Manual checks: `/discover` with a maturity filter, platform dropdown, `/search?q=godfather`, `/search?q=harry%20potter`, `/search?q=james%20bond`, typo query, `/settings/profile`, `/settings/maturity`, `/settings/lists`, `/lists/bad-id`, and a movie-detail deep link on touch/mobile.
 
