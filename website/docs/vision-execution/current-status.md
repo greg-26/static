@@ -23,12 +23,13 @@ Recently landed:
 - Slice 78: list/profile gate copy now distinguishes no-profile setup from wrong-profile/list-not-attached states on Settings → Lists and `/lists/:listId`.
 - Slice 79: Discover availability/filter-chip semantics now use `Flatrate`/`Any`, disabled future availability modes, a Settings streaming link, icon-only clear, no selected-chip × glyphs, and suppressed tautological Discover poster fit badges.
 - Slice 80: Movie-detail suitability/profile chips are tappable drill-down controls that refresh the modal reasoning profile without changing the active Discover profile; redundant Suitability/list summary boxes were removed.
+- Slice 81: Movie-detail maturity evidence/progress rows now live in the selected-profile reasoning table with one-decimal scores, allowed-level copy, tags, parental-guide links, larger external-link tap targets, and no redundant provider summary sentence above provider chips.
 
 Next useful slices:
 
-1. Merge movie-detail maturity evidence/progress rows and clean redundant provider summary copy.
-2. Modal QA coverage for movie-detail content, close control, focus/scroll state, suitability, and availability rows.
-3. Manual phone/touch verification for Discover availability/dropdown selected-state readability, movie-detail profile chips, and list/profile gate copy.
+1. Modal QA coverage for movie-detail content, close control, focus/scroll state, suitability, and availability rows.
+2. Manual phone/touch verification for Discover availability/dropdown selected-state readability, movie-detail profile chips, maturity evidence rows, provider chips, and list/profile gate copy.
+3. Settings → Lists row affordance/scanability if manual review still finds the list rows ambiguous.
 
 ## Do not do yet
 - Do not implement true Included/Free/Rent/Buy provider grouping until backend/scraper data supports it.
@@ -45,4 +46,4 @@ Next useful slices:
 - Settings is now first-class as an index, and core profile/list/maturity edit flows have route-backed pages; any remaining `ConfigModal.vue` dependency should be audited before removal.
 - Provider subscriptions now live visually in Settings, but still reuse the existing `selectedProviders` persistence path for compatibility.
 - Named maturity profiles now persist as profile presets in `filterPrefs.maturityProfiles`; custom create/duplicate/rename/delete UI exists in `/settings/maturity`.
-- Latest remaining priority: continue the CEO walk-store detail cleanup by merging maturity evidence/progress rows and removing redundant provider summary copy, then resume Sprint 9 modal QA coverage. Avoid reopening completed CEO layout/dropdown/list-gate changes unless manual phone QA finds a regression.
+- Latest remaining priority: resume Sprint 9 modal QA coverage, with manual phone/touch checks for the new maturity evidence rows and provider-chip cleanup. Avoid reopening completed CEO layout/dropdown/list-gate/detail changes unless manual QA finds a regression.

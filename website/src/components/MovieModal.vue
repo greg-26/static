@@ -91,35 +91,94 @@
             </button>
           </div>
 
-          <div v-if="compatibilityRows.length" class="compatibility-summary">
+          <section v-if="compatibilityRows.length" class="compatibility-summary" aria-labelledby="maturity-section-label">
             <div class="compatibility-summary-head">
-              <p class="modal-section-label">Compatible with: <strong>{{ selectedDetailProfileName }}</strong></p>
-              <span class="compatibility-pill" :class="compatibilityOk ? 'compatibility-pill--ok' : 'compatibility-pill--warn'">
-                {{ hasSelectedMaturityLimits ? (compatibilityOk ? 'Fits selected profile' : 'Review before watching') : 'No limit set' }}
-              </span>
+              <div>
+                <p id="maturity-section-label" class="modal-section-label">Compatible with: <strong>{{ selectedDetailProfileName }}</strong></p>
+                <p class="compatibility-subcopy">Movie score vs. this profile’s allowed level.</p>
+              </div>
+              <div class="compatibility-actions">
+                <UiBadge v-if="movie.mpa" tone="gold">{{ movie.mpa }}</UiBadge>
+                <span class="compatibility-pill" :class="compatibilityOk ? 'compatibility-pill--ok' : 'compatibility-pill--warn'">
+                  {{ hasSelectedMaturityLimits ? (compatibilityOk ? 'Fits selected profile' : 'Review before watching') : 'No limit set' }}
+                </span>
+                <a
+                  v-if="movie.id"
+                  :href="`https://www.imdb.com/title/${movie.id}/parentalguide`"
+                  target="_blank" rel="noopener"
+                  class="mat-ext-link"
+                  title="IMDb Parents Guide"
+                >IMDb guide</a>
+                <a
+                  v-if="extraDetails?.csm"
+                  :href="'https://www.commonsensemedia.org'+extraDetails.csm"
+                  target="_blank" rel="noopener"
+                  class="mat-ext-link mat-ext-link--csm"
+                  title="Common Sense Media review"
+                >CSM</a>
+                <a
+                  v-else
+                  :href="'https://www.commonsensemedia.org/search/category/movie/sort/score-desc/'+movie.t"
+                  target="_blank" rel="noopener"
+                  class="mat-ext-link mat-ext-link--csm"
+                  title="Common Sense Media review"
+                >CSM</a>
+              </div>
             </div>
             <div class="compatibility-grid">
-              <div v-for="row in compatibilityRows" :key="row.key" class="compatibility-row" :class="{ exceeded: row.exceeded }">
-                <div class="compatibility-row-main">
+              <div
+                v-for="row in compatibilityRows"
+                :key="row.key"
+                class="compatibility-row"
+                :class="{ exceeded: row.exceeded, unknown: row.unknown }"
+              >
+                <div class="compatibility-row-title">
                   <span>{{ row.label }}</span>
-                  <strong>{{ row.statusLabel }}</strong>
+                  <strong>{{ row.scoreLabel }}</strong>
+                </div>
+                <div class="compatibility-row-meter" aria-hidden="true">
+                  <div class="mat-score-bar-wrap">
+                    <div
+                      v-if="row.hasMovieScore"
+                      class="mat-score-bar"
+                      :class="row.scoreClass"
+                      :style="{ width: row.scoreWidth }"
+                    ></div>
+                  </div>
                 </div>
                 <div class="compatibility-row-detail">
-                  <small>{{ row.detailLabel }}</small>
+                  <strong>{{ row.statusLabel }}</strong>
+                  <small>{{ row.allowedDetail }}</small>
                   <div v-if="row.supportTags.length" class="compatibility-tags" :aria-label="`${row.label} details`">
                     <span v-for="tag in row.supportTags" :key="tag">{{ tag }}</span>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div v-else-if="profileCompatibilityGlance.length" class="compatibility-summary compatibility-summary--empty">
+          </section>
+          <section v-else-if="profileCompatibilityGlance.length" class="compatibility-summary compatibility-summary--empty" aria-labelledby="maturity-section-label">
             <div class="compatibility-summary-head">
-              <p class="modal-section-label">Compatible with: <strong>{{ selectedDetailProfileName }}</strong></p>
-              <span class="compatibility-pill compatibility-pill--warn">Unknown</span>
+              <p id="maturity-section-label" class="modal-section-label">Compatible with: <strong>{{ selectedDetailProfileName }}</strong></p>
+              <div class="compatibility-actions">
+                <UiBadge v-if="movie.mpa" tone="gold">{{ movie.mpa }}</UiBadge>
+                <span class="compatibility-pill compatibility-pill--warn">Unknown</span>
+                <a
+                  v-if="movie.id"
+                  :href="`https://www.imdb.com/title/${movie.id}/parentalguide`"
+                  target="_blank" rel="noopener"
+                  class="mat-ext-link"
+                  title="IMDb Parents Guide"
+                >IMDb guide</a>
+                <a
+                  :href="extraDetails?.csm ? 'https://www.commonsensemedia.org'+extraDetails.csm : 'https://www.commonsensemedia.org/search/category/movie/sort/score-desc/'+movie.t"
+                  target="_blank" rel="noopener"
+                  class="mat-ext-link mat-ext-link--csm"
+                  title="Common Sense Media review"
+                >CSM</a>
+              </div>
             </div>
-            <p class="compatibility-empty-copy">Suitability scores are not available for this title. Use the parental-guide links below if you need more confidence.</p>
-          </div>
+            <p class="compatibility-empty-copy">Suitability scores are not available for this title. Use the parental-guide links if you need more confidence.</p>
+          </section>
 
           <!-- Synopsis -->
           <div class="modal-synopsis" v-if="synopsis || genreLabels.length">
@@ -155,70 +214,14 @@
             </div>
           </div>
 
-          <!-- Supporting parental-guide detail: secondary to the suitability summary above. -->
-          <details class="modal-maturity" v-if="movie.mat !== undefined || matReviews">
+          <!-- Community review excerpts from IMDb, when fetched. Score/evidence rows live in the main maturity section above. -->
+          <details class="modal-maturity" v-if="matReviewsLoading || matReviewsError || matReviewCategories.length">
             <summary class="mat-header">
-              <p class="modal-section-label">Parental-guide details</p>
+              <p class="modal-section-label">Community parental reviews</p>
               <div class="mat-links">
                 <UiBadge v-if="movie.mpa" tone="gold">{{ movie.mpa }}</UiBadge>
-                <a
-                  v-if="movie.id"
-                  :href="`https://www.imdb.com/title/${movie.id}/parentalguide`"
-                  target="_blank" rel="noopener"
-                  class="mat-ext-link"
-                  title="IMDb Parents Guide"
-                >IMDb guide</a>
-                <a
-                  v-if="extraDetails?.csm"
-                  :href="'https://www.commonsensemedia.org'+extraDetails.csm"
-                  target="_blank" rel="noopener"
-                  class="mat-ext-link mat-ext-link--csm"
-                  title="Common Sense Media review"
-                >CSM</a>
-                <a
-                  v-else
-                  :href="'https://www.commonsensemedia.org/search/category/movie/sort/score-desc/'+movie.t"
-                  target="_blank" rel="noopener"
-                  class="mat-ext-link mat-ext-link--csm genre-chip--alt"
-                  title="Common Sense Media review"
-                >CSM</a>
               </div>
             </summary>
-
-            <!-- Score grid from stored bitmask, with per-category detail tags -->
-            <div v-if="movie.mat !== undefined" class="mat-score-grid">
-              <div
-                v-for="cat in MATURITY_CATEGORIES"
-                :key="cat.key"
-                class="mat-score-row"
-              >
-                <div class="mat-score-line">
-                  <span class="mat-score-name">{{ cat.label }}</span>
-
-                  <div class="mat-score-bar-wrap">
-                    <div
-                      class="mat-score-bar"
-                      :class="scoreCssClass(Math.round(getScore(movie.mat, cat.shift)))"
-                      :style="{ width: `${getScore(movie.mat, cat.shift) / 5 * 95+5}%` }"
-                    ></div>
-
-                  </div>
-                  <span style="font-size: 12px; color: var(--muted); min-width: 20px; flex-shrink: 0;">{{ formatScore(getScore(movie.mat, cat.shift)) }}</span>
-                  <!--<span class="mat-score-label">
-                    {{ SEVERITY_LABELS[Math.round(getScore(movie.mat, cat.shift))] }}
-                  </span>-->
-                </div>
-
-                <div class="mat-score-tags" v-if="extraDetails?.tags?.[TAG_KEYS[cat.key]]?.length">
-                  <span  class="mat-tag"> &#8627; </span>
-                  <span
-                    v-for="g in extraDetails.tags[TAG_KEYS[cat.key]]"
-                    :key="g"
-                    class="mat-tag"
-                  >&nbsp;{{ g.replaceAll('_', ' ').toLowerCase() }}</span>
-                </div>
-              </div>
-            </div>
 
             <!-- Community review excerpts from IMDb (collapsed per category) -->
             <div v-if="matReviewsLoading" class="mat-loading"><!--Loading community reviews…--></div>
@@ -246,7 +249,6 @@
               <p class="modal-section-label">Where to watch</p>
               <RouterLink v-if="availabilityDetail.action" to="/settings/streaming">Set services</RouterLink>
             </div>
-            <p v-if="availabilityDetail.label" class="availability-note" :class="availabilityDetail.className">{{ availabilityDetail.label }}</p>
             <div class="provider-list">
               <a v-for="p in providerNames" target="_blank" rel="noopener" :key="p" :href="providerWatchUrl" class="provider-chip">{{ p }}</a>
 
@@ -336,27 +338,34 @@ const compatibilityRows = computed(() => {
     const noLimit = allowed < 0;
     const rawScore = getScore(props.movie.mat, cat.shift);
     const hasMovieScore = Number.isFinite(rawScore);
-    const movieScore = hasMovieScore ? Math.round(rawScore) : null;
-    const movieLabel = hasMovieScore ? SEVERITY_LABELS[movieScore] || "Unknown" : "Unknown";
-    const scoreDetail = hasMovieScore ? `${movieLabel} (${movieScore}/5)` : movieLabel;
+    const movieScore = hasMovieScore ? rawScore : null;
+    const roundedScore = hasMovieScore ? Math.round(rawScore) : null;
+    const movieLabel = hasMovieScore ? SEVERITY_LABELS[roundedScore] || "Unknown" : "Unknown";
     const supportTags = (extraDetails.value?.tags?.[TAG_KEYS[cat.key]] || [])
       .slice(0, 4)
       .map(tag => tag.replaceAll('_', ' ').toLowerCase());
-    const exceeded = !noLimit && (!hasMovieScore || movieScore > allowed);
+    const unknown = !hasMovieScore;
+    const exceeded = !noLimit && hasMovieScore && roundedScore > allowed;
+    const allowedLabel = noLimit ? "No limit set" : `Allowed ${allowed} (${(SEVERITY_LABELS[allowed] || "Any").toLowerCase()})`;
     return {
       key: cat.key,
       label: cat.label,
+      hasMovieScore,
       movieScore,
+      scoreLabel: hasMovieScore ? `${formatScore(rawScore)}/5` : "Unknown",
+      scoreWidth: hasMovieScore ? `${Math.max(5, Math.min(100, (rawScore / 5) * 95 + 5))}%` : "0%",
+      scoreClass: hasMovieScore ? scoreCssClass(roundedScore) : "sev-nan",
       movieLabel,
-      allowedLabel: noLimit ? "No limit set" : SEVERITY_LABELS[allowed] || "Any",
-      statusLabel: noLimit ? "No limit set" : exceeded ? "Exceeds profile" : "Fits profile",
-      detailLabel: noLimit ? `${scoreDetail} · No limit set` : `${scoreDetail} · Allowed ${allowed} (${(SEVERITY_LABELS[allowed] || "Any").toLowerCase()})`,
+      allowedLabel,
+      allowedDetail: noLimit ? `${movieLabel} · No limit set` : `${movieLabel} · ${allowedLabel}`,
+      statusLabel: unknown ? "Unknown" : noLimit ? "No limit set" : exceeded ? "Exceeds profile" : "Fits profile",
       supportTags,
+      unknown,
       exceeded,
     };
   });
 });
-const compatibilityOk = computed(() => compatibilityRows.value.length > 0 && compatibilityRows.value.every(row => !row.exceeded));
+const compatibilityOk = computed(() => compatibilityRows.value.length > 0 && compatibilityRows.value.every(row => !row.exceeded && !row.unknown));
 function profileFitsMovie(profile) {
   if (!profile?.values?.some(v => v >= 0)) return true;
   if (props.movie?.mat === undefined) return false;
@@ -514,14 +523,13 @@ const providerNames = computed(() => {
 const providerWatchUrl = computed(() => extraDetails.value?.tmdbUrl ? `${extraDetails.value.tmdbUrl}/watch` : `https://www.themoviedb.org/search?query=${encodeURIComponent(props.movie?.t || "")}`);
 
 const availabilityDetail = computed(() => {
-  if (!props.movie?.prov && !resolvedCustomProviders.value.length) return { label: "Availability unknown.", className: "", action: true };
-  if (!movieStore.selectedProviders) return { label: "Set your services to put them first.", className: "", action: true };
+  if (!props.movie?.prov && !resolvedCustomProviders.value.length) return { action: true };
+  if (!movieStore.selectedProviders) return { action: true };
   const selectedNames = PROVIDERS
     .filter(p => movieStore.selectedProviders & p.bit)
     .map(p => p.name);
   const configured = providerNames.value.filter(name => selectedNames.includes(name));
-  if (configured.length) return { label: `Available on ${configured.slice(0, 2).join(" · ")}${configured.length > 2 ? ` +${configured.length - 2}` : ""}.`, className: "availability-note--ok" };
-  return { label: "Not available on your selected services.", className: "availability-note--warn", action: true };
+  return { action: !configured.length };
 });
 
 // ─── Custom providers ─────────────────────────────────────────────────────────
@@ -757,8 +765,16 @@ onUnmounted(() => {
 }
 .modal-year { font-size: 13px; color: var(--muted); }
 .modal-rating { font-size: 14px; font-weight: 500; color: var(--gold); }
-.imdb-link { display: inline-flex; align-items: center; text-decoration: none; }
-.imdb-logo { height: 12px; width: auto; border-radius: 2px; }
+.imdb-link,
+.ext-site-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 4px 2px;
+  text-decoration: none;
+}
+.imdb-logo { height: 18px; width: auto; border-radius: 2px; }
 
 .modal-title {
   font-family: var(--font-display);
@@ -930,10 +946,13 @@ onUnmounted(() => {
 }
 
 .mat-ext-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
   font-size: 11px;
   color: var(--muted);
   text-decoration: none;
-  padding: 2px 8px;
+  padding: 4px 9px;
   border: 1px solid var(--border);
   border-radius: 99px;
   transition: color 0.15s, border-color 0.15s;
@@ -1148,40 +1167,62 @@ onUnmounted(() => {
 }
 .compatibility-summary-head {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 .compatibility-summary strong { color: var(--white); }
+.compatibility-subcopy {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.compatibility-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 6px;
+}
 .compatibility-pill {
   flex-shrink: 0;
-  padding: 4px 8px;
+  padding: 5px 9px;
   border-radius: 999px;
   font-size: 11px;
   font-weight: 800;
 }
 .compatibility-pill--ok { background: rgba(45,212,191,0.12); color: var(--teal); }
 .compatibility-pill--warn { background: rgba(245,200,66,0.13); color: #f5c842; }
-.compatibility-grid { display: grid; gap: 7px; }
+.compatibility-grid { display: grid; gap: 8px; }
 .compatibility-row {
   display: grid;
-  grid-template-columns: minmax(116px, 0.7fr) minmax(0, 1.3fr);
+  grid-template-columns: minmax(112px, 0.75fr) minmax(96px, 1fr) minmax(150px, 1.2fr);
+  align-items: center;
   gap: 12px;
   color: rgba(240,238,232,0.82);
   font-size: 12px;
 }
-.compatibility-row-main,
+.compatibility-row-title,
 .compatibility-row-detail {
   min-width: 0;
   display: grid;
   gap: 4px;
 }
-.compatibility-row-main span { color: var(--white); font-weight: 650; }
-.compatibility-row-main strong { color: var(--teal); font-size: 11px; }
-.compatibility-row.exceeded .compatibility-row-main strong { color: #f5c842; }
+.compatibility-row-title span { color: var(--white); font-weight: 650; }
+.compatibility-row-title strong {
+  color: var(--white);
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: 0.02em;
+}
+.compatibility-row-detail strong { color: var(--teal); font-size: 11px; }
+.compatibility-row.exceeded .compatibility-row-detail strong { color: #f5c842; }
+.compatibility-row.unknown .compatibility-row-detail strong { color: var(--muted); }
 .compatibility-row small { color: var(--teal); }
 .compatibility-row.exceeded small { color: #f5c842; }
+.compatibility-row.unknown small { color: var(--muted); }
+.compatibility-row-meter { min-width: 0; }
 .compatibility-empty-copy {
   margin: 0;
   color: rgba(240,238,232,0.76);
@@ -1247,6 +1288,12 @@ onUnmounted(() => {
     box-shadow: 0 8px 24px rgba(0,0,0,0.32);
   }
   .modal-close--mobile svg { width: 18px; height: 18px; }
-  .compatibility-row { grid-template-columns: 1fr; gap: 5px; }
+  .compatibility-summary-head { flex-direction: column; }
+  .compatibility-actions { justify-content: flex-start; }
+  .compatibility-row { grid-template-columns: 1fr; gap: 6px; }
+  .compatibility-row-title {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
+  }
 }
 </style>

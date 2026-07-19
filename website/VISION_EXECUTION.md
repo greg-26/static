@@ -38,12 +38,13 @@ Recently landed:
 - List/profile gate copy now distinguishes no-profile setup from wrong-profile/list-not-attached states on Settings → Lists and `/lists/:listId`.
 - Discover availability/filter-chip semantics now use `Flatrate`/`Any`, disabled future availability modes, a Settings streaming link, icon-only clear, no selected-chip × glyphs, and suppressed tautological Discover poster fit badges.
 - Movie-detail suitability/profile chips are tappable drill-down controls that switch the modal reasoning profile without changing the active Discover profile.
+- Movie-detail maturity evidence/progress rows now merge into the selected-profile reasoning table, external parental-guide links are easier to tap, and the redundant provider summary sentence is gone.
 
 Next useful slices:
 
-1. Merge movie-detail maturity evidence/progress rows and clean redundant provider summary copy.
-2. Extend QA/modal coverage for movie-detail content, close control, focus/scroll state, suitability, and availability rows.
-3. Manual phone/touch verification for Discover availability/dropdown selected-state readability, movie-detail profile chips, and list/profile gate copy.
+1. Extend QA/modal coverage for movie-detail content, close control, focus/scroll state, suitability, and availability rows.
+2. Manual phone/touch verification for Discover availability/dropdown selected-state readability, movie-detail profile chips, maturity evidence rows, provider chips, and list/profile gate copy.
+3. Settings → Lists row affordance/scanability if manual review still finds the list rows ambiguous.
 
 ## Durable agent prompts
 
