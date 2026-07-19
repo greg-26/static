@@ -13,7 +13,7 @@ Focused sprint files live here so agents read only the slice they are working on
 
 | Sprint | Goal | Status | File |
 | --- | --- | --- | --- |
-| 9 | PM/QA trust, retrieval, accessibility, and phone-touch validation follow-ups. | Active — automated readiness green; real-phone checklist still open. | [`sprint-09-trust-retrieval-accessibility.md`](sprint-09-trust-retrieval-accessibility.md) |
+| 9 | PM/QA trust, retrieval, accessibility, and phone-touch validation follow-ups. | Active — automated readiness green; real-phone checklist found chip/dropdown fit feedback to fix before closure. | [`sprint-09-trust-retrieval-accessibility.md`](sprint-09-trust-retrieval-accessibility.md) |
 | 10 | Next incremental slice chosen from PMT feedback, UX review, QA findings, or human feedback after Sprint 9 validation. | Draft / parking lot. | [`sprint-10-next.md`](sprint-10-next.md) |
 
 ## Maintenance rules
