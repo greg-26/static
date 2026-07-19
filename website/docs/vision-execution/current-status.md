@@ -24,12 +24,12 @@ Recently landed:
 - Slice 79: Discover availability/filter-chip semantics now use `Flatrate`/`Any`, disabled future availability modes, a Settings streaming link, icon-only clear, no selected-chip × glyphs, and suppressed tautological Discover poster fit badges.
 - Slice 80: Movie-detail suitability/profile chips are tappable drill-down controls that refresh the modal reasoning profile without changing the active Discover profile; redundant Suitability/list summary boxes were removed.
 - Slice 81: Movie-detail maturity evidence/progress rows now live in the selected-profile reasoning table with one-decimal scores, allowed-level copy, tags, parental-guide links, larger external-link tap targets, and no redundant provider summary sentence above provider chips.
+- Slice 82: Added `npm run qa:modal` source-level coverage for movie-detail dialog semantics, close controls, focus/scroll lifecycle, local suitability profile chips/reasoning, maturity evidence links, provider availability rows, and mobile full-screen behavior.
 
 Next useful slices:
 
-1. Modal QA coverage for movie-detail content, close control, focus/scroll state, suitability, and availability rows.
-2. Manual phone/touch verification for Discover availability/dropdown selected-state readability, movie-detail profile chips, maturity evidence rows, provider chips, and list/profile gate copy.
-3. Settings → Lists row affordance/scanability if manual review still finds the list rows ambiguous.
+1. Manual phone/touch verification for Discover availability/dropdown selected-state readability, movie-detail profile chips, maturity evidence rows, provider chips, and list/profile gate copy.
+2. Settings → Lists row affordance/scanability if manual review still finds the list rows ambiguous.
 
 ## Do not do yet
 - Do not implement true Included/Free/Rent/Buy provider grouping until backend/scraper data supports it.
