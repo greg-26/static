@@ -49,3 +49,5 @@ Landed coverage:
 ## Developer notes for next sprint
 
 Add brief notes here only if they are needed to choose or clarify Sprint 10. Link evidence rather than pasting long findings.
+
+- 2026-07-19 15:09 Europe/Madrid — SDE reran `npm run qa:phone-touch` against the reachable Vite server at `http://100.85.92.106:5173/`; all automated readiness checks passed. Remaining blocker is real-phone human/QA validation of the manual checklist items before Sprint 9 can close.
