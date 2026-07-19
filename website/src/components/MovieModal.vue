@@ -74,34 +74,28 @@
             <UiBadge v-for="g in genreLabels" :key="g">{{ g }}</UiBadge>
           </div>
 
-          <div class="watch-summary">
-            <div class="watch-summary-item" :class="suitabilitySummary.className">
-              <span>Suitability</span>
-              <strong>{{ suitabilitySummary.label }}</strong>
-              <RouterLink v-if="suitabilitySummary.action" to="/settings/maturity">Adjust profile</RouterLink>
-            </div>
-            <div v-if="listSummary" class="watch-summary-item watch-summary-item--list">
-              <span>Lists</span>
-              <strong>{{ listSummary }}</strong>
-            </div>
-          </div>
-
           <div v-if="profileCompatibilityGlance.length" class="profile-glance" aria-label="Suitability across profiles">
-            <span
+            <button
               v-for="profile in profileCompatibilityGlance"
               :key="profile.id"
+              type="button"
               class="profile-glance-pill"
-              :class="profile.fits ? 'profile-glance-pill--ok' : 'profile-glance-pill--warn'"
+              :class="[
+                profile.fits ? 'profile-glance-pill--ok' : 'profile-glance-pill--warn',
+                { 'is-selected': profile.id === selectedDetailProfileId },
+              ]"
+              :aria-pressed="profile.id === selectedDetailProfileId ? 'true' : 'false'"
+              @click="selectedDetailProfileId = profile.id"
             >
               {{ profile.label }} {{ profile.fits ? '✓' : '!' }}
-            </span>
+            </button>
           </div>
 
           <div v-if="compatibilityRows.length" class="compatibility-summary">
             <div class="compatibility-summary-head">
-              <p class="modal-section-label">Compatible with: <strong>{{ activeProfileName }}</strong></p>
+              <p class="modal-section-label">Compatible with: <strong>{{ selectedDetailProfileName }}</strong></p>
               <span class="compatibility-pill" :class="compatibilityOk ? 'compatibility-pill--ok' : 'compatibility-pill--warn'">
-                {{ hasActiveMaturityLimits ? (compatibilityOk ? 'Fits current limits' : 'Review before watching') : 'No limit set' }}
+                {{ hasSelectedMaturityLimits ? (compatibilityOk ? 'Fits selected profile' : 'Review before watching') : 'No limit set' }}
               </span>
             </div>
             <div class="compatibility-grid">
@@ -118,6 +112,13 @@
                 </div>
               </div>
             </div>
+          </div>
+          <div v-else-if="profileCompatibilityGlance.length" class="compatibility-summary compatibility-summary--empty">
+            <div class="compatibility-summary-head">
+              <p class="modal-section-label">Compatible with: <strong>{{ selectedDetailProfileName }}</strong></p>
+              <span class="compatibility-pill compatibility-pill--warn">Unknown</span>
+            </div>
+            <p class="compatibility-empty-copy">Suitability scores are not available for this title. Use the parental-guide links below if you need more confidence.</p>
           </div>
 
           <!-- Synopsis -->
@@ -308,7 +309,7 @@ import { GENRES, PROVIDERS, useMovieStore } from "@/stores/movies.js";
 import { MATURITY_CATEGORIES, SEVERITY_LABELS, getScore, scoreCssClass } from "@/maturity.js";
 import { useUserStore } from "@/stores/user.js";
 import { lockBodyScroll, unlockBodyScroll, trapTabKey } from "@/composables/modalGuards.js";
-import { profileLabel } from "@/lib/maturityProfiles.js";
+import { profileById, profileLabel } from "@/lib/maturityProfiles.js";
 import UiBadge from "@/components/UiBadge.vue";
 import UiChip from "@/components/UiChip.vue";
 
@@ -320,15 +321,18 @@ const emit = defineEmits(["close"]);
 
 const dialogRef = ref(null);
 const previouslyFocused = ref(null);
+const selectedDetailProfileId = ref(movieStore.activeMaturityProfileId);
 let bodyLocked = false;
 
 const titleId = computed(() => props.movie?.id ? `movie-dialog-title-${props.movie.id}` : "movie-dialog-title");
-const activeProfileName = computed(() => profileLabel(movieStore.maturityProfiles, movieStore.activeMaturityProfileId));
-const hasActiveMaturityLimits = computed(() => movieStore.maxMaturityCat.some(v => v >= 0));
+const selectedDetailProfile = computed(() => profileById(movieStore.maturityProfiles, selectedDetailProfileId.value));
+const selectedDetailProfileName = computed(() => profileLabel(movieStore.maturityProfiles, selectedDetailProfileId.value));
+const selectedMaturityValues = computed(() => selectedDetailProfile.value?.values ?? movieStore.maxMaturityCat);
+const hasSelectedMaturityLimits = computed(() => selectedMaturityValues.value.some(v => v >= 0));
 const compatibilityRows = computed(() => {
   if (props.movie?.mat === undefined) return [];
   return MATURITY_CATEGORIES.map((cat, i) => {
-    const allowed = movieStore.maxMaturityCat[i];
+    const allowed = selectedMaturityValues.value[i];
     const noLimit = allowed < 0;
     const rawScore = getScore(props.movie.mat, cat.shift);
     const hasMovieScore = Number.isFinite(rawScore);
@@ -346,20 +350,13 @@ const compatibilityRows = computed(() => {
       movieLabel,
       allowedLabel: noLimit ? "No limit set" : SEVERITY_LABELS[allowed] || "Any",
       statusLabel: noLimit ? "No limit set" : exceeded ? "Exceeds profile" : "Fits profile",
-      detailLabel: noLimit ? `${scoreDetail} · No limit set` : `${scoreDetail} · allowed ${SEVERITY_LABELS[allowed] || "Any"}`,
+      detailLabel: noLimit ? `${scoreDetail} · No limit set` : `${scoreDetail} · Allowed ${allowed} (${(SEVERITY_LABELS[allowed] || "Any").toLowerCase()})`,
       supportTags,
       exceeded,
     };
   });
 });
 const compatibilityOk = computed(() => compatibilityRows.value.length > 0 && compatibilityRows.value.every(row => !row.exceeded));
-const suitabilitySummary = computed(() => {
-  if (!hasActiveMaturityLimits.value) return { label: "Adults / no limits", className: "" };
-  if (props.movie?.mat === undefined) return { label: "Unknown", className: "watch-summary-item--warn", action: true };
-  return compatibilityOk.value
-    ? { label: `Fits ${activeProfileName.value}`, className: "watch-summary-item--ok" }
-    : { label: `Review for ${activeProfileName.value}`, className: "watch-summary-item--warn", action: true };
-});
 function profileFitsMovie(profile) {
   if (!profile?.values?.some(v => v >= 0)) return true;
   if (props.movie?.mat === undefined) return false;
@@ -379,13 +376,6 @@ const profileCompatibilityGlance = computed(() => {
       label: profile.label,
       fits: profileFitsMovie(profile),
     }));
-});
-
-const listSummary = computed(() => {
-  if (!props.movie || !userStore.isLoggedIn) return "";
-  const labels = userStore.lists.filter(list => list.movies.includes(props.movie.id)).map(list => list.name);
-  if (userStore.isWatched(props.movie.id)) labels.unshift("Watched");
-  return labels.slice(0, 2).join(" · ");
 });
 
 function focusDialog() {
@@ -606,6 +596,7 @@ function commitProvider() {
 // ─── Watch for movie changes ──────────────────────────────────────────────────
 watch(() => props.movie, (movie) => {
   if (movie) {
+    selectedDetailProfileId.value = movieStore.activeMaturityProfileId;
     if (!bodyLocked) {
       previouslyFocused.value = document.activeElement;
       lockBodyScroll();
@@ -1111,42 +1102,6 @@ onUnmounted(() => {
 }
 .mat-items li:last-child { border-bottom: none; }
 
-/* ── Watch summary ── */
-.watch-summary {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  margin: 12px 0 12px;
-}
-.watch-summary-item {
-  min-width: 0;
-  display: grid;
-  gap: 3px;
-  padding: 11px;
-  border: 1px solid rgba(255,255,255,0.09);
-  border-radius: 13px;
-  background: rgba(255,255,255,0.035);
-}
-.watch-summary-item span {
-  color: var(--muted);
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-.watch-summary-item strong {
-  color: var(--white);
-  font-size: 12px;
-  line-height: 1.25;
-}
-.watch-summary-item a {
-  color: var(--teal);
-  font-size: 11px;
-  text-decoration: none;
-}
-.watch-summary-item--ok { border-color: rgba(45,212,191,0.24); background: rgba(45,212,191,0.08); }
-.watch-summary-item--warn { border-color: rgba(248,113,113,0.22); background: rgba(248,113,113,0.08); }
-.watch-summary-item--list { border-color: rgba(245,200,66,0.22); background: rgba(245,200,66,0.08); }
-
 .profile-glance {
   display: flex;
   gap: 6px;
@@ -1157,6 +1112,9 @@ onUnmounted(() => {
 }
 .profile-glance::-webkit-scrollbar { display: none; }
 .profile-glance-pill {
+  border: 1px solid transparent;
+  font-family: var(--font-body);
+  cursor: pointer;
   flex: 0 0 auto;
   max-width: 128px;
   overflow: hidden;
@@ -1166,9 +1124,19 @@ onUnmounted(() => {
   border-radius: 999px;
   font-size: 11px;
   font-weight: 750;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.profile-glance-pill:hover,
+.profile-glance-pill:focus-visible {
+  outline: none;
+  border-color: rgba(45,212,191,0.42);
+}
+.profile-glance-pill.is-selected {
+  border-color: rgba(45,212,191,0.5);
+  box-shadow: 0 0 0 1px rgba(45,212,191,0.12) inset;
 }
 .profile-glance-pill--ok { color: var(--teal); background: rgba(45,212,191,0.1); }
-.profile-glance-pill--warn { color: #fca5a5; background: rgba(248,113,113,0.11); }
+.profile-glance-pill--warn { color: #f5c842; background: rgba(245,200,66,0.11); }
 
 /* ── Compatibility summary ── */
 .compatibility-summary {
@@ -1194,7 +1162,7 @@ onUnmounted(() => {
   font-weight: 800;
 }
 .compatibility-pill--ok { background: rgba(45,212,191,0.12); color: var(--teal); }
-.compatibility-pill--warn { background: rgba(248,113,113,0.13); color: #fca5a5; }
+.compatibility-pill--warn { background: rgba(245,200,66,0.13); color: #f5c842; }
 .compatibility-grid { display: grid; gap: 7px; }
 .compatibility-row {
   display: grid;
@@ -1211,9 +1179,15 @@ onUnmounted(() => {
 }
 .compatibility-row-main span { color: var(--white); font-weight: 650; }
 .compatibility-row-main strong { color: var(--teal); font-size: 11px; }
-.compatibility-row.exceeded .compatibility-row-main strong { color: #fca5a5; }
+.compatibility-row.exceeded .compatibility-row-main strong { color: #f5c842; }
 .compatibility-row small { color: var(--teal); }
-.compatibility-row.exceeded small { color: #fca5a5; }
+.compatibility-row.exceeded small { color: #f5c842; }
+.compatibility-empty-copy {
+  margin: 0;
+  color: rgba(240,238,232,0.76);
+  font-size: 12px;
+  line-height: 1.45;
+}
 .compatibility-tags {
   display: flex;
   gap: 5px;
@@ -1273,7 +1247,6 @@ onUnmounted(() => {
     box-shadow: 0 8px 24px rgba(0,0,0,0.32);
   }
   .modal-close--mobile svg { width: 18px; height: 18px; }
-  .watch-summary { grid-template-columns: 1fr; }
   .compatibility-row { grid-template-columns: 1fr; gap: 5px; }
 }
 </style>
