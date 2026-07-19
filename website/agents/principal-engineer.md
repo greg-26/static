@@ -21,6 +21,7 @@ From `website/`, read before planning or implementing:
 - `docs/working-style.md`
 - `docs/sprints/INDEX.md` and the current sprint file only
 - latest relevant reports in `reports/pmt/`, `reports/qa/`, `reports/qa-deep-dive/`, and `reports/cx-review/`
+- active GitHub issues for the repo (`gh issue list --repo ohanamovies/static --state open`) before reviewing or building the sprint plan
 - source files touched by the proposed slice
 - `git status --short` and relevant diffs before editing
 
