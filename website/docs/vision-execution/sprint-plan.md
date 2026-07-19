@@ -25,6 +25,7 @@ Already landed:
 - Settings → Lists row affordance/scanability is implemented with clearer row boundaries, compact open affordance, separated management actions, and mobile wrapping.
 - Sprint 9 trust/source QA coverage is available via `npm run qa:sprint9`, covering Discover availability/chip semantics, tautological poster-fit suppression vs Search annotations, Settings → Lists navigation affordance/action isolation, and list/profile gate copy.
 - Mobile/touch source QA coverage is available via `npm run qa:mobile-touch`, covering Discover chip nowrap/dropdown settings paths, non-sticky hover semantics, movie-detail full-screen close/profile/evidence/provider tap targets, Settings → Lists mobile rows, and list/profile recovery paths.
+- Dev route smoke coverage is available via `npm run qa:dev-routes`, covering the reachable Vite/static shell for Discover, Search query deep links, Settings subroutes, missing-list recovery, and runtime catalog data.
 
 Open scope:
 
@@ -48,6 +49,7 @@ Verification:
 
 - `npm run qa:sprint9` for source-level Sprint 9 trust regressions.
 - `npm run qa:mobile-touch` for source-level mobile/touch safeguards.
+- `npm run qa:dev-routes` against the reachable Vite dev server for route/data smoke coverage.
 - `npm run build`.
 - Manual checks: `/discover` with a maturity filter, platform dropdown, `/search?q=godfather`, `/search?q=harry%20potter`, `/search?q=james%20bond`, typo query, `/settings/profile`, `/settings/maturity`, `/settings/lists`, `/lists/bad-id`, and a movie-detail deep link on touch/mobile.
 

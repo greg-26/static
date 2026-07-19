@@ -28,6 +28,7 @@ Recently landed:
 - Slice 83: Settings → Lists rows now have clearer navigational affordance, row boundaries, focus/hover states, separated management actions, compact open affordance, and mobile action wrapping.
 - Slice 84: Added `npm run qa:sprint9` source-level coverage for Discover availability/chip semantics, tautological poster-fit suppression vs Search annotations, Settings → Lists navigation affordance/action isolation, and list/profile gate copy.
 - Slice 85: Added `npm run qa:mobile-touch` source-level coverage for mobile/touch safeguards across Discover chips/dropdowns, non-sticky hover semantics, movie-detail full-screen close/profile/evidence/provider tap targets, Settings → Lists mobile rows, and list/profile gate recovery paths. Also increased key movie-detail mobile tap targets.
+- Slice 86: Added `npm run qa:dev-routes` dev-server smoke coverage for the Vite/static shell on Discover, Search query deep links, Settings subroutes, missing-list recovery, and `movies.json` runtime data.
 
 Next useful slices:
 

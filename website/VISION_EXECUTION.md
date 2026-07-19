@@ -43,6 +43,7 @@ Recently landed:
 - Settings → Lists rows now have clearer boundaries, navigational affordance, separated management actions, focus/hover states, and mobile wrapping.
 - Sprint 9 trust/source QA coverage now has `npm run qa:sprint9`, checking Discover availability/chip semantics, tautological poster-fit suppression vs Search annotations, Settings → Lists navigation affordance/action isolation, and list/profile gate copy.
 - Mobile/touch source QA coverage now has `npm run qa:mobile-touch`, checking Discover chip/dropdown touch safeguards, non-sticky hover semantics, movie-detail full-screen/tap-target safeguards, Settings → Lists mobile rows, and list/profile recovery paths.
+- Dev route smoke coverage now has `npm run qa:dev-routes`, checking the reachable Vite/static shell for Discover, Search deep links, Settings subroutes, list recovery, and runtime catalog data.
 
 Next useful slices:
 

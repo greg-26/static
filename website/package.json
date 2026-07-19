@@ -8,7 +8,8 @@
     "preview": "vite preview",
     "qa:modal": "node scripts/qa-movie-modal.mjs",
     "qa:sprint9": "node scripts/qa-sprint9-trust.mjs",
-    "qa:mobile-touch": "node scripts/qa-mobile-touch.mjs"
+    "qa:mobile-touch": "node scripts/qa-mobile-touch.mjs",
+    "qa:dev-routes": "node scripts/qa-dev-routes.mjs"
   },
   "dependencies": {
     "fuse.js": "^7.0.0",
