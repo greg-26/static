@@ -40,11 +40,11 @@ Recently landed:
 - Movie-detail suitability/profile chips are tappable drill-down controls that switch the modal reasoning profile without changing the active Discover profile.
 - Movie-detail maturity evidence/progress rows now merge into the selected-profile reasoning table, external parental-guide links are easier to tap, and the redundant provider summary sentence is gone.
 - Movie-detail modal QA coverage now has `npm run qa:modal`, checking dialog semantics, close controls, focus/scroll lifecycle, suitability profile chips/reasoning, maturity evidence links, availability rows, and mobile full-screen behavior.
+- Settings → Lists rows now have clearer boundaries, navigational affordance, separated management actions, focus/hover states, and mobile wrapping.
 
 Next useful slices:
 
-1. Manual phone/touch verification for Discover availability/dropdown selected-state readability, movie-detail profile chips, maturity evidence rows, provider chips, and list/profile gate copy.
-2. Settings → Lists row affordance/scanability if manual review still finds the list rows ambiguous.
+1. Manual phone/touch verification for Discover availability/dropdown selected-state readability, movie-detail profile chips, maturity evidence rows, provider chips, list/profile gate copy, and Settings → Lists row scanability.
 
 ## Durable agent prompts
 

@@ -22,11 +22,11 @@ Already landed:
 - Movie-detail suitability/profile chips are tappable drill-down controls per maturity profile; redundant Suitability/list summary boxes are removed; reasoning copy uses **Allowed n (label)**.
 - Movie-detail maturity evidence/progress rows are merged into the selected-profile reasoning section; redundant provider summary copy above provider chips is removed.
 - Movie-detail modal QA coverage is available via `npm run qa:modal`, covering dialog semantics, close controls, focus/scroll lifecycle, suitability profile chips/reasoning, maturity evidence links, provider availability rows, and mobile full-screen behavior.
+- Settings → Lists row affordance/scanability is implemented with clearer row boundaries, compact open affordance, separated management actions, and mobile wrapping.
 
 Open scope:
 
-- Manual phone/touch verification for Discover availability/dropdown selected-state readability, movie-detail profile chips, maturity evidence rows, provider chips, and list/profile gate copy.
-- Settings → Lists row affordance/scanability if manual review still finds the list rows ambiguous.
+- Manual phone/touch verification for Discover availability/dropdown selected-state readability, movie-detail profile chips, maturity evidence rows, provider chips, list/profile gate copy, and Settings → Lists row scanability.
 
 Acceptance criteria:
 

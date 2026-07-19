@@ -155,8 +155,13 @@
             @keydown.space.prevent="openList(list)"
           >
             <div class="list-row__summary">
+              <span class="list-row__label">Saved list</span>
               <strong>{{ list.name }}</strong>
-              <span>{{ list.movies.length }} titles</span>
+              <span>{{ list.movies.length }} {{ list.movies.length === 1 ? 'title' : 'titles' }}</span>
+            </div>
+            <div class="list-row__open" aria-hidden="true">
+              <span>Open</span>
+              <span class="list-row__chevron">›</span>
             </div>
             <div class="list-row__actions" @click.stop @keydown.stop>
               <button type="button" @click="renameList(list)">Rename</button>
@@ -454,15 +459,43 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .maturity-row span { color: var(--muted); font-size: 12px; }
 .maturity-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 
-.list-stack { display: grid; }
-.list-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.08); cursor: pointer; border-radius: 12px; transition: background 0.16s ease, border-color 0.16s ease; }
-.list-row:first-child { border-top: 1px solid rgba(255,255,255,0.08); }
-.list-row:hover, .list-row:focus-visible { background: rgba(255,255,255,0.035); border-bottom-color: rgba(107,226,214,0.28); outline: none; }
-.list-row:focus-visible { box-shadow: 0 0 0 2px rgba(107,226,214,0.24); }
-.list-row__summary { margin-right: auto; display: grid; gap: 2px; min-width: min(220px, 100%); }
-.list-row__actions { display: flex; flex-wrap: wrap; gap: 8px; }
-.list-row span { color: var(--muted); font-size: 12px; }
+.list-stack { display: grid; gap: 10px; }
+.list-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 14px 14px 16px;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 16px;
+  background: rgba(255,255,255,0.035);
+  cursor: pointer;
+  transition: background 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+}
+.list-row:hover,
+.list-row:focus-visible {
+  background: rgba(255,255,255,0.055);
+  border-color: rgba(107,226,214,0.34);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.16);
+  outline: none;
+}
+.list-row:focus-visible { box-shadow: 0 0 0 2px rgba(107,226,214,0.28), 0 10px 28px rgba(0,0,0,0.16); }
+.list-row:hover .list-row__chevron,
+.list-row:focus-visible .list-row__chevron { color: var(--teal); transform: translateX(2px); }
+.list-row__summary { display: grid; gap: 3px; min-width: 0; }
+.list-row__summary strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--white); font-size: 16px; }
+.list-row__label { color: var(--teal); font-size: 10px; font-weight: 800; letter-spacing: 0.13em; text-transform: uppercase; }
+.list-row__open { display: inline-flex; align-items: center; gap: 4px; color: rgba(240,238,232,0.58); font-size: 12px; font-weight: 700; }
+.list-row__chevron { color: rgba(240,238,232,0.42); font-size: 24px; line-height: 1; transition: transform 0.15s ease, color 0.15s ease; }
+.list-row__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding-left: 14px; border-left: 1px solid rgba(255,255,255,0.09); }
+.list-row span:not(.list-row__label):not(.list-row__chevron) { color: var(--muted); font-size: 12px; }
 .list-action-row { padding: 16px 0 0; }
 .danger:hover { border-color: rgba(248,113,113,0.45); color: #fca5a5; }
-@media (max-width: 720px) { .settings-view { padding: 20px 14px 48px; } .settings-card--primary, .settings-card--wide { grid-column: auto; } .settings-form--inline { grid-template-columns: 1fr; } }
+@media (max-width: 720px) {
+  .settings-view { padding: 20px 14px 48px; }
+  .settings-card--primary, .settings-card--wide { grid-column: auto; }
+  .settings-form--inline { grid-template-columns: 1fr; }
+  .list-row { grid-template-columns: minmax(0, 1fr) auto; gap: 10px 12px; padding: 14px; }
+  .list-row__actions { grid-column: 1 / -1; width: 100%; justify-content: flex-start; padding: 12px 0 0; border-left: 0; border-top: 1px solid rgba(255,255,255,0.08); }
+}
 </style>
