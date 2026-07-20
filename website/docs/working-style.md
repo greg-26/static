@@ -55,6 +55,18 @@ These are role wake-ups, not permission to spam commits. Cadences should be stag
 - Do **not** push every commit to the original/upstream repo; Alex verifies the dev server first.
 - External deployment remains out of scope unless Alex explicitly asks.
 
+## GitHub issues
+
+- Treat the fork/working repository (`origin`, currently `greg-26/static`) as the active issue tracker for agent-driven work. Do not use the original/upstream issue tracker unless Alex explicitly asks.
+- Never delete issues. Completed work must be traceable.
+- When an issue is fully satisfied, add a short closing comment with:
+  - what changed,
+  - the commit(s) or files involved,
+  - verification run,
+  - any remaining caveat.
+- Close issues with `gh issue close` after commenting. If evidence is incomplete or manual validation is still needed, leave the issue open and comment/update the blocker instead of closing it.
+- Telegram cron highlights should mention issue comments/closures or blockers so Alex can keep an eye on progress.
+
 ## Context budget rules
 
 - Read `VISION_EXECUTION.md` only as the router, then `docs/sprints/INDEX.md`, then the current sprint file.
