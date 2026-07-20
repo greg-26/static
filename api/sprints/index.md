@@ -3,7 +3,7 @@
 ## Status
 
 - Current planning status: reviewed against `api/docs/design.md`, `api/AGENTS.md`, and the current implementation.
-- Current implementation phase: Sprint 007 complete; final design closure remains.
+- Current implementation phase: Sprint 007 complete; final design closure remains. Wrangler configuration and API README are in place with placeholder Cloudflare resource IDs.
 - Next executable sprint: Sprint 008 — Design Closure Hardening.
 - Latest planning revision date: 2026-07-21.
 
@@ -38,10 +38,10 @@
   - Rationale: `api/AGENTS.md` makes refresh/bypass behavior a cache requirement; `api/docs/design.md` leaves manual invalidation open and does not require a mutation endpoint.
   - Affected sprints: 002, 006, 008.
   - Status: accepted.
-- Assumption: Default cache TTL will be a simple configurable value with a documented local default, chosen during Sprint 006 if Alex has not specified one.
-  - Rationale: The design requires configurable TTL but leaves the default open.
+- Decision: Use a 7-day default cache TTL (`604800` seconds), configurable by Worker environment variable.
+  - Rationale: The design requires configurable TTL and 7 days is a simple low-cost default for stable metadata.
   - Affected sprints: 006, 007.
-  - Status: provisional.
+  - Status: accepted.
 - Assumption: The first public response schema can be versioned by cache key only; no response-body schema version field is required for the initial API.
   - Rationale: The design asks to version cache keys when schema changes and lists response schema versioning as an open question.
   - Affected sprints: 003, 006, 008.
@@ -49,18 +49,12 @@
 
 ## Open questions
 
-- Default cache TTL?
-  - Recommended default: 7 days for successful normalized responses, configurable by Worker environment variable.
-  - Blocks: exact Sprint 006 default value only; not earlier implementation.
-- Which environments may use `cache=refresh` and `cache=bypass`?
-  - Recommended default: allow in local/development; reject in production unless an explicit non-production override flag is set.
-  - Blocks: exact Sprint 006 production guard only.
 - Should response payloads include an explicit `schemaVersion` field?
   - Recommended default: no for initial implementation; use `title:{imdbId}:v1` cache versioning and typed contracts instead.
   - Blocks: only if clients require body-level schema negotiation before launch.
-- Which CORS origins should be allowed in development and production?
+- Which real CORS origins should be allowed in development and production?
   - Recommended default: configure an allowlist per environment and avoid `*` in production.
-  - Blocks: production deployment hardening in Sprint 007, not local implementation.
+  - Blocks: final production deployment values only; placeholders are documented in Sprint 007.
 
 ## Completion criteria
 
