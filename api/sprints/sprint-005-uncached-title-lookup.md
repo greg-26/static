@@ -2,7 +2,7 @@
 
 ## Status
 
-proposed
+complete
 
 ## Outcome
 
@@ -69,12 +69,12 @@ This is the first vertical product slice: validated request in, TMDB-backed norm
 
 ## Acceptance criteria
 
-- [ ] `GET /titles/{validMovieImdbId}` can return a normalized movie response in tests.
-- [ ] `GET /titles/{validSeriesImdbId}` can return a normalized series response in tests.
-- [ ] Invalid IDs still return `400` before any service/TMDB call.
-- [ ] Valid unknown IDs return stable `404` JSON.
-- [ ] Upstream failures return stable `500` JSON without raw implementation details.
-- [ ] Tests cover the route/service behavior without live TMDB access.
+- [x] `GET /titles/{validMovieImdbId}` can return a normalized movie response in tests.
+- [x] `GET /titles/{validSeriesImdbId}` can return a normalized series response in tests.
+- [x] Invalid IDs still return `400` before any service/TMDB call.
+- [x] Valid unknown IDs return stable `404` JSON.
+- [x] Upstream failures return stable `500` JSON without raw implementation details.
+- [x] Tests cover the route/service behavior without live TMDB access.
 
 ## Required tests
 

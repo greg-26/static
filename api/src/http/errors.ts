@@ -7,7 +7,7 @@ export interface ErrorResponseBody {
   };
 }
 
-export function jsonResponse(body: ErrorResponseBody, status: number, init?: ResponseInit): Response {
+export function jsonResponse(body: unknown, status: number, init?: ResponseInit): Response {
   const headers = new Headers(init?.headers);
   headers.set("content-type", "application/json; charset=utf-8");
 

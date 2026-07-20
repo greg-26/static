@@ -3,8 +3,8 @@
 ## Status
 
 - Current planning status: initial plan created from `api/docs/design.md` and the empty current `api/` implementation.
-- Current implementation phase: Sprint 004 complete.
-- Next executable sprint: Sprint 005 — Uncached Title Lookup.
+- Current implementation phase: Sprint 005 complete.
+- Next executable sprint: Sprint 006 — KV Cache.
 - Latest planning revision date: 2026-07-20.
 
 ## Roadmap
@@ -15,8 +15,8 @@
 | [002](sprint-002-route-validation-errors.md) | `GET /titles/{imdbId}` route validates input and returns stable JSON errors without calling TMDB. | complete | 001 |
 | [003](sprint-003-public-model-and-mappers.md) | Application-owned title schema and pure TMDB-to-public mappers are defined and tested with movie/series fixtures. | complete | 001 |
 | [004](sprint-004-tmdb-client.md) | TMDB client resolves IMDb IDs and fetches required raw movie/series metadata through mocked fetch tests. | complete | 001, 003 |
-| [005](sprint-005-uncached-title-lookup.md) | The route returns normalized movie/series responses from TMDB on cache-miss path, including 404 and failure handling. | ready | 002, 003, 004 |
-| [006](sprint-006-kv-cache.md) | Successful normalized title responses are read from and written to Cloudflare KV using versioned keys and configurable freshness. | proposed | 005 |
+| [005](sprint-005-uncached-title-lookup.md) | The route returns normalized movie/series responses from TMDB on cache-miss path, including 404 and failure handling. | complete | 002, 003, 004 |
+| [006](sprint-006-kv-cache.md) | Successful normalized title responses are read from and written to Cloudflare KV using versioned keys and configurable freshness. | ready | 005 |
 | [007](sprint-007-wrangler-environments.md) | Wrangler configuration, bindings, secrets documentation, and local/dev/prod environment setup are in place. | proposed | 006 |
 | [008](sprint-008-design-closure-hardening.md) | Initial design is verified end-to-end, documentation matches implementation, and no initial-scope gaps remain. | proposed | 007 |
 

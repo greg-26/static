@@ -1,13 +1,129 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import worker from "../src/index";
 
 async function readJson(response: Response): Promise<unknown> {
   return response.json();
 }
 
+function jsonResponse(body: unknown, init: ResponseInit = {}): Response {
+  return new Response(JSON.stringify(body), {
+    status: 200,
+    headers: { "content-type": "application/json" },
+    ...init,
+  });
+}
+
+function tmdbFetch(responses: Response[]): typeof fetch {
+  return vi.fn(async () => {
+    const response = responses.shift();
+    if (!response) throw new Error("Unexpected fetch call");
+    return response;
+  }) as unknown as typeof fetch;
+}
+
+const env = { TMDB_API_KEY: "test-key", TMDB_BASE_URL: "https://tmdb.test/3" };
+
 describe("worker routing and errors", () => {
-  it("routes a valid IMDb title ID to the placeholder title lookup response", async () => {
-    const response = await worker.fetch(new Request("https://api.example.test/titles/tt0133093"));
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it("returns a normalized movie response for a valid IMDb title ID", async () => {
+    const fetcher = tmdbFetch([
+      jsonResponse({ movie_results: [{ id: 603 }], tv_results: [] }),
+      jsonResponse({
+        id: 603,
+        external_ids: { imdb_id: "tt0133093" },
+        title: "The Matrix",
+        original_title: "The Matrix",
+        overview: "A hacker discovers reality is a simulation.",
+        release_date: "1999-03-31",
+        runtime: 136,
+        genres: [{ id: 28, name: "Action" }],
+        vote_average: 8.2,
+        vote_count: 25000,
+        credits: { cast: [{ id: 6384, name: "Keanu Reeves", character: "Neo", order: 0 }], crew: [] },
+        images: { posters: [], backdrops: [] },
+        "watch/providers": { results: { US: { flatrate: [] } } },
+      }),
+    ]);
+    vi.stubGlobal("fetch", fetcher);
+
+    const response = await worker.fetch(new Request("https://api.example.test/titles/tt0133093"), env);
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toBe("application/json; charset=utf-8");
+    expect(await readJson(response)).toMatchObject({
+      imdbId: "tt0133093",
+      type: "movie",
+      title: "The Matrix",
+      release: { date: "1999-03-31", year: 1999 },
+      runtime: { minutes: 136 },
+      genres: ["Action"],
+      cast: [{ id: "6384", name: "Keanu Reeves", roles: ["Neo"] }],
+    });
+    expect(fetcher).toHaveBeenCalledTimes(2);
+  });
+
+  it("returns a normalized series response for a valid IMDb title ID", async () => {
+    const fetcher = tmdbFetch([
+      jsonResponse({ movie_results: [], tv_results: [{ id: 1399 }] }),
+      jsonResponse({
+        id: 1399,
+        external_ids: { imdb_id: "tt0944947" },
+        name: "Game of Thrones",
+        original_name: "Game of Thrones",
+        overview: "Nine noble families fight for control of Westeros.",
+        first_air_date: "2011-04-17",
+        episode_run_time: [60],
+        genres: [{ id: 18, name: "Drama" }],
+        vote_average: 8.4,
+        vote_count: 24000,
+        aggregate_credits: { cast: [{ id: 22970, name: "Kit Harington", roles: [{ character: "Jon Snow", episode_count: 62 }], order: 0 }], crew: [] },
+        images: { posters: [], backdrops: [] },
+        "watch/providers": { results: { US: { flatrate: [] } } },
+      }),
+    ]);
+    vi.stubGlobal("fetch", fetcher);
+
+    const response = await worker.fetch(new Request("https://api.example.test/titles/tt0944947"), env);
+
+    expect(response.status).toBe(200);
+    expect(await readJson(response)).toMatchObject({
+      imdbId: "tt0944947",
+      type: "series",
+      title: "Game of Thrones",
+      runtime: { minutes: 60 },
+      genres: ["Drama"],
+      cast: [{ id: "22970", name: "Kit Harington", roles: ["Jon Snow"], episodeCount: 62 }],
+      collection: null,
+    });
+    expect(fetcher).toHaveBeenCalledTimes(2);
+  });
+
+  it.each(["0133093", "tt", "tt0133093%2F.."])("returns 400 JSON for invalid IMDb ID %s before calling TMDB", async (imdbId) => {
+    const fetcher = vi.fn() as unknown as typeof fetch;
+    vi.stubGlobal("fetch", fetcher);
+
+    const response = await worker.fetch(new Request(`https://api.example.test/titles/${imdbId}`), env);
+
+    expect(response.status).toBe(400);
+    expect(response.headers.get("content-type")).toBe("application/json; charset=utf-8");
+    expect(await readJson(response)).toEqual({
+      error: {
+        code: "invalid_imdb_id",
+        message: "Invalid IMDb ID.",
+      },
+    });
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+
+  it("returns stable 404 JSON for a valid unknown IMDb title ID", async () => {
+    const fetcher = tmdbFetch([jsonResponse({ movie_results: [], tv_results: [] })]);
+    vi.stubGlobal("fetch", fetcher);
+
+    const response = await worker.fetch(new Request("https://api.example.test/titles/tt0000000"), env);
 
     expect(response.status).toBe(404);
     expect(response.headers.get("content-type")).toBe("application/json; charset=utf-8");
@@ -19,21 +135,25 @@ describe("worker routing and errors", () => {
     });
   });
 
-  it.each(["0133093", "tt", "tt0133093%2F.."])("returns 400 JSON for invalid IMDb ID %s", async (imdbId) => {
-    const response = await worker.fetch(new Request(`https://api.example.test/titles/${imdbId}`));
+  it("returns stable 500 JSON for upstream failures without leaking TMDB details", async () => {
+    const fetcher = tmdbFetch([jsonResponse({ status_message: "TMDB exploded" }, { status: 503 })]);
+    vi.stubGlobal("fetch", fetcher);
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
 
-    expect(response.status).toBe(400);
+    const response = await worker.fetch(new Request("https://api.example.test/titles/tt0133093"), env);
+
+    expect(response.status).toBe(500);
     expect(response.headers.get("content-type")).toBe("application/json; charset=utf-8");
     expect(await readJson(response)).toEqual({
       error: {
-        code: "invalid_imdb_id",
-        message: "Invalid IMDb ID.",
+        code: "unexpected_failure",
+        message: "Unexpected failure.",
       },
     });
   });
 
   it("returns JSON for an unknown route", async () => {
-    const response = await worker.fetch(new Request("https://api.example.test/unknown"));
+    const response = await worker.fetch(new Request("https://api.example.test/unknown"), env);
 
     expect(response.status).toBe(404);
     expect(response.headers.get("content-type")).toBe("application/json; charset=utf-8");
@@ -46,7 +166,7 @@ describe("worker routing and errors", () => {
   });
 
   it("returns deterministic JSON for an unsupported method", async () => {
-    const response = await worker.fetch(new Request("https://api.example.test/titles/tt0133093", { method: "POST" }));
+    const response = await worker.fetch(new Request("https://api.example.test/titles/tt0133093", { method: "POST" }), env);
 
     expect(response.status).toBe(405);
     expect(response.headers.get("allow")).toBe("GET");
