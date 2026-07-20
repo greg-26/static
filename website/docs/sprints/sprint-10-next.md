@@ -5,7 +5,7 @@ Owner: PE for sequencing, SDE for implementation after Sprint 9 validation or if
 
 ## Trigger
 
-Human feedback in [GitHub issue #7](https://github.com/ohanamovies/static/issues/7): Where-to-watch/provider data changes by country, so the CX must be explicit about the current country. Settings should show a country selector before providers; if only Spain is supported, keep Spain fixed/read-only. If more countries are supported, handle the choice throughout the CX.
+Human feedback in [GitHub issue #2](https://github.com/greg-26/static/issues/2) on the working fork: Where-to-watch/provider data changes by country, so the CX must be explicit about the current country. Settings should show a country selector before providers; if only Spain is supported, keep Spain fixed/read-only. If more countries are supported, handle the choice throughout the CX.
 
 ## Goal
 
