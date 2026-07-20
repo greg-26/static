@@ -17,7 +17,7 @@ Close remaining product-vision and QA findings that affect trust, retrieval, acc
 
 ## Current state
 
-Implementation slices 73–87 have landed. Automated readiness is green against the reachable Vite dev server. The concrete mobile polish failure from [GitHub issue #6](https://github.com/ohanamovies/static/issues/6) has been fixed locally; real-phone validation of that fix and the rest of the checklist remains before Sprint 9 can close.
+Implementation slices 73–87 have landed. Automated readiness is green against the reachable Vite dev server. The concrete mobile polish failure originally tracked on the upstream issue tracker has been fixed locally; the working fork (`greg-26/static`) has no matching Sprint 9 issue to close. Real-phone validation of that fix and the rest of the checklist remains before Sprint 9 can close.
 
 Landed coverage:
 
@@ -31,18 +31,18 @@ Landed coverage:
 ## Open scope
 
 1. Finish real-phone validation at `http://100.85.92.106:5173/`, recording pass/fail findings for:
-   - Discover availability/dropdown selected-state readability, including issue #6 after the local fix.
+   - Discover availability/dropdown selected-state readability, including the local chevron/row-height fix.
    - Movie-detail profile chips.
    - Maturity evidence rows.
    - Provider chips.
    - List/profile gate copy.
    - Settings → Lists row scanability.
-2. Close or explicitly defer [GitHub issue #6](https://github.com/ohanamovies/static/issues/6) after real-phone validation confirms whether the local chevron/row-height fix is good enough.
+2. Record a dated validation report/PMT note confirming whether the local chevron/row-height fix is good enough. Do not close upstream/original issues from automation; the working fork has no matching Sprint 9 issue.
 3. Convert any remaining concrete failures into Sprint 10 or another focused fix sprint. Do not reopen completed work without evidence.
 
 ## Acceptance
 
-- Issue #6 local fix is validated on a real phone and the issue is closed, or Alex/PMT explicitly defers it with a linked decision.
+- The local dropdown/mobile polish fix is validated on a real phone, or Alex/PMT explicitly defers it with a linked decision.
 - Real-phone checklist has a dated report or PMT note with pass/fail evidence.
 - Any remaining failure has a linked next sprint or explicit defer decision.
 - Dev server remains reviewable by Alex.
@@ -58,3 +58,4 @@ Add brief notes here only if they are needed to choose or clarify Sprint 10. Lin
 - 2026-07-20 03:07 Europe/Madrid — SDE wake-up found no implementation slice ready after the issue #6 fix. Dev server responds at `http://100.85.92.106:5173/`; Sprint 9 remains blocked on real-phone human/QA validation of the listed checklist before closure.
 - 2026-07-20 04:07 Europe/Madrid — PE reviewed latest PMT/SDE/QA evidence plus open issues #6/#7. Planning remains: close Sprint 9 only after real-phone validation confirms the local issue #6 polish; keep Sprint 10 as the next country-context slice from issue #7.
 - 2026-07-20 15:07 Europe/Madrid — SDE verified the working fork issue tracker (`greg-26/static`) has open issues #1 and #2 only; issue #6 is not resolvable there, so Sprint 9 closure/commenting is blocked until the real-phone validation target issue is clarified or validation evidence is provided. Dev server still responds at `http://100.85.92.106:5173/`.
+- 2026-07-20 16:07 Europe/Madrid — PE aligned Sprint 9 with the working-fork issue policy: do not touch upstream issue #6 from automation. Sprint 9 closure now needs real-phone validation evidence/PMT decision; no fork issue closure is expected unless PMT creates one.

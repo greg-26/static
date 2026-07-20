@@ -13,8 +13,8 @@ Focused sprint files live here so agents read only the slice they are working on
 
 | Sprint | Goal | Status | File |
 | --- | --- | --- | --- |
-| 9 | PM/QA trust, retrieval, accessibility, and phone-touch validation follow-ups. | Active — issue #6 polish landed locally; automated readiness green; real-phone validation and issue closure remain before sprint closure. | [`sprint-09-trust-retrieval-accessibility.md`](sprint-09-trust-retrieval-accessibility.md) |
-| 10 | Make Where-to-watch country context explicit, starting with Spain-only/read-only provider settings unless data proves multi-country support. | Planned next — triggered by human GitHub issue #2 on the working fork; start after Sprint 9 real-phone validation unless Alex escalates. | [`sprint-10-next.md`](sprint-10-next.md) |
+| 9 | PM/QA trust, retrieval, accessibility, and phone-touch validation follow-ups. | Active — automated readiness green; local dropdown/mobile polish needs real-phone validation. No matching issue exists on the working fork, so closure is blocked on validation evidence/PMT decision rather than upstream issue closure. | [`sprint-09-trust-retrieval-accessibility.md`](sprint-09-trust-retrieval-accessibility.md) |
+| 10 | Make Where-to-watch country/source context explicit, starting with Spain-only/read-only provider settings and JustWatch attribution unless data proves multi-country support. | Planned next — triggered by working-fork issues #1 and #2; start after Sprint 9 real-phone validation unless Alex escalates. | [`sprint-10-next.md`](sprint-10-next.md) |
 
 ## Maintenance rules
 
