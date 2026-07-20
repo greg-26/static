@@ -2,7 +2,7 @@
 
 ## Status
 
-ready
+complete
 
 ## Outcome
 
@@ -84,13 +84,14 @@ No API verification commands exist before this sprint because the API package ha
 
 ## Handoff
 
-The SDE agent must report:
+Completed 2026-07-20.
 
-- summary of changes
-- verification performed
-- acceptance criteria status
-- deviations from the sprint
-- newly discovered risks or follow-up work
+- Created a standalone npm package in `api/` using TypeScript, Vitest, and Cloudflare Worker types.
+- Added `src/index.ts` with a Worker-compatible `fetch` handler returning JSON `404` and `405` shell errors.
+- Added `test/worker-shell.test.ts` covering unknown-route JSON and unsupported-method JSON behavior.
+- Verification passed from `api/`: `npm run typecheck`, `npm test`, and `npm run build`.
+- No website or scraper files were modified.
+- Deviations: dependency versions were resolved to currently published npm versions after the initially selected future-dated Workers types version was unavailable.
 
 ## Dependencies unlocked
 

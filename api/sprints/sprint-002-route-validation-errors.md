@@ -2,7 +2,7 @@
 
 ## Status
 
-proposed
+complete
 
 ## Outcome
 
@@ -67,11 +67,11 @@ The public HTTP contract is the entry point to every later capability. Validatio
 
 ## Acceptance criteria
 
-- [ ] `GET /titles/tt0133093` reaches the title route and returns a deterministic non-success response until lookup exists.
-- [ ] Invalid IDs such as `0133093`, `tt`, and path traversal-like input return `400` JSON without upstream calls.
-- [ ] Unsupported methods and routes return stable JSON errors.
-- [ ] Tests cover route matching, validation, and error response shape.
-- [ ] Existing API build/typecheck/test scripts pass.
+- [x] `GET /titles/tt0133093` reaches the title route and returns a deterministic non-success response until lookup exists.
+- [x] Invalid IDs such as `0133093`, `tt`, and path traversal-like input return `400` JSON without upstream calls.
+- [x] Unsupported methods and routes return stable JSON errors.
+- [x] Tests cover route matching, validation, and error response shape.
+- [x] Existing API build/typecheck/test scripts pass.
 
 ## Required tests
 
@@ -87,13 +87,14 @@ Use the real API package scripts introduced by Sprint 001. At planning time thos
 
 ## Handoff
 
-The SDE agent must report:
+Completed 2026-07-20.
 
-- summary of changes
-- verification performed
-- acceptance criteria status
-- deviations from the sprint
-- newly discovered risks or follow-up work
+- Added explicit `GET /titles/{imdbId}` routing with validation before placeholder lookup behavior.
+- Added a shared JSON error helper and stable error codes for invalid IDs, missing titles, unknown routes, unsupported methods, and unexpected failures.
+- Added isolated IMDb title ID validator tests and route/error response tests.
+- Valid IDs currently return deterministic `404 title_not_found` until TMDB lookup exists in later sprints.
+- Verification passed from `api/`: `npm test`, `npm run typecheck`, and `npm run build`.
+- Deviations: none.
 
 ## Dependencies unlocked
 

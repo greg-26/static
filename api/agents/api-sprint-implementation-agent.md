@@ -36,9 +36,10 @@ For each run:
 6. Implement only that sprint.
 7. Run the required verification.
 8. Update the sprint status and handoff notes when appropriate.
-9. Report completion, deviations, risks, and any question for the Principal Engineer.
+9. If the sprint completed, update `api/sprints/index.md` so the next unblocked sprint whose dependencies are now complete is marked `ready` in the roadmap and shown as the next executable sprint.
+10. Report completion, deviations, risks, and any question for the Principal Engineer.
 
-Do not implement future sprints early.
+Do not implement future sprints early. Marking the next sprint `ready` in `api/sprints/index.md` is not implementation; it is the handoff step that keeps the cadence moving.
 
 ## Fresh-context startup
 
@@ -232,6 +233,20 @@ If blocked, mark it `blocked` and document the issue.
 Do not change other sprint statuses unless explicitly instructed.
 
 Update `api/sprints/index.md` only as needed to keep the selected sprint status and next executable sprint accurate.
+
+### Preparing the next sprint
+
+When you complete the selected sprint:
+
+1. Inspect the roadmap in `api/sprints/index.md`.
+2. Find the next sprint whose status is `proposed` and whose dependencies are all `complete`.
+3. If there is no unresolved blocker or Principal Engineer question for that sprint, change only that sprint's roadmap status in `api/sprints/index.md` from `proposed` to `ready` and update the status summary's `Next executable sprint` line.
+4. Do not broaden or rewrite the sprint plan while doing this.
+5. Do not mark multiple future sprints ready unless explicitly instructed.
+6. If readiness needs explanation, create a short report only when it adds useful context, then link it from the next sprint/status notes in `api/sprints/index.md`.
+7. If the next sprint cannot be marked ready, leave it `proposed` or `blocked`, document the blocker in `api/sprints/index.md`, and report it.
+
+The sprint file's own status is historical planning context unless the Principal Engineer has instructed otherwise; the execution queue is controlled by `api/sprints/index.md`.
 
 ## Handoff report
 
