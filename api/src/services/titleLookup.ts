@@ -1,3 +1,4 @@
+import { DEFAULT_TITLE_CACHE_TTL_SECONDS, readCachedTitle, writeCachedTitle, type TitleCacheBinding, type TitleCacheMode } from "../cache/titleCache";
 import type { TitleResponse } from "../models/title";
 import type { TmdbTitleLookupResult } from "../tmdb/client";
 import { mapTmdbMovieToTitle, mapTmdbSeriesToTitle } from "../tmdb/title-mapper";
@@ -10,15 +11,37 @@ export interface TitleLookupClient {
   fetchTitleByImdbId(imdbId: string): Promise<TmdbTitleLookupResult>;
 }
 
-export async function lookupTitle(imdbId: string, client: TitleLookupClient): Promise<TitleLookupResult> {
+export interface TitleLookupOptions {
+  cache?: TitleCacheBinding;
+  cacheMode?: TitleCacheMode;
+  cacheTtlSeconds?: number;
+  now?: number;
+}
+
+export async function lookupTitle(imdbId: string, client: TitleLookupClient, options: TitleLookupOptions = {}): Promise<TitleLookupResult> {
+  const cacheMode = options.cacheMode ?? "normal";
+  const now = options.now ?? Date.now();
+
+  if (cacheMode === "normal") {
+    const cachedTitle = await readCachedTitle(options.cache, imdbId, now);
+    if (cachedTitle) return { ok: true, title: cachedTitle };
+  }
+
   const result = await client.fetchTitleByImdbId(imdbId);
 
   if (!result.ok) {
     return { ok: false, error: { kind: result.error.kind === "not_found" ? "not_found" : "upstream_failure" } };
   }
 
-  return {
-    ok: true,
-    title: result.mediaType === "movie" ? mapTmdbMovieToTitle(result.data) : mapTmdbSeriesToTitle(result.data),
-  };
+  const title = result.mediaType === "movie" ? mapTmdbMovieToTitle(result.data) : mapTmdbSeriesToTitle(result.data);
+
+  if (cacheMode !== "bypass") {
+    try {
+      await writeCachedTitle(options.cache, imdbId, title, options.cacheTtlSeconds ?? DEFAULT_TITLE_CACHE_TTL_SECONDS, now);
+    } catch (error) {
+      console.error("title cache write failed", { imdbId, error: error instanceof Error ? error.name : typeof error });
+    }
+  }
+
+  return { ok: true, title };
 }

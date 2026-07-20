@@ -1,9 +1,50 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { writeCachedTitle, type TitleCacheBinding } from "../src/cache/titleCache";
+import type { TitleResponse } from "../src/models/title";
 import { lookupTitle, type TitleLookupClient } from "../src/services/titleLookup";
+import type { TmdbTitleLookupResult } from "../src/tmdb/client";
 
 function client(result: Awaited<ReturnType<TitleLookupClient["fetchTitleByImdbId"]>>): TitleLookupClient {
-  return { fetchTitleByImdbId: async () => result };
+  return { fetchTitleByImdbId: vi.fn(async () => result) };
 }
+
+function cache(raw: string | null = null, putImpl: TitleCacheBinding["put"] = vi.fn(async () => undefined)): TitleCacheBinding {
+  return {
+    get: vi.fn(async () => raw),
+    put: putImpl,
+  };
+}
+
+const cachedTitle: TitleResponse = {
+  imdbId: "tt0133093",
+  type: "movie",
+  title: "Cached Matrix",
+  originalTitle: null,
+  overview: null,
+  release: { date: null, year: null },
+  runtime: { minutes: null },
+  genres: [],
+  rating: { average: null, voteCount: 0 },
+  cast: [],
+  crew: { directors: [], creators: [] },
+  artwork: { poster: null, backdrop: null, posters: [], backdrops: [] },
+  collection: null,
+  streamingProviders: null,
+};
+
+const movieResult: TmdbTitleLookupResult = {
+  ok: true,
+  mediaType: "movie",
+  data: {
+    external_ids: { imdb_id: "tt0133093" },
+    title: "The Matrix",
+    release_date: "1999-03-31",
+    runtime: 136,
+    genres: [],
+    credits: { cast: [], crew: [] },
+    images: { posters: [], backdrops: [] },
+  },
+};
 
 describe("title lookup service", () => {
   it("normalizes successful movie lookups", async () => {
@@ -58,5 +99,85 @@ describe("title lookup service", () => {
     const result = await lookupTitle("tt0133093", client({ ok: false, error: { kind: "configuration", message: "Missing credentials." } }));
 
     expect(result).toEqual({ ok: false, error: { kind: "upstream_failure" } });
+  });
+
+  it("returns a fresh cache hit without calling the TMDB client", async () => {
+    const binding = cache();
+    await writeCachedTitle(binding, "tt0133093", cachedTitle, 60, 1_000);
+    const stored = vi.mocked(binding.put).mock.calls[0]?.[1] as string;
+    const readBinding = cache(stored);
+    const lookupClient = client(movieResult);
+
+    const result = await lookupTitle("tt0133093", lookupClient, { cache: readBinding, cacheTtlSeconds: 60, now: 2_000 });
+
+    expect(result).toEqual({ ok: true, title: cachedTitle });
+    expect(lookupClient.fetchTitleByImdbId).not.toHaveBeenCalled();
+  });
+
+  it("writes successful cache misses", async () => {
+    const binding = cache();
+
+    const result = await lookupTitle("tt0133093", client(movieResult), { cache: binding, cacheTtlSeconds: 60, now: 1_000 });
+
+    expect(result).toMatchObject({ ok: true, title: { title: "The Matrix" } });
+    expect(binding.get).toHaveBeenCalledWith("title:tt0133093:v1");
+    expect(binding.put).toHaveBeenCalledWith("title:tt0133093:v1", expect.any(String), { expirationTtl: 60 });
+  });
+
+  it("does not cache not-found or upstream failure results", async () => {
+    const notFoundCache = cache();
+    const notFound = await lookupTitle("tt0000000", client({ ok: false, error: { kind: "not_found", message: "Title not found." } }), { cache: notFoundCache });
+    expect(notFound).toEqual({ ok: false, error: { kind: "not_found" } });
+    expect(notFoundCache.put).not.toHaveBeenCalled();
+
+    const failureCache = cache();
+    const failure = await lookupTitle("tt0133093", client({ ok: false, error: { kind: "upstream_failure", message: "Bad upstream." } }), { cache: failureCache });
+    expect(failure).toEqual({ ok: false, error: { kind: "upstream_failure" } });
+    expect(failureCache.put).not.toHaveBeenCalled();
+  });
+
+  it("returns successful upstream result when cache writes fail", async () => {
+    const binding = cache(null, vi.fn(async () => {
+      throw new Error("KV down");
+    }));
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+    const result = await lookupTitle("tt0133093", client(movieResult), { cache: binding });
+
+    expect(result).toMatchObject({ ok: true, title: { title: "The Matrix" } });
+    expect(console.error).toHaveBeenCalledWith("title cache write failed", expect.objectContaining({ imdbId: "tt0133093" }));
+    vi.mocked(console.error).mockRestore();
+  });
+
+  it("falls back to upstream when the cache entry is corrupt", async () => {
+    const binding = cache("not json");
+    const lookupClient = client(movieResult);
+
+    const result = await lookupTitle("tt0133093", lookupClient, { cache: binding });
+
+    expect(result).toMatchObject({ ok: true, title: { title: "The Matrix" } });
+    expect(binding.get).toHaveBeenCalledWith("title:tt0133093:v1");
+    expect(lookupClient.fetchTitleByImdbId).toHaveBeenCalledWith("tt0133093");
+    expect(binding.put).toHaveBeenCalled();
+  });
+
+  it("refresh mode skips cache reads and replaces cached values", async () => {
+    const binding = cache("not json");
+
+    const result = await lookupTitle("tt0133093", client(movieResult), { cache: binding, cacheMode: "refresh", cacheTtlSeconds: 60 });
+
+    expect(result).toMatchObject({ ok: true, title: { title: "The Matrix" } });
+    expect(binding.get).not.toHaveBeenCalled();
+    expect(binding.put).toHaveBeenCalledWith("title:tt0133093:v1", expect.any(String), { expirationTtl: 60 });
+  });
+
+  it("bypass mode skips cache reads and writes", async () => {
+    const binding = cache();
+
+    const result = await lookupTitle("tt0133093", client(movieResult), { cache: binding, cacheMode: "bypass" });
+
+    expect(result).toMatchObject({ ok: true, title: { title: "The Matrix" } });
+    expect(binding.get).not.toHaveBeenCalled();
+    expect(binding.put).not.toHaveBeenCalled();
   });
 });

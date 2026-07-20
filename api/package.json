@@ -6,11 +6,13 @@
   "scripts": {
     "build": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "wrangler:dry-run": "wrangler deploy --dry-run --env=\"\" --outdir dist"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260719.1",
     "typescript": "^7.0.2",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.10",
+    "wrangler": "^4.112.0"
   }
 }

@@ -1,4 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { writeCachedTitle, type TitleCacheBinding } from "../src/cache/titleCache";
+import type { TitleResponse } from "../src/models/title";
 import worker from "../src/index";
 
 async function readJson(response: Response): Promise<unknown> {
@@ -22,6 +24,30 @@ function tmdbFetch(responses: Response[]): typeof fetch {
 }
 
 const env = { TMDB_API_KEY: "test-key", TMDB_BASE_URL: "https://tmdb.test/3" };
+
+const cachedTitle: TitleResponse = {
+  imdbId: "tt0133093",
+  type: "movie",
+  title: "Cached Matrix",
+  originalTitle: null,
+  overview: null,
+  release: { date: null, year: null },
+  runtime: { minutes: null },
+  genres: [],
+  rating: { average: null, voteCount: 0 },
+  cast: [],
+  crew: { directors: [], creators: [] },
+  artwork: { poster: null, backdrop: null, posters: [], backdrops: [] },
+  collection: null,
+  streamingProviders: null,
+};
+
+function kvCache(raw: string | null = null): TitleCacheBinding {
+  return {
+    get: vi.fn(async () => raw),
+    put: vi.fn(async () => undefined),
+  };
+}
 
 describe("worker routing and errors", () => {
   afterEach(() => {
@@ -150,6 +176,38 @@ describe("worker routing and errors", () => {
         message: "Unexpected failure.",
       },
     });
+  });
+
+  it("returns cached title responses without calling TMDB", async () => {
+    const writer = kvCache();
+    await writeCachedTitle(writer, "tt0133093", cachedTitle, 60, Date.now());
+    const stored = vi.mocked(writer.put).mock.calls[0]?.[1] as string;
+    const cache = kvCache(stored);
+    const fetcher = vi.fn() as unknown as typeof fetch;
+    vi.stubGlobal("fetch", fetcher);
+
+    const response = await worker.fetch(new Request("https://api.example.test/titles/tt0133093"), { ...env, TITLE_CACHE: cache, TITLE_CACHE_TTL_SECONDS: "60" });
+
+    expect(response.status).toBe(200);
+    expect(await readJson(response)).toEqual(cachedTitle);
+    expect(fetcher).not.toHaveBeenCalled();
+    expect(cache.get).toHaveBeenCalledWith("title:tt0133093:v1");
+  });
+
+  it("rejects cache override modes in production by default", async () => {
+    const fetcher = vi.fn() as unknown as typeof fetch;
+    vi.stubGlobal("fetch", fetcher);
+
+    const response = await worker.fetch(new Request("https://api.example.test/titles/tt0133093?cache=refresh"), { ...env, ENVIRONMENT: "production" });
+
+    expect(response.status).toBe(400);
+    expect(await readJson(response)).toEqual({
+      error: {
+        code: "cache_mode_not_allowed",
+        message: "Cache override mode is not allowed.",
+      },
+    });
+    expect(fetcher).not.toHaveBeenCalled();
   });
 
   it("returns JSON for an unknown route", async () => {

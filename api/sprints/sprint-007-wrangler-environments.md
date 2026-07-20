@@ -2,7 +2,7 @@
 
 ## Status
 
-proposed
+complete
 
 ## Outcome
 
@@ -31,7 +31,7 @@ The Worker behavior and KV cache should exist before binding real Cloudflare con
 ### In scope
 
 - Add `wrangler` configuration for the API Worker.
-- Define local/development/production environment placeholders or documented variables for TMDB secret, KV namespace binding, cache TTL, and any CORS allowlist chosen for deployment.
+- Define local/development/production environment placeholders or documented variables for TMDB secret, KV namespace binding, cache TTL, cache-override guard, and any CORS allowlist chosen for deployment.
 - Ensure Worker binding types match implementation expectations.
 - Document local setup and deployment prerequisites in `api/` docs or README.
 - Add a non-deploying build/dry-run style verification if supported by the chosen tooling.
@@ -61,18 +61,18 @@ The Worker behavior and KV cache should exist before binding real Cloudflare con
 
 1. Inspect existing API package scripts/tooling from Sprint 001.
 2. Add Wrangler configuration for the Worker entrypoint and environments.
-3. Wire KV binding and config variable names expected by code.
+3. Wire KV binding, cache TTL, cache-override guard, and config variable names expected by code.
 4. Document secret setup and local/development/production expectations.
 5. Add or run available non-deploying Worker validation command.
 6. Run existing API verification scripts.
 
 ## Acceptance criteria
 
-- [ ] Wrangler config points at the API Worker entrypoint.
-- [ ] KV binding name matches the cache implementation.
-- [ ] TMDB API key is documented as a secret and is not committed.
-- [ ] Local/development/production environment inputs are documented.
-- [ ] Verification does not require production Cloudflare resources or live TMDB.
+- [x] Wrangler config points at the API Worker entrypoint.
+- [x] KV binding name matches the cache implementation.
+- [x] TMDB API key is documented as a secret and is not committed.
+- [x] Local/development/production environment inputs are documented.
+- [x] Verification does not require production Cloudflare resources or live TMDB.
 
 ## Required tests
 
@@ -82,7 +82,14 @@ The Worker behavior and KV cache should exist before binding real Cloudflare con
 
 ## Verification commands
 
-Use the real API package scripts introduced by Sprint 001 and any Wrangler validation script that exists after this sprint adds Wrangler config. At planning time those commands do not exist yet, so the SDE must inspect `api/package.json`, run the relevant scripts from `api/`, and report the exact commands.
+Run from `api/`:
+
+```sh
+npm run typecheck
+npm test
+```
+
+If this sprint adds a Wrangler validation/build script, run that script too and report the exact command.
 
 ## Handoff
 
@@ -93,6 +100,15 @@ The SDE agent must report:
 - acceptance criteria status
 - deviations from the sprint
 - newly discovered risks or follow-up work
+
+Completed in implementation run on 2026-07-21.
+
+- Added `wrangler.toml` for the API Worker entrypoint, local/development/production environment variables, and `TITLE_CACHE` KV binding placeholders.
+- Added `wrangler` as a development dependency and `npm run wrangler:dry-run` for non-deploying Worker bundle/config validation.
+- Documented local setup, deployment prerequisites, TMDB secret handling, KV namespace replacement, cache controls, and environment inputs in `README.md`.
+- Added `CORS_ALLOWED_ORIGINS` to the typed environment shape as a documented deployment input; CORS enforcement remains a known production hardening question for Sprint 008.
+- Verification: `npm run typecheck` passed; `npm test` passed with 44 tests; `npm run wrangler:dry-run` passed without deploying.
+- Deviations: placeholder KV namespace IDs and placeholder CORS origins are documented because real Cloudflare resources/origins were out of scope.
 
 ## Dependencies unlocked
 

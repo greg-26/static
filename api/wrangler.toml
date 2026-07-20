@@ -1,0 +1,50 @@
+name = "ohanamovies-api"
+main = "src/index.ts"
+compatibility_date = "2026-07-20"
+workers_dev = true
+
+[vars]
+ENVIRONMENT = "local"
+TITLE_CACHE_TTL_SECONDS = "604800"
+ALLOW_CACHE_OVERRIDES = "true"
+TMDB_BASE_URL = "https://api.themoviedb.org/3"
+TMDB_TIMEOUT_MS = "5000"
+# Documented deployment input for the CORS policy. The Worker does not enforce
+# CORS yet; keep production values explicit when that behavior is added.
+CORS_ALLOWED_ORIGINS = "http://localhost:5173"
+
+[[kv_namespaces]]
+binding = "TITLE_CACHE"
+id = "00000000000000000000000000000000"
+
+[env.development]
+name = "ohanamovies-api-development"
+workers_dev = true
+
+[env.development.vars]
+ENVIRONMENT = "development"
+TITLE_CACHE_TTL_SECONDS = "604800"
+ALLOW_CACHE_OVERRIDES = "true"
+TMDB_BASE_URL = "https://api.themoviedb.org/3"
+TMDB_TIMEOUT_MS = "5000"
+CORS_ALLOWED_ORIGINS = "https://dev.example.invalid"
+
+[[env.development.kv_namespaces]]
+binding = "TITLE_CACHE"
+id = "11111111111111111111111111111111"
+
+[env.production]
+name = "ohanamovies-api"
+workers_dev = false
+
+[env.production.vars]
+ENVIRONMENT = "production"
+TITLE_CACHE_TTL_SECONDS = "604800"
+ALLOW_CACHE_OVERRIDES = "false"
+TMDB_BASE_URL = "https://api.themoviedb.org/3"
+TMDB_TIMEOUT_MS = "5000"
+CORS_ALLOWED_ORIGINS = "https://www.example.invalid"
+
+[[env.production.kv_namespaces]]
+binding = "TITLE_CACHE"
+id = "22222222222222222222222222222222"

@@ -77,13 +77,20 @@ After the Worker, route, mapper, TMDB client, cache, and Wrangler config exist, 
 
 - Full route behavior for `200`, `400`, `404`, and `500`.
 - Movie and series normalized response coverage.
-- KV cache hit/miss/write/failure coverage.
+- KV cache hit/miss/write/failure/refresh/bypass/restriction coverage.
 - No raw TMDB leakage in public success/error contracts.
 - Worker configuration/build validation if available.
 
 ## Verification commands
 
-Use the real API package scripts introduced by Sprint 001 and any real Wrangler validation scripts added by Sprint 007. At planning time those commands do not exist yet, so the SDE must inspect `api/package.json`, run the full relevant command set from `api/`, and report the exact commands.
+Run from `api/`:
+
+```sh
+npm run typecheck
+npm test
+```
+
+Also run any real Wrangler validation/build script added by Sprint 007 and report the exact command.
 
 ## Handoff
 

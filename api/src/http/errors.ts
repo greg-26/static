@@ -1,4 +1,11 @@
-export type ErrorCode = "invalid_imdb_id" | "title_not_found" | "route_not_found" | "method_not_allowed" | "unexpected_failure";
+export type ErrorCode =
+  | "invalid_imdb_id"
+  | "invalid_cache_mode"
+  | "cache_mode_not_allowed"
+  | "title_not_found"
+  | "route_not_found"
+  | "method_not_allowed"
+  | "unexpected_failure";
 
 export interface ErrorResponseBody {
   error: {

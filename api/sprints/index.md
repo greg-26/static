@@ -2,10 +2,10 @@
 
 ## Status
 
-- Current planning status: initial plan created from `api/docs/design.md` and the empty current `api/` implementation.
-- Current implementation phase: Sprint 005 complete.
-- Next executable sprint: Sprint 006 — KV Cache.
-- Latest planning revision date: 2026-07-20.
+- Current planning status: reviewed against `api/docs/design.md`, `api/AGENTS.md`, and the current implementation.
+- Current implementation phase: Sprint 007 complete; final design closure remains.
+- Next executable sprint: Sprint 008 — Design Closure Hardening.
+- Latest planning revision date: 2026-07-21.
 
 ## Roadmap
 
@@ -16,9 +16,9 @@
 | [003](sprint-003-public-model-and-mappers.md) | Application-owned title schema and pure TMDB-to-public mappers are defined and tested with movie/series fixtures. | complete | 001 |
 | [004](sprint-004-tmdb-client.md) | TMDB client resolves IMDb IDs and fetches required raw movie/series metadata through mocked fetch tests. | complete | 001, 003 |
 | [005](sprint-005-uncached-title-lookup.md) | The route returns normalized movie/series responses from TMDB on cache-miss path, including 404 and failure handling. | complete | 002, 003, 004 |
-| [006](sprint-006-kv-cache.md) | Successful normalized title responses are read from and written to Cloudflare KV using versioned keys and configurable freshness. | ready | 005 |
-| [007](sprint-007-wrangler-environments.md) | Wrangler configuration, bindings, secrets documentation, and local/dev/prod environment setup are in place. | proposed | 006 |
-| [008](sprint-008-design-closure-hardening.md) | Initial design is verified end-to-end, documentation matches implementation, and no initial-scope gaps remain. | proposed | 007 |
+| [006](sprint-006-kv-cache.md) | Successful normalized title responses are read from and written to Cloudflare KV using versioned keys and configurable freshness. | complete | 005 |
+| [007](sprint-007-wrangler-environments.md) | Wrangler configuration, bindings, secrets documentation, and local/dev/prod environment setup are in place. | complete | 006 |
+| [008](sprint-008-design-closure-hardening.md) | Initial design is verified end-to-end, documentation matches implementation, and no initial-scope gaps remain. | ready | 007 |
 
 ## Decisions and assumptions
 
@@ -34,10 +34,10 @@
   - Rationale: This is explicitly specified by the design and gives a clean schema-version bump path.
   - Affected sprints: 006, 008.
   - Status: accepted.
-- Decision: Treat cache refresh/bypass controls and manual invalidation as out of initial scope unless the design is amended.
-  - Rationale: `api/docs/design.md` lists manual invalidation as an open question/future decision; planning it now would expand the approved design.
+- Decision: Implement `cache=refresh` and `cache=bypass` as restricted operator controls in Sprint 006, but keep manual invalidation endpoints out of initial scope.
+  - Rationale: `api/AGENTS.md` makes refresh/bypass behavior a cache requirement; `api/docs/design.md` leaves manual invalidation open and does not require a mutation endpoint.
   - Affected sprints: 002, 006, 008.
-  - Status: provisional.
+  - Status: accepted.
 - Assumption: Default cache TTL will be a simple configurable value with a documented local default, chosen during Sprint 006 if Alex has not specified one.
   - Rationale: The design requires configurable TTL but leaves the default open.
   - Affected sprints: 006, 007.
@@ -52,6 +52,9 @@
 - Default cache TTL?
   - Recommended default: 7 days for successful normalized responses, configurable by Worker environment variable.
   - Blocks: exact Sprint 006 default value only; not earlier implementation.
+- Which environments may use `cache=refresh` and `cache=bypass`?
+  - Recommended default: allow in local/development; reject in production unless an explicit non-production override flag is set.
+  - Blocks: exact Sprint 006 production guard only.
 - Should response payloads include an explicit `schemaVersion` field?
   - Recommended default: no for initial implementation; use `title:{imdbId}:v1` cache versioning and typed contracts instead.
   - Blocks: only if clients require body-level schema negotiation before launch.
@@ -69,6 +72,7 @@ The initial API design is fully implemented when:
 - Normalized responses include the designed sections where data is available: title, type, overview, release, runtime, genres, rating, cast, crew, artwork, movie collection, and streaming providers.
 - TMDB details are hidden behind the client and mapper boundary.
 - Successful normalized responses are cached in Cloudflare KV under `title:{imdbId}:v1` with configurable freshness.
+- `cache=refresh` skips cache reads and replaces cached successful values; `cache=bypass` skips cache reads and writes; production access to these modes is restricted.
 - Upstream errors are not cached and are returned as stable JSON failures without exposing raw TMDB details.
 - Worker configuration documents TMDB secret, KV binding, and local/development/production environments.
 - Available API verification commands pass from the `api/` package.
