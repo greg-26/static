@@ -1,7 +1,7 @@
 
 # Movie & Series Metadata API
 
-> **Status:** Draft  
+> **Status:** Draft
 > **Purpose:** Opinionated TMDB wrapper with Cloudflare KV caching.
 
 ---
