@@ -3,8 +3,8 @@
 ## Status
 
 - Current planning status: initial plan created from `api/docs/design.md` and the empty current `api/` implementation.
-- Current implementation phase: Sprint 002 complete.
-- Next executable sprint: Sprint 003 — Public Model and Mappers.
+- Current implementation phase: Sprint 004 complete.
+- Next executable sprint: Sprint 005 — Uncached Title Lookup.
 - Latest planning revision date: 2026-07-20.
 
 ## Roadmap
@@ -13,9 +13,9 @@
 |---|---|---|---|
 | [001](sprint-001-worker-foundation.md) | Cloudflare Worker API project exists with TypeScript, test tooling, and a minimal JSON HTTP shell. | complete | none |
 | [002](sprint-002-route-validation-errors.md) | `GET /titles/{imdbId}` route validates input and returns stable JSON errors without calling TMDB. | complete | 001 |
-| [003](sprint-003-public-model-and-mappers.md) | Application-owned title schema and pure TMDB-to-public mappers are defined and tested with movie/series fixtures. | ready | 001 |
-| [004](sprint-004-tmdb-client.md) | TMDB client resolves IMDb IDs and fetches required raw movie/series metadata through mocked fetch tests. | proposed | 001, 003 |
-| [005](sprint-005-uncached-title-lookup.md) | The route returns normalized movie/series responses from TMDB on cache-miss path, including 404 and failure handling. | proposed | 002, 003, 004 |
+| [003](sprint-003-public-model-and-mappers.md) | Application-owned title schema and pure TMDB-to-public mappers are defined and tested with movie/series fixtures. | complete | 001 |
+| [004](sprint-004-tmdb-client.md) | TMDB client resolves IMDb IDs and fetches required raw movie/series metadata through mocked fetch tests. | complete | 001, 003 |
+| [005](sprint-005-uncached-title-lookup.md) | The route returns normalized movie/series responses from TMDB on cache-miss path, including 404 and failure handling. | ready | 002, 003, 004 |
 | [006](sprint-006-kv-cache.md) | Successful normalized title responses are read from and written to Cloudflare KV using versioned keys and configurable freshness. | proposed | 005 |
 | [007](sprint-007-wrangler-environments.md) | Wrangler configuration, bindings, secrets documentation, and local/dev/prod environment setup are in place. | proposed | 006 |
 | [008](sprint-008-design-closure-hardening.md) | Initial design is verified end-to-end, documentation matches implementation, and no initial-scope gaps remain. | proposed | 007 |

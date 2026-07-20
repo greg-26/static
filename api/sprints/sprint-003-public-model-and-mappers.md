@@ -2,7 +2,7 @@
 
 ## Status
 
-proposed
+complete
 
 ## Outcome
 
@@ -70,11 +70,11 @@ The design's main boundary is the normalized public schema. Defining and testing
 
 ## Acceptance criteria
 
-- [ ] Public response types do not expose raw TMDB field names as the client contract.
-- [ ] Movie fixture maps to title, overview, release/runtime, genres, rating, cast, crew, artwork, collection, and providers where present.
-- [ ] Series fixture maps to series type and series-level cast/crew without using latest season/episode as the main cast source.
-- [ ] Missing optional TMDB fields do not crash mapping.
-- [ ] Mapper tests pass and are independent of internet/TMDB credentials.
+- [x] Public response types do not expose raw TMDB field names as the client contract.
+- [x] Movie fixture maps to title, overview, release/runtime, genres, rating, cast, crew, artwork, collection, and providers where present.
+- [x] Series fixture maps to series type and series-level cast/crew without using latest season/episode as the main cast source.
+- [x] Missing optional TMDB fields do not crash mapping.
+- [x] Mapper tests pass and are independent of internet/TMDB credentials.
 
 ## Required tests
 

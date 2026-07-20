@@ -2,7 +2,7 @@
 
 ## Status
 
-proposed
+complete
 
 ## Outcome
 
@@ -68,11 +68,11 @@ After the public schema and mapper boundary exist, the API needs a controlled in
 
 ## Acceptance criteria
 
-- [ ] Valid IMDb IDs can be resolved to either movie or TV series raw data through mocked TMDB responses.
-- [ ] Unknown titles produce an internal not-found outcome suitable for HTTP `404`.
-- [ ] Upstream errors/timeouts produce internal failures suitable for stable HTTP `500` handling.
-- [ ] Tests do not require internet access, live TMDB, or production secrets.
-- [ ] TMDB raw details remain inside TMDB/integration modules.
+- [x] Valid IMDb IDs can be resolved to either movie or TV series raw data through mocked TMDB responses.
+- [x] Unknown titles produce an internal not-found outcome suitable for HTTP `404`.
+- [x] Upstream errors/timeouts produce internal failures suitable for stable HTTP `500` handling.
+- [x] Tests do not require internet access, live TMDB, or production secrets.
+- [x] TMDB raw details remain inside TMDB/integration modules.
 
 ## Required tests
 
