@@ -95,9 +95,10 @@ Local verification output:
 - `npm run wrangler:dry-run` — passed, Worker dry-run upload 22.98 KiB / gzip 6.28 KiB.
 - `git diff --check` — passed.
 
-Deployed verification output against `https://ohanamovies-api.ohanamovies-api.workers.dev`:
+Post-push deployment and deployed verification output:
 
-- `GET /titles/tt0133093` — 200; default movie response, provider region `US`, 4 collection items, first item IMDb ID `tt0133093`.
+- GitHub Actions Deploy API Worker run `29866145244` completed successfully for commit `1114fdb`.
+- `GET /titles/tt0133093` against `https://ohanamovies-api.ohanamovies-api.workers.dev` — 200; default movie response, provider region `US`, 4 collection items, first item IMDb ID `tt0133093`.
 - `GET /titles/tt0088247?lang=es&country=ES` — 200; localized movie title `Terminator`, provider region `ES`, 6 collection items, first item IMDb ID `tt0088247`.
 - `GET /titles/tt0133093?lang=es` — 200; localized movie title `Matrix`, 4 collection items, first item IMDb ID `tt0133093`.
 - `GET /titles/tt0944947?lang=es` — 200; localized series title `Juego de tronos`, `seasonCount: 8`, 9 season summaries, specials preserved as `seasonNumber: 0`.
@@ -111,4 +112,4 @@ GitHub issue evidence/closure status:
 
 Remaining risks/follow-up:
 
-- Production verification was performed before this closure commit's post-push deployment; the checked behavior is API runtime behavior from prior feature commits. This closure sprint changes docs/tests only, not runtime behavior.
+- None.
