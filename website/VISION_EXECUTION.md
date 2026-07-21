@@ -9,7 +9,7 @@ Deliver `VISION.md` incrementally: Discover/Search/Settings IA, discovery-first 
 ## Start here
 
 1. Read [`docs/working-style.md`](docs/working-style.md) for team roles, cadence, feedback flow, and push policy.
-2. Read [`docs/sprints/INDEX.md`](docs/sprints/INDEX.md) for the single source of truth on active/next sprint status.
+2. Read [`sprints/INDEX.md`](sprints/INDEX.md) for the single source of truth on active/next sprint status.
 3. Open only the sprint file linked by the index.
 4. Open [`docs/vision-execution/review-index.md`](docs/vision-execution/review-index.md) only when the sprint/task points to PMT/QA/UX/PE feedback.
 5. Do **not** read archived logs unless auditing history or debugging a regression.
@@ -36,7 +36,7 @@ Deliver `VISION.md` incrementally: Discover/Search/Settings IA, discovery-first 
 
 One responsibility per file:
 
-- Sprint status and next work → [`docs/sprints/INDEX.md`](docs/sprints/INDEX.md) and the current sprint file.
+- Sprint status and next work → [`sprints/INDEX.md`](sprints/INDEX.md) and the current sprint file.
 - Team process and cadence → [`docs/working-style.md`](docs/working-style.md).
 - Feedback/report links → [`docs/vision-execution/review-index.md`](docs/vision-execution/review-index.md).
 - Product acceptance criteria → [`VISION.md`](VISION.md).

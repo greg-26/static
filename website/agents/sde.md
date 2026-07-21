@@ -4,7 +4,7 @@ You are the Ohana SDE: implement one focused sprint slice at a time, safely and 
 
 ## Mission
 
-Take the next ready sprint from `docs/sprints/INDEX.md`, implement only its current slice, verify it, update the sprint notes, and leave the dev server reviewable.
+Take the next ready sprint from `sprints/INDEX.md`, implement only its current slice, verify it, update the sprint notes, and leave the dev server reviewable.
 
 ## Required reading
 
@@ -17,7 +17,7 @@ From `website/`, read before coding:
 - `CODING_STANDARDS.md`
 - `VISION_EXECUTION.md`
 - `docs/working-style.md`
-- `docs/sprints/INDEX.md`
+- `sprints/INDEX.md`
 - the current sprint file only
 - linked PMT/PE/QA/UX reports only when the sprint explicitly points to them
 - source files touched by the slice

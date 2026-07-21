@@ -194,7 +194,7 @@ Cards may show abstract availability status if useful, but not streaming provide
 
 ## UX review loop
 
-The UX designer periodically reviews QA/CX evidence and real-device findings. Durable feedback, questions, or misses that should shape future work belong in this file; sprint-specific implementation goes in `docs/sprints/` via PE prioritization.
+The UX designer periodically reviews QA/CX evidence and real-device findings. Durable feedback, questions, or misses that should shape future work belong in this file; sprint-specific implementation goes in `sprints/` via PE prioritization.
 
 When a design issue needs engineering work, link the QA/UX evidence from `docs/vision-execution/review-index.md` and ask PE to prioritize it in a focused sprint.
 

@@ -25,8 +25,8 @@ Human feedback takes priority over routine cron-driven work.
 
 ## Sprint rules
 
-- Sprints live in [`sprints/`](./sprints/); each sprint has its own file.
-- [`sprints/INDEX.md`](./sprints/INDEX.md) summarizes sprint goals and status.
+- Sprints live in [`sprints/`](../sprints/); each sprint has its own file.
+- [`sprints/INDEX.md`](../sprints/INDEX.md) summarizes sprint goals and status.
 - Developers may edit the next sprint file with concise feedback or implementation notes.
 - If sprint details are unclear and an implementation would require material assumptions, SDE must ask PMT, UX designer, or PE to validate the approach before coding.
 - SDE must read `DESIGN_GUIDELINES.md` and `CODING_STANDARDS.md` before UI work.
@@ -69,8 +69,8 @@ These are role wake-ups, not permission to spam commits. Cadences should be stag
 
 ## Context budget rules
 
-- Read `VISION_EXECUTION.md` only as the router, then `docs/sprints/INDEX.md`, then the current sprint file.
+- Read `VISION_EXECUTION.md` only as the router, then `sprints/INDEX.md`, then the current sprint file.
 - Open reports only through the review index or explicit sprint links.
-- Do not duplicate status across trackers; sprint status belongs in `docs/sprints/INDEX.md` and sprint details belong in the sprint file.
+- Do not duplicate status across trackers; sprint status belongs in `sprints/INDEX.md` and sprint details belong in the sprint file.
 - Do not paste long reports into trackers; summarize consequences and link the source.
 - Archive stale detail instead of keeping rolling mega-docs alive.

@@ -18,7 +18,7 @@ From `website/`, read before reporting:
 - `CODING_STANDARDS.md`
 - `AGENTS.md`
 - `VISION_EXECUTION.md`
-- current sprint file from `docs/sprints/INDEX.md`
+- current sprint file from `sprints/INDEX.md`
 - relevant recent reports under `reports/pmt/`, `reports/qa/`, `reports/qa-deep-dive/`, and `reports/cx-review/`
 - enough source files to verify findings are real, not theoretical
 
@@ -102,7 +102,7 @@ Prioritize P0/P1/P2/P3. Every finding must be actionable and grounded.
 
 ## Required execution linkage
 
-After writing a PMT report, link it from `docs/vision-execution/review-index.md`. If the report creates or changes active work, update `VISION_EXECUTION.md` and the relevant file in `docs/sprints/`.
+After writing a PMT report, link it from `docs/vision-execution/review-index.md`. If the report creates or changes active work, update `VISION_EXECUTION.md` and the relevant file in `sprints/`.
 
 Do not paste report contents into trackers. Link and summarize active consequences only.
 

@@ -16,7 +16,7 @@ From `website/`, read before reviewing:
 - `AGENTS.md`
 - `VISION_EXECUTION.md`
 - `docs/working-style.md`
-- current sprint from `docs/sprints/INDEX.md`
+- current sprint from `sprints/INDEX.md`
 - latest relevant QA/CX evidence under `reports/qa/`, `reports/qa-deep-dive/`, and `reports/cx-review/`
 
 ## Cadence responsibility

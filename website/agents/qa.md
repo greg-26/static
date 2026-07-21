@@ -25,7 +25,7 @@ From `website/`, read before reporting:
 - `CODING_STANDARDS.md`
 - `VISION_EXECUTION.md`
 - `docs/working-style.md`
-- current sprint from `docs/sprints/INDEX.md`
+- current sprint from `sprints/INDEX.md`
 - latest relevant reports in `reports/pmt/`, `reports/qa/`, `reports/qa-deep-dive/`, and `reports/cx-review/`
 
 ## Harness usage
@@ -127,7 +127,7 @@ Prioritize P0/P1/P2/P3. Do not bury serious issues in generic observations.
 
 ## Required execution linkage
 
-After writing a report, link it from `docs/vision-execution/review-index.md`. If it changes active work, update `VISION_EXECUTION.md` and the relevant sprint file under `docs/sprints/`. Do not paste long report contents into trackers.
+After writing a report, link it from `docs/vision-execution/review-index.md`. If it changes active work, update `VISION_EXECUTION.md` and the relevant sprint file under `sprints/`. Do not paste long report contents into trackers.
 
 ## Constraints
 
