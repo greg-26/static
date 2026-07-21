@@ -34,11 +34,24 @@ The API intentionally hides TMDB behind an Ohana-owned response schema. Clients 
 GET /titles/{imdbId}
 ```
 
-Example:
+Examples:
 
 ```sh
 curl "https://api.ohana.example/titles/tt0133093"
+curl "https://api.ohana.example/titles/tt0088247?lang=es&country=ES"
 ```
+
+Query parameters:
+
+- `lang` — optional TMDB metadata language. Accepted forms are conservative two-letter language tags with an optional two-letter region, e.g. `es` or `es-ES`. Language is normalized to lowercase language plus uppercase region.
+- `country` — optional watch-provider country/region. Accepted form is ISO 3166-1 alpha-2, e.g. `ES`; values are normalized to uppercase. When provided, `streamingProviders.region` uses this country and only that country is selected from TMDB provider results.
+- `cache` — optional operator cache mode: `refresh` or `bypass`.
+
+Defaults:
+
+- Without `lang`, TMDB default-language metadata is requested.
+- Without `country`, provider mapping preserves the existing default region behavior (`US`).
+- Cache keys vary by normalized `lang` and `country`, so localized responses do not share cached bodies with default requests.
 
 Cache operator modes are available outside production by default:
 
@@ -47,7 +60,7 @@ curl "https://api.ohana.example/titles/tt0133093?cache=refresh"
 curl "https://api.ohana.example/titles/tt0133093?cache=bypass"
 ```
 
-- `cache=refresh` skips cache read, fetches from TMDB, and writes a fresh successful response.
+- `cache=refresh` skips cache read, fetches from TMDB, and writes a fresh successful response for the normalized `lang`/`country` variant.
 - `cache=bypass` skips both cache read and cache write.
 - Production rejects cache override modes unless `ALLOW_CACHE_OVERRIDES=true` is explicitly configured.
 - Normal requests can return stale cached data when TMDB is unavailable; explicit refresh/bypass requests do not silently fall back to stale data.
@@ -114,6 +127,8 @@ Current statuses:
 
 - `400 invalid_imdb_id` — malformed IMDb title ID.
 - `400 invalid_cache_mode` — unsupported `cache` query value.
+- `400 invalid_language` — malformed `lang` query value.
+- `400 invalid_country` — malformed `country` query value.
 - `400 cache_mode_not_allowed` — cache override rejected in production.
 - `404 route_not_found` — unknown route.
 - `404 title_not_found` — valid IMDb ID with no matching title.

@@ -82,11 +82,18 @@ The Worker is intentionally thin. Business logic lives in a small normalization 
 
 ## GET /titles/{imdbId}
 
-Example:
+Examples:
 
 ```
 GET /titles/tt0133093
+GET /titles/tt0088247?lang=es&country=ES
 ```
+
+Optional query parameters:
+
+- `lang`: conservative TMDB-safe language tag, e.g. `es` or `es-ES`, normalized before forwarding upstream.
+- `country`: ISO 3166-1 alpha-2 provider region, e.g. `ES`, normalized to uppercase.
+- `cache`: operator cache mode, `refresh` or `bypass` where allowed.
 
 Responses:
 
@@ -126,6 +133,9 @@ Cache key:
 
 ```
 title:{imdbId}:v1
+title:{imdbId}:v1:lang={lang}
+title:{imdbId}:v1:country={country}
+title:{imdbId}:v1:lang={lang}:country={country}
 ```
 
 Guidelines:

@@ -1,6 +1,8 @@
 export type ErrorCode =
   | "invalid_imdb_id"
   | "invalid_cache_mode"
+  | "invalid_language"
+  | "invalid_country"
   | "cache_mode_not_allowed"
   | "title_not_found"
   | "route_not_found"

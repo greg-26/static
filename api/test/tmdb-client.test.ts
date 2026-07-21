@@ -80,6 +80,33 @@ describe("TMDB client", () => {
     expect(vi.mocked(fetcher).mock.calls[0]?.[1]?.headers).toEqual({ authorization: "Bearer test-token" });
   });
 
+  it("forwards language and region query params to supported TMDB requests", async () => {
+    const fetcher = tmdbFetch([
+      jsonResponse({ movie_results: [{ id: 603 }], tv_results: [] }),
+      jsonResponse({
+        id: 603,
+        title: "Matrix",
+        external_ids: { imdb_id: "tt0133093" },
+        credits: { cast: [], crew: [] },
+        images: { posters: [], backdrops: [] },
+        "watch/providers": { results: { ES: { flatrate: [] } } },
+        belongs_to_collection: { id: 2344, name: "Matrix", poster_path: null, backdrop_path: null },
+      }),
+      jsonResponse({ id: 2344, name: "Colección Matrix", poster_path: null, backdrop_path: null }),
+    ]);
+
+    const result = await createTmdbClient({ apiKey: "test-key", baseUrl: "https://tmdb.test/3", fetch: fetcher }).fetchTitleByImdbId("tt0133093", { language: "es", country: "ES" });
+
+    expect(result).toMatchObject({ ok: true, mediaType: "movie", data: { title: "Matrix", belongs_to_collection: { name: "Colección Matrix" } } });
+    const findUrl = new URL(String(vi.mocked(fetcher).mock.calls[0]?.[0]));
+    const detailsUrl = new URL(String(vi.mocked(fetcher).mock.calls[1]?.[0]));
+    const collectionUrl = new URL(String(vi.mocked(fetcher).mock.calls[2]?.[0]));
+    expect(findUrl.searchParams.get("language")).toBe("es");
+    expect(detailsUrl.searchParams.get("language")).toBe("es");
+    expect(detailsUrl.searchParams.get("watch_region")).toBe("ES");
+    expect(collectionUrl.searchParams.get("language")).toBe("es");
+  });
+
   it("maps no TMDB result to not found", async () => {
     const fetcher = tmdbFetch([jsonResponse({ movie_results: [], tv_results: [] })]);
 

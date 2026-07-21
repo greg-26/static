@@ -22,6 +22,11 @@ export type TmdbTitleLookupResult =
   | { ok: true; mediaType: "series"; data: TmdbSeriesForMapping }
   | { ok: false; error: TmdbClientError };
 
+export interface TmdbRequestContext {
+  language?: string;
+  country?: string;
+}
+
 interface RequestOptions {
   optional?: boolean;
 }
@@ -52,33 +57,36 @@ export class TmdbClient {
     this.fetcher = config.fetch ?? ((input, init) => fetch(input, init));
   }
 
-  async fetchTitleByImdbId(imdbId: string): Promise<TmdbTitleLookupResult> {
+  async fetchTitleByImdbId(imdbId: string, context: TmdbRequestContext = {}): Promise<TmdbTitleLookupResult> {
     if (!this.apiKey && !this.accessToken) {
       return failure("configuration", "TMDB credentials are not configured.");
     }
 
-    const resolved = await this.request<TmdbFindResponse>(`/find/${encodeURIComponent(imdbId)}`, {
+    const resolved = await this.request<TmdbFindResponse>(`/find/${encodeURIComponent(imdbId)}`, compactQuery({
       external_source: "imdb_id",
-    });
+      language: context.language,
+    }));
     if (!resolved.ok) return resolved;
 
     const movieId = firstId(resolved.data.movie_results);
     if (movieId !== undefined) {
-      return this.fetchMovie(movieId);
+      return this.fetchMovie(movieId, context);
     }
 
     const seriesId = firstId(resolved.data.tv_results);
     if (seriesId !== undefined) {
-      return this.fetchSeries(seriesId);
+      return this.fetchSeries(seriesId, context);
     }
 
     return failure("not_found", "Title not found.");
   }
 
-  private async fetchMovie(movieId: number): Promise<TmdbTitleLookupResult> {
-    const details = await this.request<TmdbMovieDetailsResponse>(`/movie/${movieId}`, {
+  private async fetchMovie(movieId: number, context: TmdbRequestContext): Promise<TmdbTitleLookupResult> {
+    const details = await this.request<TmdbMovieDetailsResponse>(`/movie/${movieId}`, compactQuery({
       append_to_response: "credits,images,watch/providers,external_ids",
-    });
+      language: context.language,
+      watch_region: context.country,
+    }));
     if (!details.ok) return details;
 
     const movie: TmdbMovieForMapping = {
@@ -87,7 +95,7 @@ export class TmdbClient {
     };
 
     if (movie.belongs_to_collection?.id !== undefined) {
-      const collection = await this.request<TmdbCollectionDetails>(`/collection/${movie.belongs_to_collection.id}`, {}, { optional: true });
+      const collection = await this.request<TmdbCollectionDetails>(`/collection/${movie.belongs_to_collection.id}`, compactQuery({ language: context.language }), { optional: true });
       if (collection.ok) {
         movie.belongs_to_collection = collection.data;
       }
@@ -96,10 +104,12 @@ export class TmdbClient {
     return { ok: true, mediaType: "movie", data: movie };
   }
 
-  private async fetchSeries(seriesId: number): Promise<TmdbTitleLookupResult> {
-    const details = await this.request<TmdbSeriesDetailsResponse>(`/tv/${seriesId}`, {
+  private async fetchSeries(seriesId: number, context: TmdbRequestContext): Promise<TmdbTitleLookupResult> {
+    const details = await this.request<TmdbSeriesDetailsResponse>(`/tv/${seriesId}`, compactQuery({
       append_to_response: "aggregate_credits,images,watch/providers,external_ids",
-    });
+      language: context.language,
+      watch_region: context.country,
+    }));
     if (!details.ok) return details;
 
     return {
@@ -160,4 +170,8 @@ function failure(kind: TmdbClientErrorKind, message: string, status?: number, ca
 
 function emptyToUndefined(value: string | undefined): string | undefined {
   return value?.trim() === "" ? undefined : value;
+}
+
+function compactQuery(query: Record<string, string | number | undefined>): Record<string, string | number> {
+  return Object.fromEntries(Object.entries(query).filter((entry): entry is [string, string | number] => entry[1] !== undefined));
 }

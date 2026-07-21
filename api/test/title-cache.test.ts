@@ -31,34 +31,40 @@ describe("title cache", () => {
     expect(titleCacheKey("tt0133093")).toBe("title:tt0133093:v1");
   });
 
+  it("varies cache keys by normalized language and country", () => {
+    expect(titleCacheKey("tt0133093", { language: "es" })).toBe("title:tt0133093:v1:lang=es");
+    expect(titleCacheKey("tt0133093", { country: "ES" })).toBe("title:tt0133093:v1:country=ES");
+    expect(titleCacheKey("tt0133093", { language: "es", country: "ES" })).toBe("title:tt0133093:v1:lang=es:country=ES");
+  });
+
   it("writes and reads fresh cached title envelopes", async () => {
     const binding = cache();
-    await writeCachedTitle(binding, "tt0133093", title, 60, 1_000);
+    await writeCachedTitle(binding, "tt0133093", title, 60, {}, 1_000);
 
     expect(binding.put).toHaveBeenCalledWith("title:tt0133093:v1", expect.any(String), { expirationTtl: 60 });
 
     const stored = vi.mocked(binding.put).mock.calls[0]?.[1] as string;
     const readBinding = cache(stored);
-    await expect(readCachedTitle(readBinding, "tt0133093", 30_000)).resolves.toEqual(title);
+    await expect(readCachedTitle(readBinding, "tt0133093", {}, 30_000)).resolves.toEqual(title);
   });
 
   it("ignores corrupt cache entries", async () => {
-    await expect(readCachedTitle(cache("not json"), "tt0133093", 1_000)).resolves.toBeNull();
+    await expect(readCachedTitle(cache("not json"), "tt0133093", {}, 1_000)).resolves.toBeNull();
   });
 
   it("treats stale cache entries as misses", async () => {
     const binding = cache();
-    await writeCachedTitle(binding, "tt0133093", title, 60, 1_000);
+    await writeCachedTitle(binding, "tt0133093", title, 60, {}, 1_000);
     const stored = vi.mocked(binding.put).mock.calls[0]?.[1] as string;
 
-    await expect(readCachedTitle(cache(stored), "tt0133093", 62_000)).resolves.toBeNull();
+    await expect(readCachedTitle(cache(stored), "tt0133093", {}, 62_000)).resolves.toBeNull();
   });
 
   it("exposes stale cache entries for normal-request upstream fallback", async () => {
     const binding = cache();
-    await writeCachedTitle(binding, "tt0133093", title, 60, 1_000);
+    await writeCachedTitle(binding, "tt0133093", title, 60, {}, 1_000);
     const stored = vi.mocked(binding.put).mock.calls[0]?.[1] as string;
 
-    await expect(readCachedTitleState(cache(stored), "tt0133093", 62_000)).resolves.toEqual({ status: "stale", title });
+    await expect(readCachedTitleState(cache(stored), "tt0133093", {}, 62_000)).resolves.toEqual({ status: "stale", title });
   });
 });

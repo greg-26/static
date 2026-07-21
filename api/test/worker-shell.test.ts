@@ -128,6 +128,52 @@ describe("worker routing and errors", () => {
     expect(fetcher).toHaveBeenCalledTimes(2);
   });
 
+  it("accepts localized title requests and selects requested provider country", async () => {
+    const fetcher = tmdbFetch([
+      jsonResponse({ movie_results: [{ id: 603 }], tv_results: [] }),
+      jsonResponse({
+        id: 603,
+        external_ids: { imdb_id: "tt0088247" },
+        title: "Terminator",
+        original_title: "The Terminator",
+        overview: "Un cyborg asesino viaja desde el futuro.",
+        release_date: "1984-10-26",
+        runtime: 108,
+        genres: [],
+        credits: { cast: [], crew: [] },
+        images: { posters: [], backdrops: [] },
+        "watch/providers": { results: { US: { flatrate: [] }, ES: { flatrate: [{ provider_id: 337, provider_name: "Disney Plus", logo_path: null }] } } },
+      }),
+    ]);
+    vi.stubGlobal("fetch", fetcher);
+
+    const response = await worker.fetch(new Request("https://api.example.test/titles/tt0088247?lang=es&country=ES"), env);
+
+    expect(response.status).toBe(200);
+    expect(await readJson(response)).toMatchObject({
+      imdbId: "tt0088247",
+      type: "movie",
+      title: "Terminator",
+      streamingProviders: { region: "ES", stream: [{ id: "337", name: "Disney Plus" }], rent: [], buy: [] },
+    });
+    const findUrl = new URL(String(vi.mocked(fetcher).mock.calls[0]?.[0]));
+    const detailsUrl = new URL(String(vi.mocked(fetcher).mock.calls[1]?.[0]));
+    expect(findUrl.searchParams.get("language")).toBe("es");
+    expect(detailsUrl.searchParams.get("language")).toBe("es");
+    expect(detailsUrl.searchParams.get("watch_region")).toBe("ES");
+  });
+
+  it.each(["?lang=spanish", "?lang=e", "?lang=es-419", "?country=Spain", "?country=E1"])("returns 400 JSON for invalid localized query %s before calling TMDB", async (query) => {
+    const fetcher = vi.fn() as unknown as typeof fetch;
+    vi.stubGlobal("fetch", fetcher);
+
+    const response = await worker.fetch(new Request(`https://api.example.test/titles/tt0133093${query}`), env);
+
+    expect(response.status).toBe(400);
+    expect(await readJson(response)).toMatchObject({ error: { code: expect.stringMatching(/^invalid_(language|country)$/) } });
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+
   it.each(["0133093", "tt", "tt0133093%2F.."])("returns 400 JSON for invalid IMDb ID %s before calling TMDB", async (imdbId) => {
     const fetcher = vi.fn() as unknown as typeof fetch;
     vi.stubGlobal("fetch", fetcher);
@@ -180,7 +226,7 @@ describe("worker routing and errors", () => {
 
   it("returns cached title responses without calling TMDB", async () => {
     const writer = kvCache();
-    await writeCachedTitle(writer, "tt0133093", cachedTitle, 60, Date.now());
+    await writeCachedTitle(writer, "tt0133093", cachedTitle, 60, {}, Date.now());
     const stored = vi.mocked(writer.put).mock.calls[0]?.[1] as string;
     const cache = kvCache(stored);
     const fetcher = vi.fn() as unknown as typeof fetch;
@@ -192,6 +238,22 @@ describe("worker routing and errors", () => {
     expect(await readJson(response)).toEqual(cachedTitle);
     expect(fetcher).not.toHaveBeenCalled();
     expect(cache.get).toHaveBeenCalledWith("title:tt0133093:v1");
+  });
+
+  it("uses localized cache keys for localized worker requests", async () => {
+    const writer = kvCache();
+    await writeCachedTitle(writer, "tt0133093", cachedTitle, 60, { language: "es-ES", country: "ES" }, Date.now());
+    const stored = vi.mocked(writer.put).mock.calls[0]?.[1] as string;
+    const cache = kvCache(stored);
+    const fetcher = vi.fn() as unknown as typeof fetch;
+    vi.stubGlobal("fetch", fetcher);
+
+    const response = await worker.fetch(new Request("https://api.example.test/titles/tt0133093?lang=es-es&country=es"), { ...env, TITLE_CACHE: cache, TITLE_CACHE_TTL_SECONDS: "60" });
+
+    expect(response.status).toBe(200);
+    expect(await readJson(response)).toEqual(cachedTitle);
+    expect(fetcher).not.toHaveBeenCalled();
+    expect(cache.get).toHaveBeenCalledWith("title:tt0133093:v1:lang=es-ES:country=ES");
   });
 
   it("rejects cache override modes in production by default", async () => {

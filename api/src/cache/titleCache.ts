@@ -5,6 +5,11 @@ export const DEFAULT_TITLE_CACHE_TTL_SECONDS = 7 * 24 * 60 * 60;
 
 export type TitleCacheMode = "normal" | "refresh" | "bypass";
 
+export interface TitleCacheVariant {
+  language?: string;
+  country?: string;
+}
+
 export interface TitleCacheBinding {
   get(key: string): Promise<string | null>;
   put(key: string, value: string, options?: { expirationTtl?: number }): Promise<void>;
@@ -21,8 +26,11 @@ export type CachedTitleReadResult =
   | { status: "stale"; title: TitleResponse }
   | { status: "miss" };
 
-export function titleCacheKey(imdbId: string): string {
-  return `title:${imdbId}:${TITLE_CACHE_SCHEMA_VERSION}`;
+export function titleCacheKey(imdbId: string, variant: TitleCacheVariant = {}): string {
+  const parts = [`title:${imdbId}:${TITLE_CACHE_SCHEMA_VERSION}`];
+  if (variant.language) parts.push(`lang=${variant.language}`);
+  if (variant.country) parts.push(`country=${variant.country}`);
+  return parts.join(":");
 }
 
 export function parseTitleCacheTtlSeconds(value: string | undefined): number {
@@ -62,21 +70,28 @@ function decodeEnvelope(raw: string, now: number): CachedTitleReadResult {
   }
 }
 
-export async function readCachedTitleState(cache: TitleCacheBinding | undefined, imdbId: string, now = Date.now()): Promise<CachedTitleReadResult> {
+export async function readCachedTitleState(cache: TitleCacheBinding | undefined, imdbId: string, variant: TitleCacheVariant = {}, now = Date.now()): Promise<CachedTitleReadResult> {
   if (!cache) return { status: "miss" };
 
-  const raw = await cache.get(titleCacheKey(imdbId));
+  const raw = await cache.get(titleCacheKey(imdbId, variant));
   return raw === null ? { status: "miss" } : decodeEnvelope(raw, now);
 }
 
-export async function readCachedTitle(cache: TitleCacheBinding | undefined, imdbId: string, now = Date.now()): Promise<TitleResponse | null> {
-  const result = await readCachedTitleState(cache, imdbId, now);
+export async function readCachedTitle(cache: TitleCacheBinding | undefined, imdbId: string, variant: TitleCacheVariant = {}, now = Date.now()): Promise<TitleResponse | null> {
+  const result = await readCachedTitleState(cache, imdbId, variant, now);
   return result.status === "fresh" ? result.title : null;
 }
 
-export async function writeCachedTitle(cache: TitleCacheBinding | undefined, imdbId: string, title: TitleResponse, ttlSeconds: number, now = Date.now()): Promise<void> {
+export async function writeCachedTitle(
+  cache: TitleCacheBinding | undefined,
+  imdbId: string,
+  title: TitleResponse,
+  ttlSeconds: number,
+  variant: TitleCacheVariant = {},
+  now = Date.now(),
+): Promise<void> {
   if (!cache) return;
 
   const options = ttlSeconds >= 60 ? { expirationTtl: ttlSeconds } : undefined;
-  await cache.put(titleCacheKey(imdbId), encodeEnvelope(title, ttlSeconds, now), options);
+  await cache.put(titleCacheKey(imdbId, variant), encodeEnvelope(title, ttlSeconds, now), options);
 }

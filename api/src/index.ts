@@ -1,8 +1,9 @@
-import { areCacheOverridesAllowed, isProductionEnvironment, parseTitleCacheTtlSeconds, type TitleCacheMode } from "./cache/titleCache";
+import { parseTitleCacheTtlSeconds } from "./cache/titleCache";
 import type { ApiEnv } from "./config/env";
 import { tmdbTimeoutMs } from "./config/env";
 import { errorResponse } from "./http/errors";
 import { jsonResponse } from "./http/errors";
+import { parseTitleQuery } from "./http/titleQuery";
 import { lookupTitle } from "./services/titleLookup";
 import { createTmdbClient } from "./tmdb/client";
 import { isValidImdbTitleId } from "./validation/imdb";
@@ -10,21 +11,6 @@ import { isValidImdbTitleId } from "./validation/imdb";
 function routeTitleRequest(pathname: string): string | undefined {
   const match = /^\/titles\/([^/]+)$/.exec(pathname);
   return match?.[1];
-}
-
-function parseCacheMode(url: URL, env: ApiEnv): { ok: true; mode: TitleCacheMode } | { ok: false; response: Response } {
-  const value = url.searchParams.get("cache");
-  const mode = value === null || value === "" ? "normal" : value;
-
-  if (mode !== "normal" && mode !== "refresh" && mode !== "bypass") {
-    return { ok: false, response: errorResponse("invalid_cache_mode", "Invalid cache mode.", 400) };
-  }
-
-  if ((mode === "refresh" || mode === "bypass") && isProductionEnvironment(env.ENVIRONMENT) && !areCacheOverridesAllowed(env.ALLOW_CACHE_OVERRIDES)) {
-    return { ok: false, response: errorResponse("cache_mode_not_allowed", "Cache override mode is not allowed.", 400) };
-  }
-
-  return { ok: true, mode };
 }
 
 async function handleRequest(request: Request, env: ApiEnv): Promise<Response> {
@@ -48,8 +34,8 @@ async function handleRequest(request: Request, env: ApiEnv): Promise<Response> {
     return errorResponse("invalid_imdb_id", "Invalid IMDb ID.", 400);
   }
 
-  const cacheMode = parseCacheMode(url, env);
-  if (!cacheMode.ok) return cacheMode.response;
+  const query = parseTitleQuery(url, env);
+  if (!query.ok) return query.response;
 
   const client = createTmdbClient({
     apiKey: env.TMDB_API_KEY,
@@ -59,7 +45,9 @@ async function handleRequest(request: Request, env: ApiEnv): Promise<Response> {
   });
   const result = await lookupTitle(imdbId, client, {
     cache: env.TITLE_CACHE,
-    cacheMode: cacheMode.mode,
+    cacheMode: query.context.cacheMode,
+    language: query.context.language,
+    country: query.context.country,
     cacheTtlSeconds: parseTitleCacheTtlSeconds(env.TITLE_CACHE_TTL_SECONDS),
   });
 

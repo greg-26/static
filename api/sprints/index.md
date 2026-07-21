@@ -1,80 +1,64 @@
-# API Sprint Plan
+# API Sprint Projects Index
 
 ## Status
 
-- Current planning status: reviewed against `api/docs/design.md`, `api/AGENTS.md`, and the current implementation.
-- Current implementation phase: Initial API design implementation complete through Sprint 009. Worker deployment automation is wired with real deployed-environment KV namespaces and GitHub Actions.
-- Next executable sprint: none planned in the API package; future work should start from website integration or custom API domain requirements.
+- Current planning status: new API feature-wave project created for GitHub issues whose titles start with `api -`.
+- Current implementation phase: initial API implementation is complete and archived; next work is feature expansion for localization, collection details, and season details.
+- Current project: [2026-07 API Feature Wave](projects/2026-07-api-feature-wave/INDEX.md).
+- Archived/previous project: [2026-07 Initial API Implementation](archive/2026-07-initial-api-implementation/index.md).
 - Latest planning revision date: 2026-07-21.
 
-## Roadmap
+## Projects
+
+| Project | Scope | Status | Location |
+|---|---|---|---|
+| 2026-07 Initial API Implementation | Worker foundation through deployment automation, Sprints 001-009. | archived / complete | [`archive/2026-07-initial-api-implementation/`](archive/2026-07-initial-api-implementation/) |
+| 2026-07 API Feature Wave | GitHub issues #3 localization, #4 collection details, and #5 season details. | current / ready | [`projects/2026-07-api-feature-wave/`](projects/2026-07-api-feature-wave/) |
+
+## Current roadmap
 
 | Sprint | Outcome | Status | Depends on |
 |---|---|---|---|
-| [001](sprint-001-worker-foundation.md) | Cloudflare Worker API project exists with TypeScript, test tooling, and a minimal JSON HTTP shell. | complete | none |
-| [002](sprint-002-route-validation-errors.md) | `GET /titles/{imdbId}` route validates input and returns stable JSON errors without calling TMDB. | complete | 001 |
-| [003](sprint-003-public-model-and-mappers.md) | Application-owned title schema and pure TMDB-to-public mappers are defined and tested with movie/series fixtures. | complete | 001 |
-| [004](sprint-004-tmdb-client.md) | TMDB client resolves IMDb IDs and fetches required raw movie/series metadata through mocked fetch tests. | complete | 001, 003 |
-| [005](sprint-005-uncached-title-lookup.md) | The route returns normalized movie/series responses from TMDB on cache-miss path, including 404 and failure handling. | complete | 002, 003, 004 |
-| [006](sprint-006-kv-cache.md) | Successful normalized title responses are read from and written to Cloudflare KV using versioned keys and configurable freshness. | complete | 005 |
-| [007](sprint-007-wrangler-environments.md) | Wrangler configuration, bindings, secrets documentation, and local/dev/prod environment setup are in place. | complete | 006 |
-| [008](sprint-008-design-closure-hardening.md) | Initial design is verified end-to-end, documentation matches implementation, and no initial-scope gaps remain. | complete | 007 |
-| [009](sprint-009-worker-deployment-automation.md) | Cloudflare Worker deployment is wired end-to-end with real Cloudflare resources, GitHub Actions automation, verification, and documented API URLs. | complete | 008 |
+| [010](projects/2026-07-api-feature-wave/sprint-010-localization-and-provider-region.md) | `GET /titles/{imdbId}` accepts `lang` and `country`, returns localized title metadata/provider country data, and documents the query contract. | complete | initial API implementation |
+| [011](projects/2026-07-api-feature-wave/sprint-011-collection-items.md) | Movie collection responses include enough normalized collection item details to render the collection list, especially item IMDb IDs. | ready | 010 |
+| [012](projects/2026-07-api-feature-wave/sprint-012-series-season-summaries.md) | Series responses include season count and normalized season summaries with stable IDs/key details for CX season lists. | ready | 010 |
+| [013](projects/2026-07-api-feature-wave/sprint-013-feature-wave-closure.md) | README/specs, tests, deployed behavior, and issue handoff evidence are checked across the feature wave. | proposed | 010, 011, 012 |
 
 ## Decisions and assumptions
 
-- Decision: Build the API as a dedicated `api/` Cloudflare Worker package rather than mixing it into `website/` or `scraper/`.
-  - Rationale: The repo currently has no API package; the design calls for a single Worker and the existing website/scraper packages are separate concerns.
-  - Affected sprints: 001-008.
+- Decision: Archive the completed initial implementation under `api/sprints/archive/2026-07-initial-api-implementation/` and keep new feature-wave planning under `api/sprints/projects/2026-07-api-feature-wave/`.
+  - Rationale: Alex explicitly asked for a new sprint folder and the old sprint set moved into its own folder, not mixed with the new plan.
+  - Affected sprints: all API planning docs.
   - Status: accepted.
-- Decision: Keep TMDB raw response types and fixtures inside the integration/mapper boundary.
-  - Rationale: The design requires an application-owned public schema and says clients must never depend on TMDB field names.
-  - Affected sprints: 003-005.
+- Decision: Continue sprint numbering from 010 rather than restarting at 001 inside the new project.
+  - Rationale: The API codebase has completed Sprints 001-009; continuing numbers preserves chronology while the folder boundary separates projects.
+  - Affected sprints: 010-013.
   - Status: accepted.
-- Decision: Use `title:{imdbId}:v1` as the initial cache key shape.
-  - Rationale: This is explicitly specified by the design and gives a clean schema-version bump path.
-  - Affected sprints: 006, 008.
+- Decision: Treat `lang` and `country` as cache-varying request inputs.
+  - Rationale: Localized metadata and provider availability can change the successful response body; cache keys must not mix languages or regions.
+  - Affected sprints: 010-013.
   - Status: accepted.
-- Decision: Implement `cache=refresh` and `cache=bypass` as restricted operator controls in Sprint 006, but keep manual invalidation endpoints out of initial scope.
-  - Rationale: `api/AGENTS.md` makes refresh/bypass behavior a cache requirement; `api/docs/design.md` leaves manual invalidation open and does not require a mutation endpoint.
-  - Affected sprints: 002, 006, 008.
-  - Status: accepted.
-- Decision: Use a 7-day default cache TTL (`604800` seconds), configurable by Worker environment variable.
-  - Rationale: The design requires configurable TTL and 7 days is a simple low-cost default for stable metadata.
-  - Affected sprints: 006, 007.
-  - Status: accepted.
-- Assumption: The first public response schema can be versioned by cache key only; no response-body schema version field is required for the initial API.
-  - Rationale: The design asks to version cache keys when schema changes and lists response schema versioning as an open question.
-  - Affected sprints: 003, 006, 008.
+- Assumption: Default requests without `lang` or `country` keep the current response shape and behavior as much as possible.
+  - Rationale: The deployed API already has clients/tests around `GET /titles/{imdbId}`; feature work should be additive unless the issue explicitly requires a break.
+  - Affected sprints: 010-013.
   - Status: provisional.
 
 ## Open questions
 
-- Should response payloads include an explicit `schemaVersion` field?
-  - Recommended default: no for initial implementation; use `title:{imdbId}:v1` cache versioning and typed contracts instead.
-  - Blocks: only if clients require body-level schema negotiation before launch.
-- Which real CORS origins should be allowed in development and production?
-  - Current default: `https://ohana-tv.pages.dev` for both deployed API environments. The Worker does not enforce CORS yet, so this remains a deployment input for future CORS work.
-  - Blocks: nothing in Sprint 009.
-- What should the deployed API base URLs be for development and production?
-  - Current default: use Cloudflare Workers URLs for the first automated deploy, then add custom domains only when needed by the website.
-  - Production: `https://ohanamovies-api.ohanamovies-api.workers.dev`.
-  - Development: `https://ohanamovies-api-development.ohanamovies-api.workers.dev`.
-  - Blocks: nothing in Sprint 009.
+- Should absent `country` return all TMDB provider countries or a default country only?
+  - Recommended default: return the current/default provider shape when absent; when `country` is provided, return that country only while keeping the `streamingProviders` shape consistent.
+  - Blocks: no; Sprint 010 can implement the recommended default unless product says otherwise.
+- Should localized cache keys use ISO-normalized lowercase/uppercase values?
+  - Recommended default: normalize language to lowercase BCP-47-ish strings accepted by TMDB and country to uppercase ISO 3166-1 alpha-2 before validation/cache key construction.
+  - Blocks: no.
 
-## Completion criteria
+## Completion criteria for the current project
 
-The initial API design is fully implemented when:
+The API feature wave is complete when:
 
-- `GET /titles/{imdbId}` accepts valid IMDb title IDs and rejects invalid IDs with stable JSON `400` errors.
-- Valid but unknown IMDb IDs return stable JSON `404` errors.
-- Successful movie and TV series lookups return only the application-owned normalized schema.
-- Normalized responses include the designed sections where data is available: title, type, overview, release, runtime, genres, rating, cast, crew, artwork, movie collection, and streaming providers.
-- TMDB details are hidden behind the client and mapper boundary.
-- Successful normalized responses are cached in Cloudflare KV under `title:{imdbId}:v1` with configurable freshness.
-- `cache=refresh` skips cache reads and replaces cached successful values; `cache=bypass` skips cache reads and writes; production access to these modes is restricted.
-- Upstream errors are not cached and are returned as stable JSON failures without exposing raw TMDB details.
-- Worker configuration documents TMDB secret, KV binding, and local/development/production environments.
-- Available API verification commands pass from the `api/` package.
-
-Deployment is ready: Sprint 009 replaced deployed-environment Cloudflare resource IDs, configured required GitHub/Worker secrets, added the API GitHub Actions deploy workflow, verified the deployed Worker, and documented the resulting API URLs.
+- Issue [#3](https://github.com/greg-26/static/issues/3) is satisfied: README documents `lang` and `country`, localized requests are verified, and changes are pushed by the SDE implementation agent.
+- Issue [#4](https://github.com/greg-26/static/issues/4) is satisfied: movie collection payloads include normalized collection items with at least IMDb IDs where TMDB can resolve them.
+- Issue [#5](https://github.com/greg-26/static/issues/5) is satisfied: series payloads include season count and normalized season summaries with stable IDs/key details.
+- New behavior is covered by unit/integration tests without live TMDB or production Cloudflare resources.
+- API README and relevant design/planning docs describe the shipped query params and response additions.
+- `npm run typecheck`, `npm test`, `npm run wrangler:dry-run`, and `git diff --check` pass before push/deployment.
