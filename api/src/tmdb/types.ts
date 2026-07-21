@@ -77,12 +77,7 @@ export interface TmdbMovieForMapping {
   vote_count?: number | null;
   poster_path?: string | null;
   backdrop_path?: string | null;
-  belongs_to_collection?: {
-    id: number;
-    name?: string | null;
-    poster_path?: string | null;
-    backdrop_path?: string | null;
-  } | null;
+  belongs_to_collection?: TmdbCollectionDetails | null;
   credits?: { cast?: TmdbMovieCastCredit[] | null; crew?: TmdbCrewCredit[] | null } | null;
   images?: { posters?: TmdbImage[] | null; backdrops?: TmdbImage[] | null } | null;
   watch?: TmdbWatchProviders | null;
@@ -116,9 +111,24 @@ export interface TmdbFindResponse {
   tv_results?: TmdbFindResult[] | null;
 }
 
+export interface TmdbExternalIds {
+  imdb_id?: string | null;
+}
+
+export interface TmdbCollectionPart {
+  id: number;
+  external_ids?: TmdbExternalIds | null;
+  title?: string | null;
+  original_title?: string | null;
+  release_date?: string | null;
+  poster_path?: string | null;
+  order?: number | null;
+}
+
 export interface TmdbCollectionDetails {
   id: number;
   name?: string | null;
   poster_path?: string | null;
   backdrop_path?: string | null;
+  parts?: TmdbCollectionPart[] | null;
 }

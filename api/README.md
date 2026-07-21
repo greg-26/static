@@ -105,10 +105,37 @@ curl "https://api.ohana.example/titles/tt0133093?cache=bypass"
     "posters": [],
     "backdrops": []
   },
-  "collection": null,
+  "collection": {
+    "id": "2344",
+    "name": "The Matrix Collection",
+    "poster": null,
+    "backdrop": null,
+    "items": [
+      {
+        "id": "603",
+        "imdbId": "tt0133093",
+        "title": "The Matrix",
+        "release": {
+          "date": "1999-03-31",
+          "year": 1999
+        },
+        "poster": null,
+        "order": 0
+      }
+    ]
+  },
   "streamingProviders": null
 }
 ```
+
+Movie `collection` is `null` when TMDB has no collection. When present, `collection.items` contains normalized movie summaries in collection order:
+
+- `id` — stable Ohana string identifier derived from the TMDB movie ID.
+- `imdbId` — item IMDb title ID when TMDB external IDs resolve it; otherwise `null`.
+- `title`, `release`, `poster`, and `order` — display data for CX collection lists.
+
+Series always return `collection: null`; seasons are a separate series concern.
+
 
 ## Errors
 

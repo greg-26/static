@@ -30,7 +30,18 @@ describe("TMDB client", () => {
         "watch/providers": { results: { US: { flatrate: [] } } },
         belongs_to_collection: { id: 2344, name: "Matrix", poster_path: null, backdrop_path: null },
       }),
-      jsonResponse({ id: 2344, name: "The Matrix Collection", poster_path: "/collection.jpg", backdrop_path: "/collection-bg.jpg" }),
+      jsonResponse({
+        id: 2344,
+        name: "The Matrix Collection",
+        poster_path: "/collection.jpg",
+        backdrop_path: "/collection-bg.jpg",
+        parts: [
+          { id: 603, title: "The Matrix", release_date: "1999-03-31", poster_path: "/matrix.jpg" },
+          { id: 604, title: "The Matrix Reloaded", release_date: "2003-05-15", poster_path: null },
+        ],
+      }),
+      jsonResponse({ imdb_id: "tt0133093" }),
+      jsonResponse({ imdb_id: "tt0234215" }),
     ]);
 
     const result = await createTmdbClient({ apiKey: "test-key", baseUrl: "https://tmdb.test/3", fetch: fetcher }).fetchTitleByImdbId("tt0133093");
@@ -43,10 +54,18 @@ describe("TMDB client", () => {
         title: "The Matrix",
         external_ids: { imdb_id: "tt0133093" },
         watch: { results: { US: { flatrate: [] } } },
-        belongs_to_collection: { id: 2344, name: "The Matrix Collection", poster_path: "/collection.jpg" },
+        belongs_to_collection: {
+          id: 2344,
+          name: "The Matrix Collection",
+          poster_path: "/collection.jpg",
+          parts: [
+            { id: 603, external_ids: { imdb_id: "tt0133093" } },
+            { id: 604, external_ids: { imdb_id: "tt0234215" } },
+          ],
+        },
       },
     });
-    expect(fetcher).toHaveBeenCalledTimes(3);
+    expect(fetcher).toHaveBeenCalledTimes(5);
     expect(new URL(String(vi.mocked(fetcher).mock.calls[0]?.[0])).pathname).toBe("/3/find/tt0133093");
     expect(new URL(String(vi.mocked(fetcher).mock.calls[1]?.[0])).searchParams.get("append_to_response")).toBe("credits,images,watch/providers,external_ids");
   });
@@ -92,7 +111,8 @@ describe("TMDB client", () => {
         "watch/providers": { results: { ES: { flatrate: [] } } },
         belongs_to_collection: { id: 2344, name: "Matrix", poster_path: null, backdrop_path: null },
       }),
-      jsonResponse({ id: 2344, name: "Colección Matrix", poster_path: null, backdrop_path: null }),
+      jsonResponse({ id: 2344, name: "Colección Matrix", poster_path: null, backdrop_path: null, parts: [{ id: 603, title: "Matrix" }] }),
+      jsonResponse({ imdb_id: "tt0133093" }),
     ]);
 
     const result = await createTmdbClient({ apiKey: "test-key", baseUrl: "https://tmdb.test/3", fetch: fetcher }).fetchTitleByImdbId("tt0133093", { language: "es", country: "ES" });
@@ -101,10 +121,12 @@ describe("TMDB client", () => {
     const findUrl = new URL(String(vi.mocked(fetcher).mock.calls[0]?.[0]));
     const detailsUrl = new URL(String(vi.mocked(fetcher).mock.calls[1]?.[0]));
     const collectionUrl = new URL(String(vi.mocked(fetcher).mock.calls[2]?.[0]));
+    const externalIdsUrl = new URL(String(vi.mocked(fetcher).mock.calls[3]?.[0]));
     expect(findUrl.searchParams.get("language")).toBe("es");
     expect(detailsUrl.searchParams.get("language")).toBe("es");
     expect(detailsUrl.searchParams.get("watch_region")).toBe("ES");
     expect(collectionUrl.searchParams.get("language")).toBe("es");
+    expect(externalIdsUrl.pathname).toBe("/3/movie/603/external_ids");
   });
 
   it("maps no TMDB result to not found", async () => {
@@ -134,6 +156,27 @@ describe("TMDB client", () => {
     const result = await createTmdbClient({ apiKey: "test-key", timeoutMs: 1, fetch: fetcher }).fetchTitleByImdbId("tt0133093");
 
     expect(result).toEqual({ ok: false, error: { kind: "upstream_failure", message: "TMDB request failed.", cause: "AbortError" } });
+  });
+
+  it("keeps collection item data when optional item external ID fetches fail", async () => {
+    const fetcher = tmdbFetch([
+      jsonResponse({ movie_results: [{ id: 603 }], tv_results: [] }),
+      jsonResponse({
+        id: 603,
+        title: "The Matrix",
+        belongs_to_collection: { id: 2344, name: "Matrix", poster_path: null, backdrop_path: null },
+      }),
+      jsonResponse({ id: 2344, name: "Matrix", parts: [{ id: 603, title: "The Matrix", release_date: "1999-03-31" }] }),
+      jsonResponse({ status_message: "temporary" }, { status: 500 }),
+    ]);
+
+    const result = await createTmdbClient({ apiKey: "test-key", fetch: fetcher }).fetchTitleByImdbId("tt0133093");
+
+    expect(result).toMatchObject({
+      ok: true,
+      mediaType: "movie",
+      data: { belongs_to_collection: { parts: [{ id: 603, external_ids: null }] } },
+    });
   });
 
   it("keeps required movie data when optional collection detail fetch fails", async () => {

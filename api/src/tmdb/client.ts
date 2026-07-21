@@ -1,4 +1,4 @@
-import type { TmdbCollectionDetails, TmdbFindResponse, TmdbMovieForMapping, TmdbSeriesForMapping } from "./types";
+import type { TmdbCollectionDetails, TmdbExternalIds, TmdbFindResponse, TmdbMovieForMapping, TmdbSeriesForMapping } from "./types";
 
 export interface TmdbClientConfig {
   apiKey?: string;
@@ -97,11 +97,22 @@ export class TmdbClient {
     if (movie.belongs_to_collection?.id !== undefined) {
       const collection = await this.request<TmdbCollectionDetails>(`/collection/${movie.belongs_to_collection.id}`, compactQuery({ language: context.language }), { optional: true });
       if (collection.ok) {
-        movie.belongs_to_collection = collection.data;
+        movie.belongs_to_collection = await this.hydrateCollectionItemExternalIds(collection.data);
       }
     }
 
     return { ok: true, mediaType: "movie", data: movie };
+  }
+
+  private async hydrateCollectionItemExternalIds(collection: TmdbCollectionDetails): Promise<TmdbCollectionDetails> {
+    if (!collection.parts?.length) return collection;
+
+    const parts = await Promise.all(collection.parts.map(async (part) => {
+      const externalIds = await this.request<TmdbExternalIds>(`/movie/${part.id}/external_ids`, {}, { optional: true });
+      return { ...part, external_ids: externalIds.ok ? externalIds.data : (part.external_ids ?? null) };
+    }));
+
+    return { ...collection, parts };
   }
 
   private async fetchSeries(seriesId: number, context: TmdbRequestContext): Promise<TmdbTitleLookupResult> {

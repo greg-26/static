@@ -23,11 +23,24 @@ export interface CrewCredits {
   creators: PersonCredit[];
 }
 
+export interface CollectionItemSummary {
+  id: string;
+  imdbId: string | null;
+  title: string;
+  release: {
+    date: string | null;
+    year: number | null;
+  };
+  poster: ImageAsset | null;
+  order: number;
+}
+
 export interface CollectionSummary {
   id: string;
   name: string;
   poster: ImageAsset | null;
   backdrop: ImageAsset | null;
+  items: CollectionItemSummary[];
 }
 
 export interface StreamingProvider {

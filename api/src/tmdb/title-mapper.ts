@@ -1,4 +1,4 @@
-import type { CollectionSummary, ImageAsset, PersonCredit, StreamingProvider, StreamingProviders, TitleResponse } from "../models/title";
+import type { CollectionItemSummary, CollectionSummary, ImageAsset, PersonCredit, StreamingProvider, StreamingProviders, TitleResponse } from "../models/title";
 import type {
   TmdbCreatedBy,
   TmdbCrewCredit,
@@ -7,6 +7,7 @@ import type {
   TmdbMovieCastCredit,
   TmdbMovieForMapping,
   TmdbProvider,
+  TmdbCollectionPart,
   TmdbSeriesCastCredit,
   TmdbSeriesCastRole,
   TmdbSeriesForMapping,
@@ -152,7 +153,26 @@ function mapCollection(collection: TmdbMovieForMapping["belongs_to_collection"])
     name: collection.name ?? "",
     poster: collection.poster_path ? mapImagePath(collection.poster_path, "poster") : null,
     backdrop: collection.backdrop_path ? mapImagePath(collection.backdrop_path, "backdrop") : null,
+    items: mapCollectionItems(collection.parts),
   };
+}
+
+function mapCollectionItems(parts: TmdbCollectionPart[] | null | undefined): CollectionItemSummary[] {
+  return [...(parts ?? [])]
+    .map((part, index) => ({ part, index }))
+    .sort((a, b) => collectionItemOrder(a.part, a.index) - collectionItemOrder(b.part, b.index))
+    .map(({ part, index }) => ({
+      id: String(part.id),
+      imdbId: part.external_ids?.imdb_id ?? null,
+      title: part.title ?? part.original_title ?? "",
+      release: mapRelease(part.release_date),
+      poster: part.poster_path ? mapImagePath(part.poster_path, "poster") : null,
+      order: collectionItemOrder(part, index),
+    }));
+}
+
+function collectionItemOrder(part: TmdbCollectionPart, index: number): number {
+  return part.order ?? index;
 }
 
 function mapStreamingProviders(watch: TmdbWatchProviders | null | undefined, providerRegion = "US"): StreamingProviders | null {

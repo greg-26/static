@@ -21,6 +21,10 @@ const movieFixture: TmdbMovieForMapping = {
     name: "The Matrix Collection",
     poster_path: "/collection-poster.jpg",
     backdrop_path: "/collection-backdrop.jpg",
+    parts: [
+      { id: 603, external_ids: { imdb_id: "tt0133093" }, title: "The Matrix", release_date: "1999-03-31", poster_path: "/matrix-poster.jpg", order: 0 },
+      { id: 604, external_ids: { imdb_id: "tt0234215" }, title: "The Matrix Reloaded", release_date: "2003-05-15", poster_path: null, order: 1 },
+    ],
   },
   credits: {
     cast: [
@@ -106,7 +110,14 @@ describe("TMDB title mappers", () => {
         { id: "2975", name: "Laurence Fishburne", roles: ["Morpheus"], episodeCount: null },
       ],
       crew: { directors: [{ id: "9339", name: "Lana Wachowski", roles: ["Director"] }], creators: [] },
-      collection: { id: "2344", name: "The Matrix Collection" },
+      collection: {
+        id: "2344",
+        name: "The Matrix Collection",
+        items: [
+          { id: "603", imdbId: "tt0133093", title: "The Matrix", release: { date: "1999-03-31", year: 1999 }, order: 0 },
+          { id: "604", imdbId: "tt0234215", title: "The Matrix Reloaded", release: { date: "2003-05-15", year: 2003 }, poster: null, order: 1 },
+        ],
+      },
       streamingProviders: {
         region: "US",
         stream: [{ id: "8", name: "Netflix" }],
@@ -130,6 +141,34 @@ describe("TMDB title mappers", () => {
     });
     expect(title.collection?.poster?.sizes.small).toBe("https://image.tmdb.org/t/p/w185/collection-poster.jpg");
     expect(title.streamingProviders?.stream[0]?.logo?.sizes.thumbnail).toBe("https://image.tmdb.org/t/p/w45/netflix.jpg");
+  });
+
+  it("maps collection items with partial upstream data without crashing", () => {
+    const title = mapTmdbMovieToTitle({
+      external_ids: { imdb_id: "tt0000001" },
+      belongs_to_collection: {
+        id: 10,
+        name: "Partial Collection",
+        poster_path: null,
+        backdrop_path: null,
+        parts: [
+          { id: 2, external_ids: null, title: null, original_title: "Fallback Title", release_date: "", poster_path: null, order: 2 },
+          { id: 1, external_ids: { imdb_id: "tt0000002" }, title: "First", release_date: null, poster_path: "/first.jpg", order: 1 },
+        ],
+      },
+      genres: [],
+      credits: { cast: [], crew: [] },
+      images: { posters: [], backdrops: [] },
+    });
+
+    expect(title.collection).toMatchObject({
+      id: "10",
+      items: [
+        { id: "1", imdbId: "tt0000002", title: "First", release: { date: null, year: null }, order: 1 },
+        { id: "2", imdbId: null, title: "Fallback Title", release: { date: null, year: null }, poster: null, order: 2 },
+      ],
+    });
+    expect(title.collection?.items[0]?.poster?.sizes.small).toBe("https://image.tmdb.org/t/p/w185/first.jpg");
   });
 
   it("maps a series fixture using series-level aggregate credits and no collection", () => {

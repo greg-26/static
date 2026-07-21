@@ -2,7 +2,7 @@
 
 ## Status
 
-ready
+complete
 
 ## GitHub issues
 
@@ -75,13 +75,13 @@ The initial API only exposes the collection parent/artwork. CX now needs the mov
 
 ## Acceptance criteria
 
-- [ ] Movie responses with collections include `collection.items` as an array.
-- [ ] Collection items include IMDb IDs when available from TMDB/external-ID data.
-- [ ] Collection items include enough display data for CX list rendering without raw TMDB field names.
-- [ ] Missing item IMDb IDs or posters are handled without crashing.
-- [ ] Series responses do not treat seasons as collections.
-- [ ] Tests cover collection item mapping and partial upstream data.
-- [ ] API typecheck, tests, Wrangler dry-run, and `git diff --check` pass.
+- [x] Movie responses with collections include `collection.items` as an array.
+- [x] Collection items include IMDb IDs when available from TMDB/external-ID data.
+- [x] Collection items include enough display data for CX list rendering without raw TMDB field names.
+- [x] Missing item IMDb IDs or posters are handled without crashing.
+- [x] Series responses do not treat seasons as collections.
+- [x] Tests cover collection item mapping and partial upstream data.
+- [x] API typecheck, tests, Wrangler dry-run, and `git diff --check` pass.
 
 ## Required tests
 
@@ -104,13 +104,24 @@ git diff --check
 
 ## Handoff
 
-The SDE agent must report:
+Completed 2026-07-21 by SDE implementation agent.
 
-- final public `collection.items` schema
-- issue #4 acceptance criteria status
-- partial-data behavior for missing IMDb IDs
-- tests added/updated
-- verification output
+Final public `collection.items[]` schema:
+
+- `id: string` — stable Ohana string identifier derived from the TMDB movie ID.
+- `imdbId: string | null` — resolved from TMDB movie external IDs when available; `null` when unresolved or optional external-ID fetch fails.
+- `title: string` — localized collection part title when TMDB supplies it, falling back to original title or empty string.
+- `release: { date: string | null; year: number | null }` — normalized release display data.
+- `poster: ImageAsset | null` — normalized poster image or `null`.
+- `order: number` — TMDB collection order when available, otherwise response index.
+
+Evidence:
+
+- Implemented collection part typing, external-ID hydration, normalized mapping, and public type updates.
+- Preserved collection parent fields/artwork and `collection: null` for series.
+- Bumped title cache schema keys from `v1` to `v2` so old cached responses without `collection.items` are not reused.
+- Documented collection item shape in `api/README.md` and `api/docs/design.md`.
+- Verification passed: `npm run typecheck`; `npm test` (59 tests); `npm run wrangler:dry-run`; `git diff --check`.
 
 ## Dependencies unlocked
 
