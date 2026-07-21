@@ -17,6 +17,7 @@ Historical human/PMT feedback is now PMT-owned and lives under `reports/pmt/huma
 
 Historical planning reports may live under the old `reports/principal-engineer/` path; new planning reports belong in `reports/sprint-planner/`.
 
+- [`reports/sprint-planner/2026-07-22-sprint-planner-more-issues.md`](../../reports/sprint-planner/2026-07-22-sprint-planner-more-issues.md) — post-Sprint-013 working-fork issues #10–#12 mapped to Sprints 014–016.
 - [`reports/sprint-planner/2026-07-21-sprint-planner-plan.md`](../../reports/sprint-planner/2026-07-21-sprint-planner-plan.md) — open working-fork issue map to Sprints 010–012.
 - [`reports/principal-engineer/2026-07-13-principal-engineer-plan.md`](../../reports/principal-engineer/2026-07-13-principal-engineer-plan.md) — implementation sequencing and risk plan.
 - [`reports/principal-engineer/2026-07-18-pm-walk-store-execution-plan.md`](../../reports/principal-engineer/2026-07-18-pm-walk-store-execution-plan.md) — Sprint 9 follow-up sequencing from walk-the-store feedback.
