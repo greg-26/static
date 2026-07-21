@@ -218,7 +218,7 @@ Possible additions:
 
 - trailers
 - watch providers refresh endpoint
-- localized metadata
+- broader localization refinements beyond the supported `lang`/`country` contract
 - multiple metadata providers
 - background cache refresh
 

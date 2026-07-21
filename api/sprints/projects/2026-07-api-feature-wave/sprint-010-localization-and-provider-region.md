@@ -116,10 +116,10 @@ Completed 2026-07-21 by SDE implementation agent.
 - Stable 400 errors added: `invalid_language` and `invalid_country`; invalid values return before TMDB calls.
 - TMDB forwarding implemented: `language` goes to find/details/collection requests; `watch_region` goes to movie/series detail requests when `country` is present.
 - Provider selection implemented through the existing `streamingProviders` shape; requested `country` selects that country, absent `country` preserves existing default `US` behavior.
-- Cache key examples: default `title:tt0133093:v1`; Spanish `title:tt0133093:v1:lang=es`; Spain `title:tt0133093:v1:country=ES`; Spanish+Spain `title:tt0133093:v1:lang=es:country=ES`.
+- Cache key examples at final feature-wave closure: default `title:tt0133093:v3`; Spanish `title:tt0133093:v3:lang=es`; Spain `title:tt0133093:v3:country=ES`; Spanish+Spain `title:tt0133093:v3:lang=es:country=ES`.
 - README and design docs updated for query params, defaults, cache variance, and new errors.
-- Verification: `npm run typecheck` passed; `npm test` passed (57 tests). Final required dry-run/diff-check evidence is in the run handoff.
-- Commit/push: pending final run verification and clean handling of pre-existing sprint-planning changes.
+- Verification: `npm run typecheck` passed; `npm test` passed (57 tests). Final required dry-run/diff-check evidence is in the run handoff. Sprint 013 closure re-verified the full feature wave with 62 tests.
+- Commit/push: completed by the feature-wave implementation sequence.
 
 ## Dependencies unlocked
 

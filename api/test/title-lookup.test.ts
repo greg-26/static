@@ -158,6 +158,63 @@ describe("title lookup service", () => {
     expect(binding.put).toHaveBeenCalledWith("title:tt0133093:v3:lang=es:country=ES", expect.any(String), { expirationTtl: 60 });
   });
 
+  it("isolates localized collection item payloads by cache variant", async () => {
+    const defaultBinding = cache();
+    await writeCachedTitle(defaultBinding, "tt0133093", cachedTitle, 60, {}, 1_000);
+    const defaultCachedEnvelope = vi.mocked(defaultBinding.put).mock.calls[0]?.[1] as string;
+    const binding: TitleCacheBinding = {
+      get: vi.fn(async (key) => (key === "title:tt0133093:v3" ? defaultCachedEnvelope : null)),
+      put: vi.fn(async () => undefined),
+    };
+    const lookupClient = client({
+      ok: true,
+      mediaType: "movie",
+      data: {
+        external_ids: { imdb_id: "tt0133093" },
+        title: "Matrix",
+        belongs_to_collection: {
+          id: 2344,
+          name: "Colección Matrix",
+          parts: [{ id: 603, external_ids: { imdb_id: "tt0133093" }, title: "Matrix", release_date: "1999-03-31", poster_path: null, order: 0 }],
+        },
+        genres: [],
+        credits: { cast: [], crew: [] },
+        images: { posters: [], backdrops: [] },
+      },
+    });
+
+    const result = await lookupTitle("tt0133093", lookupClient, { cache: binding, language: "es", cacheTtlSeconds: 60, now: 2_000 });
+
+    expect(result).toMatchObject({ ok: true, title: { title: "Matrix", collection: { name: "Colección Matrix", items: [{ imdbId: "tt0133093", title: "Matrix" }] } } });
+    expect(binding.get).toHaveBeenCalledWith("title:tt0133093:v3:lang=es");
+    expect(lookupClient.fetchTitleByImdbId).toHaveBeenCalledWith("tt0133093", { language: "es" });
+    expect(binding.put).toHaveBeenCalledWith("title:tt0133093:v3:lang=es", expect.any(String), { expirationTtl: 60 });
+  });
+
+  it("writes localized series season summaries under localized cache keys", async () => {
+    const binding = cache();
+    const lookupClient = client({
+      ok: true,
+      mediaType: "series",
+      data: {
+        external_ids: { imdb_id: "tt0944947" },
+        name: "Juego de tronos",
+        number_of_seasons: 8,
+        seasons: [{ id: 3625, season_number: 1, name: "Temporada 1", overview: "Se acerca el invierno.", episode_count: 10, air_date: "2011-04-17", poster_path: null }],
+        genres: [],
+        aggregate_credits: { cast: [], crew: [] },
+        images: { posters: [], backdrops: [] },
+      },
+    });
+
+    const result = await lookupTitle("tt0944947", lookupClient, { cache: binding, language: "es", country: "ES", cacheTtlSeconds: 60, now: 1_000 });
+
+    expect(result).toMatchObject({ ok: true, title: { title: "Juego de tronos", seasonCount: 8, seasons: [{ seasonNumber: 1, name: "Temporada 1", overview: "Se acerca el invierno." }] } });
+    expect(lookupClient.fetchTitleByImdbId).toHaveBeenCalledWith("tt0944947", { language: "es", country: "ES" });
+    expect(binding.get).toHaveBeenCalledWith("title:tt0944947:v3:lang=es:country=ES");
+    expect(binding.put).toHaveBeenCalledWith("title:tt0944947:v3:lang=es:country=ES", expect.any(String), { expirationTtl: 60 });
+  });
+
   it("does not cache not-found or upstream failure results", async () => {
     const notFoundCache = cache();
     const notFound = await lookupTitle("tt0000000", client({ ok: false, error: { kind: "not_found", message: "Title not found." } }), { cache: notFoundCache });

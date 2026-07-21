@@ -2,10 +2,10 @@
 
 ## Status
 
-- Current planning status: ready for SDE implementation.
+- Current planning status: complete.
 - Scope source: GitHub issues [#3](https://github.com/greg-26/static/issues/3), [#4](https://github.com/greg-26/static/issues/4), and [#5](https://github.com/greg-26/static/issues/5), all titled `api - ...`.
 - Starting point: the initial API implementation and deployment automation are complete in archived Sprints 001-009.
-- Next executable sprint: [Sprint 013 — Feature Wave Closure](sprint-013-feature-wave-closure.md).
+- Next executable sprint: none; feature wave complete.
 - Latest planning revision date: 2026-07-21.
 
 ## Roadmap
@@ -15,7 +15,7 @@
 | [010](sprint-010-localization-and-provider-region.md) | [#3](https://github.com/greg-26/static/issues/3) | `lang` and `country` query params are supported, documented, tested, and cache-safe. | complete | initial API implementation |
 | [011](sprint-011-collection-items.md) | [#4](https://github.com/greg-26/static/issues/4) | Movie collection responses include normalized collection item summaries with IMDb IDs when available. | complete | 010 |
 | [012](sprint-012-series-season-summaries.md) | [#5](https://github.com/greg-26/static/issues/5) | Series responses include season count and normalized season summaries. | complete | 010 |
-| [013](sprint-013-feature-wave-closure.md) | [#3](https://github.com/greg-26/static/issues/3), [#4](https://github.com/greg-26/static/issues/4), [#5](https://github.com/greg-26/static/issues/5) | Cross-feature docs, deployed verification, and issue handoff evidence are complete. | ready | 010, 011, 012 |
+| [013](sprint-013-feature-wave-closure.md) | [#3](https://github.com/greg-26/static/issues/3), [#4](https://github.com/greg-26/static/issues/4), [#5](https://github.com/greg-26/static/issues/5) | Cross-feature docs, deployed verification, and issue handoff evidence are complete. | complete | 010, 011, 012 |
 
 ## SDE handoff rules
 

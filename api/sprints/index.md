@@ -3,8 +3,8 @@
 ## Status
 
 - Current planning status: new API feature-wave project created for GitHub issues whose titles start with `api -`.
-- Current implementation phase: initial API implementation is complete and archived; next work is feature expansion for localization, collection details, and season details.
-- Current project: [2026-07 API Feature Wave](projects/2026-07-api-feature-wave/INDEX.md).
+- Current implementation phase: initial API implementation is complete and archived; the 2026-07 feature wave for localization, collection details, and season details is complete.
+- Current project: none active; latest completed project is [2026-07 API Feature Wave](projects/2026-07-api-feature-wave/INDEX.md).
 - Archived/previous project: [2026-07 Initial API Implementation](archive/2026-07-initial-api-implementation/index.md).
 - Latest planning revision date: 2026-07-21.
 
@@ -13,7 +13,7 @@
 | Project | Scope | Status | Location |
 |---|---|---|---|
 | 2026-07 Initial API Implementation | Worker foundation through deployment automation, Sprints 001-009. | archived / complete | [`archive/2026-07-initial-api-implementation/`](archive/2026-07-initial-api-implementation/) |
-| 2026-07 API Feature Wave | GitHub issues #3 localization, #4 collection details, and #5 season details. | current / ready | [`projects/2026-07-api-feature-wave/`](projects/2026-07-api-feature-wave/) |
+| 2026-07 API Feature Wave | GitHub issues #3 localization, #4 collection details, and #5 season details. | complete | [`projects/2026-07-api-feature-wave/`](projects/2026-07-api-feature-wave/) |
 
 ## Current roadmap
 
@@ -22,7 +22,7 @@
 | [010](projects/2026-07-api-feature-wave/sprint-010-localization-and-provider-region.md) | `GET /titles/{imdbId}` accepts `lang` and `country`, returns localized title metadata/provider country data, and documents the query contract. | complete | initial API implementation |
 | [011](projects/2026-07-api-feature-wave/sprint-011-collection-items.md) | Movie collection responses include enough normalized collection item details to render the collection list, especially item IMDb IDs. | complete | 010 |
 | [012](projects/2026-07-api-feature-wave/sprint-012-series-season-summaries.md) | Series responses include season count and normalized season summaries with stable IDs/key details for CX season lists. | complete | 010 |
-| [013](projects/2026-07-api-feature-wave/sprint-013-feature-wave-closure.md) | README/specs, tests, deployed behavior, and issue handoff evidence are checked across the feature wave. | ready | 010, 011, 012 |
+| [013](projects/2026-07-api-feature-wave/sprint-013-feature-wave-closure.md) | README/specs, tests, deployed behavior, and issue handoff evidence are checked across the feature wave. | complete | 010, 011, 012 |
 
 ## Decisions and assumptions
 
