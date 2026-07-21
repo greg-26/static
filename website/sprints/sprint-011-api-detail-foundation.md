@@ -54,6 +54,20 @@ Working-fork issue [#6](https://github.com/greg-26/static/issues/6) asks the web
 - If API/base URL is not configured, default to production Workers.dev but keep local override possible for development.
 - Do not duplicate maturity/provider surfaces while adding overview/cast/collection.
 
+## Data-loading model
+
+- `public/movies.json` remains the source for Discover rows, Search results, poster cards, provider bitmasks, and initial modal/card data.
+- The Ohana API is detail-only enrichment: fetch `GET /titles/{imdbId}` lazily when a movie detail view/page opens, cache the response for the browser session, and never prefetch whole rows/search results.
+- API metadata must be optional. If the API is slow, unavailable, or partial, the existing static detail view stays usable and no browse/search behavior changes.
+
+## QA/CX notes
+
+- Do not let enrichment create duplicate decision blocks: API overview should enhance/replace weak static synopsis copy where appropriate, not render as a second competing “about” section.
+- Keep first-screen modal hierarchy focused on the title, suitability, and where-to-watch decision; cast and collection are supporting context and can sit lower or use compact previews.
+- Limit cast to a short scan list on mobile. Prefer names plus the most useful role/character; avoid headshot grids or long “full credits” surfaces in this slice.
+- Collection context should answer “is this part of a series and where does it fit?” Use compact ordered summaries; do not build a separate collection browsing product.
+- Do not use API `streamingProviders` to replace existing provider availability in this sprint unless country/region semantics are explicitly aligned with Sprint 010. Where-to-watch provider truth remains the `movies.json` bitmask path.
+
 ## Expected file impact
 
 - `src/lib/ohanaApi.js` or equivalent client module

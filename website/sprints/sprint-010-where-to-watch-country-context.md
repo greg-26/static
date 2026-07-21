@@ -51,6 +51,13 @@ Working-fork issues [#1](https://github.com/greg-26/static/issues/1) and [#2](ht
 - Use one source of truth for the current country label so Settings and movie details cannot drift.
 - Preserve existing profile/list/provider persistence and the static hosting model.
 
+## QA/CX notes
+
+- Treat the country row as trust context, not a new setting: if data inspection confirms Spain-only availability, show a fixed/read-only value such as **Country: Spain** with short support copy, not a disabled dropdown that looks broken.
+- Keep Where-to-watch attribution adjacent to the provider list and scannable, e.g. **Availability in Spain · Data from JustWatch via TMDB**. If a JustWatch logo cannot be added cleanly, text attribution is acceptable for this slice.
+- Verify no provider/source/country copy leaks onto poster cards or Discover rows; the card-level model still comes from `movies.json` and should stay abstract.
+- Do not introduce API calls for this sprint. Confirm `movies.json` remains the only browse/card/provider source, with no multi-country UI until the static data model supports it.
+
 ## Expected file impact
 
 - `src/components/SettingsView.vue`
