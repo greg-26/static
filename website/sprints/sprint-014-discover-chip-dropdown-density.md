@@ -37,7 +37,6 @@ Alex added working-fork issue [#10](https://github.com/greg-26/static/issues/10)
 
 - Changing filter taxonomy, option order, or filter persistence.
 - Reworking chip selected/open/disabled states beyond what is required to remove subtitles safely.
-- Mobile real-phone validation for unrelated Sprint 9 blockers.
 - Discover row deduplication from issue #7.
 - Closing issue #10; closure belongs to the implementation completion workflow after verification.
 

@@ -10,4 +10,4 @@ Use this file only as historical context when debugging or auditing the July 202
 - Implementation slices 73–87 had landed.
 - Remaining next useful slice was real-phone validation via `npm run qa:phone-touch` and manual review at `http://100.85.92.106:5173/`.
 
-See [`../../sprints/sprint-09-trust-retrieval-accessibility.md`](../../sprints/sprint-09-trust-retrieval-accessibility.md) for the maintained Sprint 9 state.
+Sprint 9 has since been removed from the active planner and preserved only as archived evidence at [`archive/sprint-09-trust-retrieval-accessibility-archived.md`](archive/sprint-09-trust-retrieval-accessibility-archived.md).

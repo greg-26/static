@@ -1,7 +1,7 @@
 # Sprint 9 — PM/QA trust, retrieval, and accessibility follow-ups
 
-Status: **blocked** — validation remaining
-Owner: sprint implementation agent for implementation slices, sprint planner for sequencing, PMT for product priority.
+Status: **superseded/archived** — removed from active website planner on 2026-07-22 at Alex's request. Historical implementation evidence is preserved below; no active sprint work should point here.
+Owner: historical sprint implementation agent for implementation slices, sprint planner for sequencing, PMT for product priority.
 
 ## Goal
 
@@ -9,11 +9,11 @@ Close remaining product-vision and QA findings that affect trust, retrieval, acc
 
 ## Required reading for this sprint
 
-- [`../../VISION.md`](../../VISION.md)
-- [`../../DESIGN_GUIDELINES.md`](../../DESIGN_GUIDELINES.md)
-- [`../../CODING_STANDARDS.md`](../../CODING_STANDARDS.md)
-- [`../working-style.md`](../working-style.md)
-- Feedback links in [`../vision-execution/review-index.md`](../vision-execution/review-index.md) only when the task touches that area.
+- [`../../../VISION.md`](../../../VISION.md)
+- [`../../../DESIGN_GUIDELINES.md`](../../../DESIGN_GUIDELINES.md)
+- [`../../../CODING_STANDARDS.md`](../../../CODING_STANDARDS.md)
+- [`../../working-style.md`](../../working-style.md)
+- Feedback links in [`../review-index.md`](../review-index.md) only when the task touches that area.
 
 ## Current state
 
@@ -28,7 +28,7 @@ Landed coverage:
 - `npm run qa:phone-touch` against `http://100.85.92.106:5173/`
 - `npm run build`
 
-## Open scope
+## Former open scope
 
 1. Finish real-phone validation at `http://100.85.92.106:5173/`, recording pass/fail findings for:
    - Discover availability/dropdown selected-state readability, including the local chevron/row-height fix.
@@ -40,16 +40,16 @@ Landed coverage:
 2. Record a dated validation report/PMT note confirming whether the local chevron/row-height fix is good enough. Do not close upstream/original issues from automation; the working fork has no matching Sprint 9 issue.
 3. Convert any remaining concrete failures into Sprint 10 or another focused fix sprint. Do not reopen completed work without evidence.
 
-## Acceptance
+## Former acceptance
 
 - The local dropdown/mobile polish fix is validated on a real phone, or Alex/PMT explicitly defers it with a linked decision.
 - Real-phone checklist has a dated report or PMT note with pass/fail evidence.
 - Any remaining failure has a linked next sprint or explicit defer decision.
 - Dev server remains reviewable by Alex.
 
-## Developer notes for next sprint
+## Historical developer notes
 
-Add brief notes here only if they are needed to choose or clarify Sprint 10. Link evidence rather than pasting long findings.
+Preserved from the active sprint file for audit/history. Do not treat these as next-work instructions.
 
 - 2026-07-19 15:09 Europe/Madrid — SDE reran `npm run qa:phone-touch` against the reachable Vite server at `http://100.85.92.106:5173/`; all automated readiness checks passed. Remaining blocker is real-phone human/QA validation of the manual checklist items before Sprint 9 can close.
 - 2026-07-19 20:07 Europe/Madrid — PE reviewed latest PMT/QA evidence plus open GitHub issues. Human feedback in [issue #6](https://github.com/ohanamovies/static/issues/6) is now the next Sprint 9 fix before closure; keep the slice limited to chevron vertical centering and two-line dropdown row fit.

@@ -9,7 +9,7 @@ Users can tell which country Ohana's provider availability represents and which 
 
 ## Why now
 
-Working-fork issues [#1](https://github.com/greg-26/static/issues/1) and [#2](https://github.com/greg-26/static/issues/2) are open and both affect trust in the same Where-to-watch surface. The work is small, user-visible, and independent of Sprint 9's phone-validation blocker.
+Working-fork issues [#1](https://github.com/greg-26/static/issues/1) and [#2](https://github.com/greg-26/static/issues/2) are open and both affect trust in the same Where-to-watch surface. The work is small, user-visible, and already implemented as the first issue-driven provider trust slice.
 
 ## Source requirements
 

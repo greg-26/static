@@ -5,7 +5,7 @@ Focused sprint files live here so agents read only the slice they are working on
 ## Status
 
 - Current planning status: issue-driven website roadmap refreshed for open working-fork issues (#6, #7, #8, #9, #10, #11, #12), with Alex's post-Sprint-013 additions mapped into focused follow-up sprints.
-- Current implementation phase: Sprint 10 is implemented and verified; Sprint 9 remains blocked on real-phone validation/PMT decision.
+- Current implementation phase: Sprint 10 is implemented and verified; Sprint 9 has been removed from the active planner and archived as historical evidence.
 - Next executable sprint: Sprint 13 — Search recents autocomplete polish for issues #8 and #9, followed by Sprint 14 for issue #10.
 - Latest planning update: 2026-07-22.
 
@@ -13,8 +13,7 @@ Focused sprint files live here so agents read only the slice they are working on
 
 | Sprint | Outcome | Status | Depends on |
 | --- | --- | --- | --- |
-| 9 | PM/QA trust, retrieval, accessibility, and phone-touch validation follow-ups. | `blocked` — automated readiness green; local dropdown/mobile polish needs real-phone validation. No matching issue exists on the working fork, so closure is blocked on validation evidence/PMT decision. | Earlier redesign implementation slices |
-| 10 | Make Where-to-watch country/source context explicit with Spain read-only provider settings and JustWatch/TMDB attribution. | `complete` — implemented and verified 2026-07-22; addresses working-fork issues #1 and #2. | Alex escalation from 2026-07-21 planning run; no code dependency on Sprint 9 validation |
+| 10 | Make Where-to-watch country/source context explicit with Spain read-only provider settings and JustWatch/TMDB attribution. | `complete` — implemented and verified 2026-07-22; addresses working-fork issues #1 and #2. | Alex escalation from 2026-07-21 planning run |
 | 11 | Integrate the Ohana API into movie details for overview, cast, and collection context. | `ready/backlog` — addresses the movie-detail API foundation for issue #6, but is temporarily behind Alex's latest non-API polish requests. | Sprint 10 complete |
 | 12 | Finish API-enriched detail surfaces for TV seasons and API-state hardening. | `proposed` — completes issue #6 after Sprint 11 foundation. | Sprint 11 complete |
 | 13 | Convert Search recent-search chips into focus-gated autocomplete suggestions and align recent/result row radii. | `ready` — addresses latest non-API Search/recents issues #8 and #9. | Sprint 10 complete; independent of API Sprints 11/12 |
@@ -24,7 +23,6 @@ Focused sprint files live here so agents read only the slice they are working on
 
 ## Sprint files
 
-- Sprint 9: [`sprint-09-trust-retrieval-accessibility.md`](sprint-09-trust-retrieval-accessibility.md)
 - Sprint 10: [`sprint-010-where-to-watch-country-context.md`](sprint-010-where-to-watch-country-context.md)
 - Sprint 11: [`sprint-011-api-detail-foundation.md`](sprint-011-api-detail-foundation.md)
 - Sprint 12: [`sprint-012-api-tv-seasons-hardening.md`](sprint-012-api-tv-seasons-hardening.md)
@@ -37,7 +35,7 @@ Focused sprint files live here so agents read only the slice they are working on
 
 - Working-fork issues (`origin`, currently `greg-26/static`) are the active issue tracker for agent-driven work.
 - Upstream/original issues are not touched by automation unless Alex explicitly asks.
-- This planning run treats Alex's issue-driven request as explicit escalation to make Sprint 10 executable despite Sprint 9's real-phone validation blocker.
+- Sprint 9 was removed from the active planner on 2026-07-22 at Alex's request; its historical implementation evidence is archived at [`../docs/vision-execution/archive/sprint-09-trust-retrieval-accessibility-archived.md`](../docs/vision-execution/archive/sprint-09-trust-retrieval-accessibility-archived.md).
 - Sprint 10 assumes Spain-only provider availability until scraper/data inspection proves multi-country support.
 - Sprint 11 assumes the deployed Ohana API title endpoint can be consumed read-only by the static website with graceful fallback to existing catalog fields.
 - Sprint 12 keeps TV season rendering separate from the first API integration slice so the movie-detail page remains reviewable after Sprint 11.
@@ -49,7 +47,6 @@ Focused sprint files live here so agents read only the slice they are working on
 
 ## Open questions
 
-- Sprint 9 closure: real-phone validation or PMT decision is still needed for the local dropdown/mobile polish fix. Recommended default: leave Sprint 9 blocked and do not let it block issue-driven Sprint 10.
 - API endpoint configuration: use production API by default or an environment-configured base URL? Recommended default: add a small config constant/env fallback and keep local development overrideable.
 - API payload limits: cast/collection/seasons may be long. Recommended default: render compact previews first, with progressive disclosure only if the data volume demands it.
 - Search recents autocomplete semantics: prefer an input-attached, focus-gated suggestion list over permanent chips; keep mobile keyboard behavior from prior Search polish intact.
@@ -66,7 +63,6 @@ The current website issue tranche is complete when:
 - Sprint 11 and Sprint 12 API enrichment are implemented and verified, and issue #6 is commented and closed by the implementation workflow when fully satisfied.
 - Sprint 15 provider settings/custom-source ownership is implemented and verified, and issue #11 is commented and closed by the implementation workflow when fully satisfied.
 - Sprint 16 provider availability grouping/icons is implemented and verified, and issue #12 is commented and closed by the implementation workflow when fully satisfied or left open with an API contract blocker.
-- Sprint 9 validation evidence is accepted or explicitly deferred by PMT/Alex.
 - The dev server remains reviewable for Alex over Tailscale after implementation slices.
 
 ## Maintenance rules
