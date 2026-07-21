@@ -14,14 +14,19 @@ The API intentionally hides TMDB behind an Ohana-owned response schema. Clients 
   ```
 
   Wrangler prints the local Worker URL; use that as the API base.
-- **Deployed API:** deploy the Worker after replacing the placeholder KV namespace IDs and setting the TMDB secret for the target environment:
+- **Deployed API:** pushes to `origin/main` that touch `api/**` deploy the production Worker through GitHub Actions after typecheck, tests, and Wrangler dry-run pass. Manual dispatch of **Deploy API Worker** can deploy either `production` or `development`.
+
+  Current Workers URLs:
+
+  - Production: `https://ohanamovies-api.ohanamovies-api.workers.dev`
+  - Development: `https://ohanamovies-api-development.ohanamovies-api.workers.dev`
+
+  Manual local deploys are still available when needed:
 
   ```sh
   npx wrangler deploy --env development
   npx wrangler deploy --env production
   ```
-
-  The deployed Worker URL is the API base. A push to `origin/main` does not currently deploy this Worker automatically; deployment wiring is tracked as follow-up planning.
 
 ## Endpoint
 
@@ -146,7 +151,7 @@ Configuration is in `wrangler.toml`:
 - `TMDB_BASE_URL` / `TMDB_TIMEOUT_MS` — TMDB integration settings.
 - `CORS_ALLOWED_ORIGINS` — deployment input for the future CORS allowlist. The Worker does not enforce CORS yet.
 
-The committed KV namespace IDs and CORS origins are placeholders until real Cloudflare resources and website origins are chosen.
+Development and production use real Cloudflare KV namespace IDs for `TITLE_CACHE`. The top-level local namespace ID remains a dry-run/local placeholder.
 
 ## Environment setup
 
@@ -159,31 +164,25 @@ The committed KV namespace IDs and CORS origins are placeholders until real Clou
 
 ### Development
 
-Before deploying with `--env development`:
-
-1. Create a development KV namespace for `TITLE_CACHE`.
-2. Replace `env.development.kv_namespaces[0].id` in `wrangler.toml`.
-3. Set the development TMDB secret:
-
-   ```sh
-   npx wrangler secret put TMDB_API_KEY --env development
-   ```
-
-4. Replace the placeholder `CORS_ALLOWED_ORIGINS` value with the development website origin when CORS is implemented.
+- Worker name: `ohanamovies-api-development`.
+- URL: `https://ohanamovies-api-development.ohanamovies-api.workers.dev`.
+- `TITLE_CACHE` uses the Cloudflare KV namespace `development-TITLE_CACHE`.
+- `ALLOW_CACHE_OVERRIDES=true` for safe operator testing.
+- Required Worker secret: `TMDB_API_KEY` or `TMDB_ACCESS_TOKEN`.
 
 ### Production
 
-Before deploying with `--env production`:
+- Worker name: `ohanamovies-api`.
+- URL: `https://ohanamovies-api.ohanamovies-api.workers.dev`.
+- `TITLE_CACHE` uses the Cloudflare KV namespace `production-TITLE_CACHE`.
+- `ALLOW_CACHE_OVERRIDES=false`; keep it disabled unless an intentional production cache operation requires otherwise.
+- Required Worker secret: `TMDB_API_KEY` or `TMDB_ACCESS_TOKEN`.
 
-1. Create a production KV namespace for `TITLE_CACHE`.
-2. Replace `env.production.kv_namespaces[0].id` in `wrangler.toml`.
-3. Set the production TMDB secret:
+## Deployment automation
 
-   ```sh
-   npx wrangler secret put TMDB_API_KEY --env production
-   ```
+GitHub Actions workflow: `.github/workflows/api-worker.yml`.
 
-4. Replace the placeholder `CORS_ALLOWED_ORIGINS` value with the production website origin when CORS is implemented.
-5. Keep `ALLOW_CACHE_OVERRIDES=false` unless an intentional production cache operation requires otherwise.
-
-Deployment is intentionally not part of the sprint implementation flow.
+- `push` to `main` with changes under `api/**` or the workflow file deploys `production`.
+- `workflow_dispatch` deploys the selected environment: `production` or `development`.
+- The workflow runs `npm ci`, `npm run typecheck`, `npm test`, `npm run wrangler:dry-run`, syncs the TMDB secret into the target Cloudflare Worker environment, then runs `wrangler deploy`.
+- Required GitHub Actions secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, and either `TMDB_API_KEY` or `TMDB_ACCESS_TOKEN`.

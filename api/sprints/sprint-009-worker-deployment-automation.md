@@ -2,7 +2,7 @@
 
 ## Status
 
-planned
+complete
 
 ## Outcome
 
@@ -51,12 +51,12 @@ The API implementation is complete, but deployment is still manual. The reposito
 
 ## Acceptance criteria
 
-- [ ] `wrangler.toml` no longer contains placeholder KV namespace IDs for deployed environments.
-- [ ] Required Cloudflare and TMDB credentials are configured as GitHub Actions secrets or environment secrets.
-- [ ] A GitHub Actions workflow deploys the API Worker on relevant `api/**` changes and supports manual dispatch.
-- [ ] Deployment verification is recorded with the deployed Worker URL and a representative `GET /titles/{imdbId}` check.
-- [ ] API documentation lists the resulting development and production API base URLs and the deployment path.
-- [ ] No API implementation behavior changes are included in this sprint unless needed to unblock deployment and explicitly documented.
+- [x] `wrangler.toml` no longer contains placeholder KV namespace IDs for deployed environments.
+- [x] Required Cloudflare and TMDB credentials are configured as GitHub Actions secrets or environment secrets.
+- [x] A GitHub Actions workflow deploys the API Worker on relevant `api/**` changes and supports manual dispatch.
+- [x] Deployment verification is recorded with the deployed Worker URL and a representative `GET /titles/{imdbId}` check.
+- [x] API documentation lists the resulting development and production API base URLs and the deployment path.
+- [x] No API implementation behavior changes are included in this sprint unless needed to unblock deployment and explicitly documented.
 
 ## Verification commands
 
@@ -76,19 +76,31 @@ curl -i "$OHANA_API_BASE_URL/titles/tt0133093"
 
 ## Blockers / required inputs
 
-- Real Cloudflare account ID and deploy-capable API token.
-- Real development and production KV namespace IDs.
-- TMDB API key or access token for each deployed environment.
-- Decision on production deploy policy: direct deploy from `main` or protected/manual approval.
-- Final public API base URL(s), including any custom domain decision.
+None for the first Workers.dev deployment.
+
+Resolved inputs:
+
+- Cloudflare account ID/API token are available as GitHub Actions secrets and local Wrangler auth was sufficient for provisioning.
+- Created real KV namespaces: `development-TITLE_CACHE` and `production-TITLE_CACHE`.
+- `TMDB_API_KEY` is configured as a GitHub Actions secret and as a Cloudflare Worker secret for development and production.
+- Production deploy policy: direct deploy from `main` on `api/**` pushes after checks pass; manual dispatch can deploy production or development.
+- API base URLs:
+  - Production: `https://ohanamovies-api.ohanamovies-api.workers.dev`
+  - Development: `https://ohanamovies-api-development.ohanamovies-api.workers.dev`
+
+Custom domains remain out of scope.
 
 ## Handoff
 
-The implementation agent must report:
+Implementation report:
 
-- Cloudflare resources created or reused.
-- GitHub secrets/variables configured, without exposing secret values.
-- Workflow file added and trigger behavior.
-- Deployed API URL(s).
-- Verification commands and deployed endpoint check results.
-- Any remaining manual deploy or DNS steps.
+- Cloudflare resources created: `development-TITLE_CACHE`, `production-TITLE_CACHE`.
+- GitHub secrets configured/reused: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `TMDB_API_KEY`.
+- Cloudflare Worker secrets configured: `TMDB_API_KEY` for development and production.
+- Workflow added: `.github/workflows/api-worker.yml`; `main` + `api/**` pushes deploy production, `workflow_dispatch` can deploy production or development.
+- Deployed API URLs:
+  - Production: `https://ohanamovies-api.ohanamovies-api.workers.dev`
+  - Development: `https://ohanamovies-api-development.ohanamovies-api.workers.dev`
+- Deployment-required API code fix: the TMDB client now wraps the default Worker `fetch` instead of storing the unbound global function; this fixed deployed Worker `TypeError` failures without changing the public API schema.
+- Verification: `npm run typecheck`, `npm test`, `npm run wrangler:dry-run`, `git diff --check`, and deployed `GET /titles/tt0133093` passed.
+- Remaining manual steps: none for Workers.dev deployment; custom domains/DNS remain future work.

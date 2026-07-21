@@ -93,7 +93,7 @@ describe("TMDB client", () => {
 
     const result = await createTmdbClient({ apiKey: "secret-key", fetch: fetcher }).fetchTitleByImdbId("tt0133093");
 
-    expect(result).toEqual({ ok: false, error: { kind: "upstream_failure", message: "TMDB request failed." } });
+    expect(result).toEqual({ ok: false, error: { kind: "upstream_failure", message: "TMDB request failed.", status: 503 } });
   });
 
   it("maps aborted fetches/timeouts to an internal upstream failure", async () => {
@@ -106,7 +106,7 @@ describe("TMDB client", () => {
 
     const result = await createTmdbClient({ apiKey: "test-key", timeoutMs: 1, fetch: fetcher }).fetchTitleByImdbId("tt0133093");
 
-    expect(result).toEqual({ ok: false, error: { kind: "upstream_failure", message: "TMDB request failed." } });
+    expect(result).toEqual({ ok: false, error: { kind: "upstream_failure", message: "TMDB request failed.", cause: "AbortError" } });
   });
 
   it("keeps required movie data when optional collection detail fetch fails", async () => {

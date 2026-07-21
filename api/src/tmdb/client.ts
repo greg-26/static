@@ -13,6 +13,8 @@ export type TmdbClientErrorKind = "configuration" | "not_found" | "upstream_fail
 export interface TmdbClientError {
   kind: TmdbClientErrorKind;
   message: string;
+  status?: number;
+  cause?: string;
 }
 
 export type TmdbTitleLookupResult =
@@ -47,7 +49,7 @@ export class TmdbClient {
     this.accessToken = emptyToUndefined(config.accessToken);
     this.baseUrl = (config.baseUrl ?? DEFAULT_TMDB_BASE_URL).replace(/\/$/, "");
     this.timeoutMs = config.timeoutMs ?? DEFAULT_TIMEOUT_MS;
-    this.fetcher = config.fetch ?? fetch;
+    this.fetcher = config.fetch ?? ((input, init) => fetch(input, init));
   }
 
   async fetchTitleByImdbId(imdbId: string): Promise<TmdbTitleLookupResult> {
@@ -132,12 +134,12 @@ export class TmdbClient {
         if (response.status === 404) {
           return options.optional ? { ok: false, error: { kind: "not_found", message: "Optional TMDB resource not found." } } : failure("not_found", "Title not found.");
         }
-        return failure("upstream_failure", "TMDB request failed.");
+        return failure("upstream_failure", "TMDB request failed.", response.status);
       }
 
       return { ok: true, data: (await response.json()) as T };
-    } catch {
-      return failure("upstream_failure", "TMDB request failed.");
+    } catch (error) {
+      return failure("upstream_failure", "TMDB request failed.", undefined, error instanceof Error ? error.name : typeof error);
     } finally {
       clearTimeout(timeout);
     }
@@ -152,8 +154,8 @@ function firstId(results: Array<{ id: number }> | null | undefined): number | un
   return results?.[0]?.id;
 }
 
-function failure(kind: TmdbClientErrorKind, message: string): { ok: false; error: TmdbClientError } {
-  return { ok: false, error: { kind, message } };
+function failure(kind: TmdbClientErrorKind, message: string, status?: number, cause?: string): { ok: false; error: TmdbClientError } {
+  return { ok: false, error: { kind, message, ...(status === undefined ? {} : { status }), ...(cause === undefined ? {} : { cause }) } };
 }
 
 function emptyToUndefined(value: string | undefined): string | undefined {

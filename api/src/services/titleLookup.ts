@@ -5,7 +5,7 @@ import { mapTmdbMovieToTitle, mapTmdbSeriesToTitle } from "../tmdb/title-mapper"
 
 export type TitleLookupErrorKind = "not_found" | "upstream_failure";
 
-export type TitleLookupResult = { ok: true; title: TitleResponse } | { ok: false; error: { kind: TitleLookupErrorKind } };
+export type TitleLookupResult = { ok: true; title: TitleResponse } | { ok: false; error: { kind: TitleLookupErrorKind; upstreamStatus?: number; upstreamCause?: string } };
 
 export interface TitleLookupClient {
   fetchTitleByImdbId(imdbId: string): Promise<TmdbTitleLookupResult>;
@@ -33,7 +33,7 @@ export async function lookupTitle(imdbId: string, client: TitleLookupClient, opt
 
   if (!result.ok) {
     if (staleTitle && result.error.kind !== "not_found") return { ok: true, title: staleTitle };
-    return { ok: false, error: { kind: result.error.kind === "not_found" ? "not_found" : "upstream_failure" } };
+    return { ok: false, error: { kind: result.error.kind === "not_found" ? "not_found" : "upstream_failure", upstreamStatus: result.error.status, upstreamCause: result.error.cause } };
   }
 
   const title = result.mediaType === "movie" ? mapTmdbMovieToTitle(result.data) : mapTmdbSeriesToTitle(result.data);

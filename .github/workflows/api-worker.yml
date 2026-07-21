@@ -1,0 +1,84 @@
+name: Deploy API Worker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - api/**
+      - .github/workflows/api-worker.yml
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Cloudflare Worker environment to deploy
+        type: choice
+        required: true
+        default: production
+        options:
+          - production
+          - development
+
+concurrency:
+  group: api-worker-${{ github.ref }}-${{ github.event.inputs.environment || 'production' }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve deploy target
+        id: target
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "environment=${{ github.event.inputs.environment }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "environment=production" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: api/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Wrangler dry-run
+        run: npm run wrangler:dry-run
+
+      - name: Sync TMDB Worker secret
+        run: |
+          set -euo pipefail
+          if [ -n "${TMDB_API_KEY:-}" ]; then
+            printf '%s' "$TMDB_API_KEY" | npx wrangler secret put TMDB_API_KEY --env "${{ steps.target.outputs.environment }}"
+          elif [ -n "${TMDB_ACCESS_TOKEN:-}" ]; then
+            printf '%s' "$TMDB_ACCESS_TOKEN" | npx wrangler secret put TMDB_ACCESS_TOKEN --env "${{ steps.target.outputs.environment }}"
+          else
+            echo "Missing TMDB_API_KEY or TMDB_ACCESS_TOKEN GitHub secret." >&2
+            exit 1
+          fi
+
+      - name: Deploy Worker
+        run: npx wrangler deploy --env "${{ steps.target.outputs.environment }}"

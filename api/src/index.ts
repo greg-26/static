@@ -71,7 +71,7 @@ async function handleRequest(request: Request, env: ApiEnv): Promise<Response> {
     return errorResponse("title_not_found", "Title not found.", 404);
   }
 
-  console.error("title lookup failed", { imdbId, errorKind: result.error.kind });
+  console.error("title lookup failed", { imdbId, errorKind: result.error.kind, upstreamStatus: result.error.upstreamStatus, upstreamCause: result.error.upstreamCause });
   return errorResponse("unexpected_failure", "Unexpected failure.", 500);
 }
 
