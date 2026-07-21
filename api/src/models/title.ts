@@ -43,6 +43,17 @@ export interface CollectionSummary {
   items: CollectionItemSummary[];
 }
 
+export interface SeasonSummary {
+  id: string;
+  seasonNumber: number;
+  name: string;
+  episodeCount: number | null;
+  airDate: string | null;
+  year: number | null;
+  overview: string | null;
+  poster: ImageAsset | null;
+}
+
 export interface StreamingProvider {
   id: string;
   name: string;
@@ -83,5 +94,7 @@ export interface TitleResponse {
     backdrops: ImageAsset[];
   };
   collection: CollectionSummary | null;
+  seasonCount?: number | null;
+  seasons?: SeasonSummary[];
   streamingProviders: StreamingProviders | null;
 }

@@ -77,6 +77,8 @@ describe("TMDB client", () => {
         id: 1399,
         name: "Game of Thrones",
         external_ids: { imdb_id: "tt0944947" },
+        number_of_seasons: 8,
+        seasons: [{ id: 3625, season_number: 1, name: "Season 1", episode_count: 10, air_date: "2011-04-17", poster_path: "/season.jpg" }],
         aggregate_credits: { cast: [], crew: [] },
         images: { posters: [], backdrops: [] },
         "watch/providers": { results: { GB: { flatrate: [] } } },
@@ -91,6 +93,8 @@ describe("TMDB client", () => {
       data: {
         id: 1399,
         name: "Game of Thrones",
+        number_of_seasons: 8,
+        seasons: [{ id: 3625, season_number: 1, name: "Season 1" }],
         watch: { results: { GB: { flatrate: [] } } },
       },
     });

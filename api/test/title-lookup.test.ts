@@ -78,6 +78,8 @@ describe("title lookup service", () => {
           external_ids: { imdb_id: "tt0944947" },
           name: "Game of Thrones",
           first_air_date: "2011-04-17",
+          number_of_seasons: 8,
+          seasons: [{ id: 3625, season_number: 1, name: "Season 1", episode_count: 10, air_date: "2011-04-17", poster_path: "/season.jpg" }],
           episode_run_time: [60],
           genres: [],
           aggregate_credits: { cast: [], crew: [] },
@@ -86,7 +88,16 @@ describe("title lookup service", () => {
       }),
     );
 
-    expect(result).toMatchObject({ ok: true, title: { imdbId: "tt0944947", type: "series", title: "Game of Thrones" } });
+    expect(result).toMatchObject({
+      ok: true,
+      title: {
+        imdbId: "tt0944947",
+        type: "series",
+        title: "Game of Thrones",
+        seasonCount: 8,
+        seasons: [{ id: "3625", seasonNumber: 1, name: "Season 1", episodeCount: 10, airDate: "2011-04-17", year: 2011 }],
+      },
+    });
   });
 
   it("maps client not-found to service not-found", async () => {
@@ -120,8 +131,8 @@ describe("title lookup service", () => {
     const result = await lookupTitle("tt0133093", client(movieResult), { cache: binding, cacheTtlSeconds: 60, now: 1_000 });
 
     expect(result).toMatchObject({ ok: true, title: { title: "The Matrix" } });
-    expect(binding.get).toHaveBeenCalledWith("title:tt0133093:v2");
-    expect(binding.put).toHaveBeenCalledWith("title:tt0133093:v2", expect.any(String), { expirationTtl: 60 });
+    expect(binding.get).toHaveBeenCalledWith("title:tt0133093:v3");
+    expect(binding.put).toHaveBeenCalledWith("title:tt0133093:v3", expect.any(String), { expirationTtl: 60 });
   });
 
   it("passes localized request context to TMDB and localized cache keys", async () => {
@@ -143,8 +154,8 @@ describe("title lookup service", () => {
 
     expect(result).toMatchObject({ ok: true, title: { title: "Matrix", streamingProviders: { region: "ES", stream: [{ id: "8", name: "Netflix" }] } } });
     expect(lookupClient.fetchTitleByImdbId).toHaveBeenCalledWith("tt0133093", { language: "es", country: "ES" });
-    expect(binding.get).toHaveBeenCalledWith("title:tt0133093:v2:lang=es:country=ES");
-    expect(binding.put).toHaveBeenCalledWith("title:tt0133093:v2:lang=es:country=ES", expect.any(String), { expirationTtl: 60 });
+    expect(binding.get).toHaveBeenCalledWith("title:tt0133093:v3:lang=es:country=ES");
+    expect(binding.put).toHaveBeenCalledWith("title:tt0133093:v3:lang=es:country=ES", expect.any(String), { expirationTtl: 60 });
   });
 
   it("does not cache not-found or upstream failure results", async () => {
@@ -179,7 +190,7 @@ describe("title lookup service", () => {
     const result = await lookupTitle("tt0133093", lookupClient, { cache: binding });
 
     expect(result).toMatchObject({ ok: true, title: { title: "The Matrix" } });
-    expect(binding.get).toHaveBeenCalledWith("title:tt0133093:v2");
+    expect(binding.get).toHaveBeenCalledWith("title:tt0133093:v3");
     expect(lookupClient.fetchTitleByImdbId).toHaveBeenCalledWith("tt0133093", {});
     expect(binding.put).toHaveBeenCalled();
   });
@@ -233,7 +244,7 @@ describe("title lookup service", () => {
 
     expect(result).toMatchObject({ ok: true, title: { title: "The Matrix" } });
     expect(binding.get).not.toHaveBeenCalled();
-    expect(binding.put).toHaveBeenCalledWith("title:tt0133093:v2", expect.any(String), { expirationTtl: 60 });
+    expect(binding.put).toHaveBeenCalledWith("title:tt0133093:v3", expect.any(String), { expirationTtl: 60 });
   });
 
   it("bypass mode skips cache reads and writes", async () => {

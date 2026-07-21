@@ -237,7 +237,7 @@ describe("worker routing and errors", () => {
     expect(response.status).toBe(200);
     expect(await readJson(response)).toEqual(cachedTitle);
     expect(fetcher).not.toHaveBeenCalled();
-    expect(cache.get).toHaveBeenCalledWith("title:tt0133093:v2");
+    expect(cache.get).toHaveBeenCalledWith("title:tt0133093:v3");
   });
 
   it("uses localized cache keys for localized worker requests", async () => {
@@ -253,7 +253,7 @@ describe("worker routing and errors", () => {
     expect(response.status).toBe(200);
     expect(await readJson(response)).toEqual(cachedTitle);
     expect(fetcher).not.toHaveBeenCalled();
-    expect(cache.get).toHaveBeenCalledWith("title:tt0133093:v2:lang=es-ES:country=ES");
+    expect(cache.get).toHaveBeenCalledWith("title:tt0133093:v3:lang=es-ES:country=ES");
   });
 
   it("rejects cache override modes in production by default", async () => {

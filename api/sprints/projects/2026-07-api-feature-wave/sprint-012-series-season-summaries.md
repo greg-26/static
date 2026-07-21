@@ -2,7 +2,7 @@
 
 ## Status
 
-ready
+complete
 
 ## GitHub issues
 
@@ -72,13 +72,13 @@ The initial API intentionally used series-level data and did not expose seasons.
 
 ## Acceptance criteria
 
-- [ ] Series responses include season count.
-- [ ] Series responses include normalized season summaries with stable IDs/key details.
-- [ ] Missing season optional fields are handled safely.
-- [ ] Series cast/crew remains series-level, not season-derived.
-- [ ] Movie responses do not expose seasons as collections.
-- [ ] Tests cover season mapping and partial data.
-- [ ] API typecheck, tests, Wrangler dry-run, and `git diff --check` pass.
+- [x] Series responses include season count.
+- [x] Series responses include normalized season summaries with stable IDs/key details.
+- [x] Missing season optional fields are handled safely.
+- [x] Series cast/crew remains series-level, not season-derived.
+- [x] Movie responses do not expose seasons as collections.
+- [x] Tests cover season mapping and partial data.
+- [x] API typecheck, tests, Wrangler dry-run, and `git diff --check` pass.
 
 ## Required tests
 
@@ -112,3 +112,12 @@ The SDE agent must report:
 ## Dependencies unlocked
 
 - Sprint 013 can verify all feature-wave response additions together.
+
+## Completion evidence
+
+- Completed: 2026-07-21 by SDE implementation agent.
+- Public schema: series responses include `seasonCount` and `seasons[]`; each season has `id`, `seasonNumber`, `name`, `episodeCount`, `airDate`, `year`, `overview`, and `poster`. Movie responses omit season fields.
+- Specials handling: TMDB specials are preserved when present and identified by `seasonNumber: 0`.
+- Missing fields: optional season poster, overview, air date, and episode count map to `null`; missing names map to an empty string; invalid season summaries missing stable ID or season number are skipped.
+- Cache/schema note: title cache schema version moved to `v3` so existing cached bodies without season summaries are not reused.
+- Tests/checks: `npm run typecheck`, `npm test`, `npm run wrangler:dry-run`, and `git diff --check` passed locally.

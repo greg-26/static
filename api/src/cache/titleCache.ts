@@ -1,6 +1,6 @@
 import type { TitleResponse } from "../models/title";
 
-export const TITLE_CACHE_SCHEMA_VERSION = "v2";
+export const TITLE_CACHE_SCHEMA_VERSION = "v3";
 export const DEFAULT_TITLE_CACHE_TTL_SECONDS = 7 * 24 * 60 * 60;
 
 export type TitleCacheMode = "normal" | "refresh" | "bypass";

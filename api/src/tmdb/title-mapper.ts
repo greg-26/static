@@ -1,4 +1,4 @@
-import type { CollectionItemSummary, CollectionSummary, ImageAsset, PersonCredit, StreamingProvider, StreamingProviders, TitleResponse } from "../models/title";
+import type { CollectionItemSummary, CollectionSummary, ImageAsset, PersonCredit, SeasonSummary, StreamingProvider, StreamingProviders, TitleResponse } from "../models/title";
 import type {
   TmdbCreatedBy,
   TmdbCrewCredit,
@@ -8,6 +8,7 @@ import type {
   TmdbMovieForMapping,
   TmdbProvider,
   TmdbCollectionPart,
+  TmdbSeason,
   TmdbSeriesCastCredit,
   TmdbSeriesCastRole,
   TmdbSeriesForMapping,
@@ -45,6 +46,7 @@ export function mapTmdbMovieToTitle(movie: TmdbMovieForMapping, options: MapperO
 }
 
 export function mapTmdbSeriesToTitle(series: TmdbSeriesForMapping, options: MapperOptions = {}): TitleResponse {
+  const seasons = mapSeasons(series.seasons);
   return {
     imdbId: series.external_ids?.imdb_id ?? "",
     type: "series",
@@ -62,8 +64,29 @@ export function mapTmdbSeriesToTitle(series: TmdbSeriesForMapping, options: Mapp
     },
     artwork: mapArtwork(series.poster_path, series.backdrop_path, series.images),
     collection: null,
+    seasonCount: series.number_of_seasons ?? (series.seasons ? seasons.length : null),
+    seasons,
     streamingProviders: mapStreamingProviders(series.watch, options.providerRegion),
   };
+}
+
+function mapSeasons(seasons: TmdbSeason[] | null | undefined): SeasonSummary[] {
+  return [...(seasons ?? [])]
+    .filter((season) => season.id !== null && season.id !== undefined && season.season_number !== null && season.season_number !== undefined)
+    .sort((a, b) => (a.season_number as number) - (b.season_number as number))
+    .map((season) => {
+      const release = mapRelease(season.air_date);
+      return {
+        id: String(season.id),
+        seasonNumber: season.season_number as number,
+        name: season.name ?? "",
+        episodeCount: season.episode_count ?? null,
+        airDate: release.date,
+        year: release.year,
+        overview: season.overview ?? null,
+        poster: season.poster_path ? mapImagePath(season.poster_path, "poster") : null,
+      };
+    });
 }
 
 function mapRelease(date: string | null | undefined): TitleResponse["release"] {

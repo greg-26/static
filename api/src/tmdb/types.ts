@@ -90,6 +90,8 @@ export interface TmdbSeriesForMapping {
   original_name?: string | null;
   overview?: string | null;
   first_air_date?: string | null;
+  number_of_seasons?: number | null;
+  seasons?: TmdbSeason[] | null;
   episode_run_time?: number[] | null;
   genres?: TmdbGenre[] | null;
   vote_average?: number | null;
@@ -100,6 +102,16 @@ export interface TmdbSeriesForMapping {
   aggregate_credits?: { cast?: TmdbSeriesCastCredit[] | null; crew?: TmdbCrewCredit[] | null } | null;
   images?: { posters?: TmdbImage[] | null; backdrops?: TmdbImage[] | null } | null;
   watch?: TmdbWatchProviders | null;
+}
+
+export interface TmdbSeason {
+  id?: number | null;
+  season_number?: number | null;
+  name?: string | null;
+  overview?: string | null;
+  episode_count?: number | null;
+  air_date?: string | null;
+  poster_path?: string | null;
 }
 
 export interface TmdbFindResult {

@@ -51,7 +51,7 @@ Defaults:
 
 - Without `lang`, TMDB default-language metadata is requested.
 - Without `country`, provider mapping preserves the existing default region behavior (`US`).
-- Cache keys vary by normalized `lang` and `country`, so localized responses do not share cached bodies with default requests.
+- Cache keys use schema version `v3` and vary by normalized `lang` and `country`, so localized responses do not share cached bodies with default requests.
 
 Cache operator modes are available outside production by default:
 
@@ -134,7 +134,12 @@ Movie `collection` is `null` when TMDB has no collection. When present, `collect
 - `imdbId` — item IMDb title ID when TMDB external IDs resolve it; otherwise `null`.
 - `title`, `release`, `poster`, and `order` — display data for CX collection lists.
 
-Series always return `collection: null`; seasons are a separate series concern.
+Series always return `collection: null`; seasons are a separate series concern. Series responses include:
+
+- `seasonCount` — TMDB's official number of seasons when available; otherwise the number of returned season summaries, or `null`.
+- `seasons` — normalized season summaries in season-number order. Each summary has stable string `id`, `seasonNumber`, `name`, `episodeCount`, `airDate`, `year`, `overview`, and `poster`.
+
+TMDB specials are preserved when TMDB returns them and can be identified by `seasonNumber: 0`. Missing optional season fields are returned as `null` or empty strings according to the field type. Movie responses omit `seasonCount` and `seasons`.
 
 
 ## Errors

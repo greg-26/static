@@ -61,6 +61,12 @@ const seriesFixture: TmdbSeriesForMapping = {
   original_name: "Game of Thrones",
   overview: "Nine noble families fight for control of Westeros.",
   first_air_date: "2011-04-17",
+  number_of_seasons: 8,
+  seasons: [
+    { id: 3624, season_number: 0, name: "Specials", overview: "Behind the scenes.", episode_count: 272, air_date: "2010-12-05", poster_path: "/got-specials.jpg" },
+    { id: 3625, season_number: 1, name: "Season 1", overview: "Winter is coming.", episode_count: 10, air_date: "2011-04-17", poster_path: "/got-s1.jpg" },
+    { id: 3626, season_number: 2, name: "Season 2", overview: "The War of the Five Kings.", episode_count: 10, air_date: "2012-04-01", poster_path: null },
+  ],
   episode_run_time: [60],
   genres: [{ id: 18, name: "Drama" }],
   vote_average: 8.4,
@@ -193,7 +199,40 @@ describe("TMDB title mappers", () => {
         creators: [{ id: "9813", name: "David Benioff", roles: ["Creator"] }],
       },
       collection: null,
+      seasonCount: 8,
+      seasons: [
+        { id: "3624", seasonNumber: 0, name: "Specials", episodeCount: 272, airDate: "2010-12-05", year: 2010, overview: "Behind the scenes." },
+        { id: "3625", seasonNumber: 1, name: "Season 1", episodeCount: 10, airDate: "2011-04-17", year: 2011, overview: "Winter is coming." },
+        { id: "3626", seasonNumber: 2, name: "Season 2", episodeCount: 10, airDate: "2012-04-01", year: 2012, overview: "The War of the Five Kings.", poster: null },
+      ],
       streamingProviders: { region: "GB", stream: [{ id: "29", name: "Sky" }], rent: [], buy: [] },
+    });
+    expect(title.seasons?.[1]?.poster?.sizes.medium).toBe("https://image.tmdb.org/t/p/w342/got-s1.jpg");
+  });
+
+  it("maps partial series season data without crashing", () => {
+    const title = mapTmdbSeriesToTitle({
+      external_ids: { imdb_id: "tt0944947" },
+      name: "Game of Thrones",
+      number_of_seasons: null,
+      seasons: [
+        { id: 2, season_number: 2, name: null, overview: null, episode_count: null, air_date: "", poster_path: null },
+        { id: 1, season_number: 1, name: "Season 1", air_date: null },
+        { id: null, season_number: 3, name: "Invalid missing id" },
+        { id: 4, season_number: null, name: "Invalid missing season number" },
+      ],
+      aggregate_credits: { cast: [], crew: [] },
+      images: { posters: [], backdrops: [] },
+    });
+
+    expect(title).toMatchObject({
+      type: "series",
+      seasonCount: 2,
+      seasons: [
+        { id: "1", seasonNumber: 1, name: "Season 1", episodeCount: null, airDate: null, year: null, overview: null, poster: null },
+        { id: "2", seasonNumber: 2, name: "", episodeCount: null, airDate: null, year: null, overview: null, poster: null },
+      ],
+      collection: null,
     });
   });
 
@@ -228,5 +267,7 @@ describe("TMDB title mappers", () => {
       collection: null,
       streamingProviders: null,
     });
+    expect(title).not.toHaveProperty("seasons");
+    expect(title).not.toHaveProperty("seasonCount");
   });
 });

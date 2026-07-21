@@ -123,6 +123,9 @@ Example sections include:
 - collection
   - movies may include `collection.items[]` with stable string `id`, `imdbId` when resolvable, `title`, `release`, `poster`, and `order`
   - series use `collection: null`; seasons are not collections
+- seasonCount and seasons
+  - series include `seasonCount` and normalized `seasons[]` with `id`, `seasonNumber`, `name`, `episodeCount`, `airDate`, `year`, `overview`, and `poster`
+  - TMDB specials are preserved when TMDB returns them; clients can identify them with `seasonNumber: 0`
 - streaming providers
 
 Clients should never depend on TMDB field names.
@@ -134,10 +137,10 @@ Clients should never depend on TMDB field names.
 Cache key:
 
 ```
-title:{imdbId}:v2
-title:{imdbId}:v2:lang={lang}
-title:{imdbId}:v2:country={country}
-title:{imdbId}:v2:lang={lang}:country={country}
+title:{imdbId}:v3
+title:{imdbId}:v3:lang={lang}
+title:{imdbId}:v3:country={country}
+title:{imdbId}:v3:lang={lang}:country={country}
 ```
 
 Guidelines:
@@ -228,7 +231,7 @@ These should not complicate the initial implementation.
 - Default cache TTL: 7 days, configurable by Worker environment.
 - Manual cache invalidation: out of initial scope; use restricted `cache=refresh` for operator refreshes.
 - Background refresh vs lazy refresh: initial implementation uses lazy refresh with stale fallback for normal requests.
-- Response schema versioning: cache keys currently use `title:{imdbId}:v2` and typed contracts, without a response-body `schemaVersion` field.
+- Response schema versioning: cache keys currently use `title:{imdbId}:v3` and typed contracts, without a response-body `schemaVersion` field.
 
 ---
 

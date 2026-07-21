@@ -21,8 +21,8 @@
 |---|---|---|---|
 | [010](projects/2026-07-api-feature-wave/sprint-010-localization-and-provider-region.md) | `GET /titles/{imdbId}` accepts `lang` and `country`, returns localized title metadata/provider country data, and documents the query contract. | complete | initial API implementation |
 | [011](projects/2026-07-api-feature-wave/sprint-011-collection-items.md) | Movie collection responses include enough normalized collection item details to render the collection list, especially item IMDb IDs. | complete | 010 |
-| [012](projects/2026-07-api-feature-wave/sprint-012-series-season-summaries.md) | Series responses include season count and normalized season summaries with stable IDs/key details for CX season lists. | ready | 010 |
-| [013](projects/2026-07-api-feature-wave/sprint-013-feature-wave-closure.md) | README/specs, tests, deployed behavior, and issue handoff evidence are checked across the feature wave. | proposed | 010, 011, 012 |
+| [012](projects/2026-07-api-feature-wave/sprint-012-series-season-summaries.md) | Series responses include season count and normalized season summaries with stable IDs/key details for CX season lists. | complete | 010 |
+| [013](projects/2026-07-api-feature-wave/sprint-013-feature-wave-closure.md) | README/specs, tests, deployed behavior, and issue handoff evidence are checked across the feature wave. | ready | 010, 011, 012 |
 
 ## Decisions and assumptions
 
