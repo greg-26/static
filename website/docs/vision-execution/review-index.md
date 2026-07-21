@@ -15,6 +15,8 @@ Historical human/PMT feedback is now PMT-owned and lives under `reports/pmt/huma
 
 ## Planning and QA
 
+Historical planning reports may live under the old `reports/principal-engineer/` path; new planning reports belong in `reports/sprint-planner/`.
+
 - [`reports/principal-engineer/2026-07-13-principal-engineer-plan.md`](../../reports/principal-engineer/2026-07-13-principal-engineer-plan.md) — implementation sequencing and risk plan.
 - [`reports/principal-engineer/2026-07-18-pm-walk-store-execution-plan.md`](../../reports/principal-engineer/2026-07-18-pm-walk-store-execution-plan.md) — Sprint 9 follow-up sequencing from walk-the-store feedback.
 - [`reports/pmt/2026-07-13-pm-tech-vision-cx-report.md`](../../reports/pmt/2026-07-13-pm-tech-vision-cx-report.md) — PMT vision/CX findings.

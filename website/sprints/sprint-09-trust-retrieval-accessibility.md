@@ -1,7 +1,7 @@
 # Sprint 9 — PM/QA trust, retrieval, and accessibility follow-ups
 
-Status: **Active / validation remaining**
-Owner: SDE for implementation slices, PE for sequencing, PMT for product priority.
+Status: **blocked** — validation remaining
+Owner: sprint implementation agent for implementation slices, sprint planner for sequencing, PMT for product priority.
 
 ## Goal
 

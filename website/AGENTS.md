@@ -32,10 +32,9 @@ Scope: this file is for the `website/` project only inside the Ohana static repo
 - `DESIGN_GUIDELINES.md` — durable design principles, screen intent, visual hierarchy, and UX critique checklist.
 - `VISION_EXECUTION.md` — thin execution front door. It must not duplicate sprint status; current sprint work lives under `sprints/`, and team cadence lives in `docs/working-style.md`.
 - `CODING_STANDARDS.md` — reusable component and UI implementation standards.
-- `docs/working-style.md` — team operating model: PMT feedback intake, PE planning, SDE execution, UX/QA review cadence, and git/push policy.
+- `docs/working-style.md` — team operating model: PMT feedback intake, sprint planning, sprint implementation, UX/QA review cadence, and git/push policy.
 - `sprints/INDEX.md` — focused sprint index; each sprint has its own file.
-- `agents/pmt.md`, `agents/principal-engineer.md`, `agents/sde.md`, `agents/ux-designer.md`, `agents/qa.md` — specialist prompts.
-- `agents/ceo-assistant.md` — deprecated shim; use PMT for human/product feedback.
+- `agents/pmt.md`, `agents/sprint-planner.md`, `agents/sprint-implementation-agent.md`, `agents/ux-designer.md`, `agents/qa.md` — specialist prompts.
 
 ## Current product model
 
@@ -73,8 +72,8 @@ curl -fL --compressed https://ohana.tv/movies.json -o public/movies.json
 - Do not turn `VISION_EXECUTION.md` back into a long rolling log. Keep it as the durable execution front door; put sprint detail in `sprints/` and stale detail in `docs/vision-execution/archive/`.
 - Before vision implementation, read `README.md`, `VISION.md`, `DESIGN_GUIDELINES.md`, `CODING_STANDARDS.md`, this `AGENTS.md`, `VISION_EXECUTION.md`, and the current sprint file.
 - Sequence work according to `VISION.md` and the current sprint file. Update the sprint file before/after each slice; do not duplicate active sprint status in `VISION_EXECUTION.md`.
-- Human/product feedback is PMT-owned: capture new feedback in `reports/pmt/`, update vision/design/planning as needed, then have PE link the sprint(s) that address it. Do not create new `reports/ceo/` reports; `reports/pmt/human-feedback/` is historical.
-- Developers may add concise notes to the next sprint file when useful. If sprint details are unclear and material assumptions are required, ask PMT, UX designer, or PE to validate before coding.
+- Human/product feedback is PMT-owned: capture new feedback in `reports/pmt/`, update vision/design/planning as needed, then have the sprint planner link the sprint(s) that address it. Do not create legacy executive-feedback reports; `reports/pmt/human-feedback/` is historical.
+- Developers may add concise notes to the next sprint file when useful. If sprint details are unclear and material assumptions are required, ask PMT, UX designer, or the sprint planner to validate before coding.
 - Use subagents for scoped audits, implementation consensus, and separation of concerns; ask them for concise findings, exact file refs, risks, and verification results.
 - Preserve existing worktree changes: inspect `git status --short` and relevant diffs before editing.
 - After each implementation slice, run the smallest meaningful verification gate, usually `npm run build`, and note manual/mobile checks still needed.

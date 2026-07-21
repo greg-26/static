@@ -6,7 +6,7 @@ Progressive-disclosure map for agents working on the Ohana redesign. Start with 
 
 - [`../working-style.md`](../working-style.md) — team roles, cron cadence, feedback flow, git/push policy, and context budget rules.
 - [`../../sprints/INDEX.md`](../../sprints/INDEX.md) — current sprint index and status.
-- [`review-index.md`](review-index.md) — links to PMT/human-feedback/QA/UX/PE reports that may need follow-up.
+- [`review-index.md`](review-index.md) — links to PMT/human-feedback/QA/UX/sprint-planner reports that may need follow-up.
 - [`current-status.md`](current-status.md) — legacy snapshot retained for historical context; do not treat as the active planning surface.
 - [`sprint-plan.md`](sprint-plan.md) — legacy pointer retained for compatibility; active sprint files live in `../../sprints/`.
 - [`archive/progress-log-2026-07-12-13.md`](archive/progress-log-2026-07-12-13.md) — historical slice log. Do not read for routine implementation.

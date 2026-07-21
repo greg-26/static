@@ -11,17 +11,16 @@ Deliver `VISION.md` incrementally: Discover/Search/Settings IA, discovery-first 
 1. Read [`docs/working-style.md`](docs/working-style.md) for team roles, cadence, feedback flow, and push policy.
 2. Read [`sprints/INDEX.md`](sprints/INDEX.md) for the single source of truth on active/next sprint status.
 3. Open only the sprint file linked by the index.
-4. Open [`docs/vision-execution/review-index.md`](docs/vision-execution/review-index.md) only when the sprint/task points to PMT/QA/UX/PE feedback.
+4. Open [`docs/vision-execution/review-index.md`](docs/vision-execution/review-index.md) only when the sprint/task points to PMT/QA/UX/sprint-planner feedback.
 5. Do **not** read archived logs unless auditing history or debugging a regression.
 
 ## Durable prompts
 
 - PMT / human feedback intake: [`agents/pmt.md`](agents/pmt.md)
-- Principal engineer: [`agents/principal-engineer.md`](agents/principal-engineer.md)
-- SDE: [`agents/sde.md`](agents/sde.md)
+- Sprint planner: [`agents/sprint-planner.md`](agents/sprint-planner.md)
+- Sprint implementation agent: [`agents/sprint-implementation-agent.md`](agents/sprint-implementation-agent.md)
 - UX designer: [`agents/ux-designer.md`](agents/ux-designer.md)
 - QA/CX reviewer: [`agents/qa.md`](agents/qa.md)
-- Deprecated CEO assistant shim: [`agents/ceo-assistant.md`](agents/ceo-assistant.md)
 
 ## Standing constraints
 

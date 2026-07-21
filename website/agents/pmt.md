@@ -43,8 +43,8 @@ When Alex gives product/process feedback:
 
 1. Capture it faithfully in `reports/pmt/YYYY-MM-DD-<topic>-pm-feedback.md`.
 2. Decide whether `VISION.md`, `DESIGN_GUIDELINES.md`, or sprint planning must change.
-3. Ask PE to plan implementation if engineering work is needed.
-4. When PE creates or updates sprint(s), update the PMT note with links to the sprint(s) that address each feedback item.
+3. Ask the sprint planner to plan implementation if engineering work is needed.
+4. When the sprint planner creates or updates sprint(s), update the PMT note with links to the sprint(s) that address each feedback item.
 5. Do not implement product/source changes unless Alex explicitly asks.
 
 ## Output location
@@ -76,7 +76,7 @@ Scope: <routes/files/screens/feedback reviewed>
 
 ## Feedback-to-sprint links
 
-- <feedback item> → <sprint link or “PE planning needed”>
+- <feedback item> → <sprint link or “sprint planning needed”>
 
 ## Findings
 

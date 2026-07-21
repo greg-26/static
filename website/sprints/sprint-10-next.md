@@ -1,7 +1,7 @@
 # Sprint 10 — Where-to-watch country and source context
 
-Status: **Planned next**
-Owner: PE for sequencing, SDE for implementation after Sprint 9 validation or if Alex escalates it.
+Status: **proposed** — next after Sprint 9 validation unless Alex escalates
+Owner: sprint planner for sequencing, sprint implementation agent after Sprint 9 validation or if Alex escalates it.
 
 ## Trigger
 
