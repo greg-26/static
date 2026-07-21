@@ -255,7 +255,10 @@
 
           <div class="modal-providers" v-if="providerNames.length || userStore.isLoggedIn">
             <div class="providers-head">
-              <p class="modal-section-label">Where to watch</p>
+              <div>
+                <p class="modal-section-label">Where to watch</p>
+                <p class="availability-source">{{ availabilityContextCopy }}</p>
+              </div>
               <RouterLink v-if="availabilityDetail.action" to="/settings/streaming">Set services</RouterLink>
             </div>
             <div class="provider-list">
@@ -321,6 +324,7 @@ import { MATURITY_CATEGORIES, SEVERITY_LABELS, getScore, scoreCssClass } from "@
 import { useUserStore } from "@/stores/user.js";
 import { lockBodyScroll, unlockBodyScroll, trapTabKey } from "@/composables/modalGuards.js";
 import { profileById, profileLabel } from "@/lib/maturityProfiles.js";
+import { AVAILABILITY_CONTEXT_COPY } from "@/lib/availabilityContext.js";
 import UiBadge from "@/components/UiBadge.vue";
 import UiChip from "@/components/UiChip.vue";
 
@@ -333,6 +337,7 @@ const emit = defineEmits(["close"]);
 const dialogRef = ref(null);
 const previouslyFocused = ref(null);
 const selectedDetailProfileId = ref(movieStore.activeMaturityProfileId);
+const availabilityContextCopy = AVAILABILITY_CONTEXT_COPY;
 let bodyLocked = false;
 
 const titleId = computed(() => props.movie?.id ? `movie-dialog-title-${props.movie.id}` : "movie-dialog-title");
@@ -856,6 +861,12 @@ onUnmounted(() => {
 }
 .availability-note--ok { color: var(--teal); }
 .availability-note--warn { color: #fca5a5; }
+.availability-source {
+  margin: 4px 0 0;
+  color: rgba(240,238,232,0.58);
+  font-size: 12px;
+  line-height: 1.35;
+}
 .provider-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .provider-chip {
   display: inline-flex;

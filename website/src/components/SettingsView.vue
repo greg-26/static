@@ -77,6 +77,14 @@
           <p class="section-label">Streaming services</p>
           <h2>{{ selectedProviderSummary }}</h2>
           <p>These are permanent subscriptions. Discover can temporarily switch to “Any availability” without deleting them.</p>
+          <div class="availability-country" aria-label="Availability country">
+            <div>
+              <span>Country</span>
+              <strong>{{ availabilityCountry.label }}</strong>
+            </div>
+            <UiChip size="sm" tone="safe" disabled>{{ availabilityCountry.status }}</UiChip>
+          </div>
+          <p class="availability-copy">{{ availabilitySettingsCopy }}</p>
           <div class="provider-grid" aria-label="Streaming services">
             <UiChip
               v-for="provider in movieStore.availableProviders"
@@ -204,6 +212,7 @@ import { useMovieStore } from "@/stores/movies.js";
 import { useUserStore } from "@/stores/user.js";
 import { MATURITY_CATEGORIES, SEVERITY_LABELS } from "@/maturity.js";
 import { profileLabel } from "@/lib/maturityProfiles.js";
+import { AVAILABILITY_COUNTRY, AVAILABILITY_SETTINGS_COPY } from "@/lib/availabilityContext.js";
 import SettingsRow from "@/components/SettingsRow.vue";
 import UiChip from "@/components/UiChip.vue";
 
@@ -226,6 +235,8 @@ const creatingList = ref(false);
 const addingList = ref(false);
 const newMaturityProfileName = ref("");
 const maturityProfileError = ref("");
+const availabilityCountry = AVAILABILITY_COUNTRY;
+const availabilitySettingsCopy = AVAILABILITY_SETTINGS_COPY;
 
 const settingsSections = new Set(["profile", "streaming", "maturity", "lists"]);
 const activeSection = computed(() => {
@@ -451,6 +462,26 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .empty-state--inline { padding: 10px 0; max-width: 520px; }
 .empty-title { margin: 0; color: var(--white); font-size: 20px; font-weight: 650; }
 .empty-copy { margin: 0; font-size: 14px; line-height: 1.5; }
+.availability-country {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 16px;
+  background: rgba(255,255,255,0.035);
+}
+.availability-country > div { display: grid; gap: 3px; }
+.availability-country span {
+  color: var(--teal);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+.availability-country strong { color: var(--white); font-size: 16px; }
+.availability-copy { margin-top: -10px; font-size: 13px; }
 .provider-grid, .profile-grid { display: flex; flex-wrap: wrap; gap: 8px; }
 .profile-actions-panel { display: grid; gap: 10px; padding: 12px 0; }
 .maturity-editor { display: grid; gap: 14px; }

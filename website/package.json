@@ -8,6 +8,7 @@
     "preview": "vite preview",
     "qa:modal": "node scripts/qa-movie-modal.mjs",
     "qa:sprint9": "node scripts/qa-sprint9-trust.mjs",
+    "qa:sprint10": "node scripts/qa-sprint10-availability-context.mjs",
     "qa:mobile-touch": "node scripts/qa-mobile-touch.mjs",
     "qa:dev-routes": "node scripts/qa-dev-routes.mjs",
     "qa:phone-touch": "node scripts/qa-phone-touch.mjs"

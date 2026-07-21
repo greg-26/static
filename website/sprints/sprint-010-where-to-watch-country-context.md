@@ -1,7 +1,7 @@
 # Sprint 010 — Where-to-watch country and source context
 
 ## Status
-ready
+complete — implemented 2026-07-22
 
 ## Outcome
 
@@ -77,13 +77,20 @@ Working-fork issues [#1](https://github.com/greg-26/static/issues/1) and [#2](ht
 
 ## Acceptance criteria
 
-- [ ] Settings → Streaming services shows country before provider controls.
-- [ ] If only Spain is supported, the country control is visibly read-only/fixed and does not imply switching works.
-- [ ] Movie details Where-to-watch identifies Spain as the availability country.
-- [ ] Where-to-watch data is attributed to JustWatch/TMDB in the detail surface.
-- [ ] Provider availability semantics remain bitmask-compatible and unchanged.
-- [ ] Poster cards still do not show provider/source/country labels.
-- [ ] Issues #1 and #2 have implementation evidence comments only after the sprint is complete.
+- [x] Settings → Streaming services shows country before provider controls.
+- [x] If only Spain is supported, the country control is visibly read-only/fixed and does not imply switching works.
+- [x] Movie details Where-to-watch identifies Spain as the availability country.
+- [x] Where-to-watch data is attributed to JustWatch/TMDB in the detail surface.
+- [x] Provider availability semantics remain bitmask-compatible and unchanged.
+- [x] Poster cards still do not show provider/source/country labels.
+- [x] Issues #1 and #2 have implementation evidence comments only after the sprint is complete.
+
+## Evidence
+
+- 2026-07-22 — Confirmed `public/movies.json` has provider bitmasks/provider names only, with no country map.
+- 2026-07-22 — Added shared Spain availability/source constants, fixed country row in Settings → Streaming services, and detail-surface copy: `Availability in Spain · Data from JustWatch via TMDB`.
+- 2026-07-22 — Added `npm run qa:sprint10` coverage for country/source copy, Spain-only data semantics, and no card-level source/country leakage.
+- Verification: `npm run qa:sprint10`; `npm run build`.
 
 ## Required tests
 

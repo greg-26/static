@@ -5,17 +5,17 @@ Focused sprint files live here so agents read only the slice they are working on
 ## Status
 
 - Current planning status: issue-driven website roadmap refreshed for all open working-fork issues (#1, #2, #6).
-- Current implementation phase: Sprint 9 remains blocked on real-phone validation/PMT decision, but Alex's latest issue-driven planning request escalates Sprint 10 as the next executable implementation slice.
-- Next executable sprint: Sprint 10 — Where-to-watch country and source context.
-- Latest planning revision: 2026-07-21.
+- Current implementation phase: Sprint 10 is implemented and verified; Sprint 9 remains blocked on real-phone validation/PMT decision.
+- Next executable sprint: Sprint 11 — API detail foundation for movie details.
+- Latest implementation update: 2026-07-22.
 
 ## Roadmap
 
 | Sprint | Outcome | Status | Depends on |
 | --- | --- | --- | --- |
 | 9 | PM/QA trust, retrieval, accessibility, and phone-touch validation follow-ups. | `blocked` — automated readiness green; local dropdown/mobile polish needs real-phone validation. No matching issue exists on the working fork, so closure is blocked on validation evidence/PMT decision. | Earlier redesign implementation slices |
-| 10 | Make Where-to-watch country/source context explicit with Spain read-only provider settings and JustWatch/TMDB attribution. | `ready` — addresses working-fork issues #1 and #2. | Alex escalation from 2026-07-21 planning run; no code dependency on Sprint 9 validation |
-| 11 | Integrate the Ohana API into movie details for overview, cast, and collection context. | `proposed` — addresses the movie-detail API foundation for issue #6. | Sprint 10 complete |
+| 10 | Make Where-to-watch country/source context explicit with Spain read-only provider settings and JustWatch/TMDB attribution. | `complete` — implemented and verified 2026-07-22; addresses working-fork issues #1 and #2. | Alex escalation from 2026-07-21 planning run; no code dependency on Sprint 9 validation |
+| 11 | Integrate the Ohana API into movie details for overview, cast, and collection context. | `ready` — addresses the movie-detail API foundation for issue #6. | Sprint 10 complete |
 | 12 | Finish API-enriched detail surfaces for TV seasons and API-state hardening. | `proposed` — completes issue #6 after Sprint 11 foundation. | Sprint 11 complete |
 
 ## Sprint files
