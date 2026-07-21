@@ -3,8 +3,8 @@
 ## Status
 
 - Current planning status: reviewed against `api/docs/design.md`, `api/AGENTS.md`, and the current implementation.
-- Current implementation phase: Sprint 007 complete; final design closure remains. Wrangler configuration and API README are in place with placeholder Cloudflare resource IDs.
-- Next executable sprint: Sprint 008 — Design Closure Hardening.
+- Current implementation phase: Initial API design implementation complete through Sprint 008. Wrangler configuration and API README are in place with placeholder Cloudflare resource IDs.
+- Next executable sprint: Sprint 009 — wire Cloudflare Worker deployment end-to-end so API pushes can deploy the backend.
 - Latest planning revision date: 2026-07-21.
 
 ## Roadmap
@@ -18,7 +18,8 @@
 | [005](sprint-005-uncached-title-lookup.md) | The route returns normalized movie/series responses from TMDB on cache-miss path, including 404 and failure handling. | complete | 002, 003, 004 |
 | [006](sprint-006-kv-cache.md) | Successful normalized title responses are read from and written to Cloudflare KV using versioned keys and configurable freshness. | complete | 005 |
 | [007](sprint-007-wrangler-environments.md) | Wrangler configuration, bindings, secrets documentation, and local/dev/prod environment setup are in place. | complete | 006 |
-| [008](sprint-008-design-closure-hardening.md) | Initial design is verified end-to-end, documentation matches implementation, and no initial-scope gaps remain. | ready | 007 |
+| [008](sprint-008-design-closure-hardening.md) | Initial design is verified end-to-end, documentation matches implementation, and no initial-scope gaps remain. | complete | 007 |
+| [009](sprint-009-worker-deployment-automation.md) | Cloudflare Worker deployment is wired end-to-end with real Cloudflare resources, GitHub Actions automation, verification, and documented API URLs. | planned | 008 |
 
 ## Decisions and assumptions
 
@@ -55,6 +56,9 @@
 - Which real CORS origins should be allowed in development and production?
   - Recommended default: configure an allowlist per environment and avoid `*` in production.
   - Blocks: final production deployment values only; placeholders are documented in Sprint 007.
+- What should the deployed API base URLs be for development and production?
+  - Recommended default: use Cloudflare Workers URLs for the first automated deploy, then add custom domains only when needed by the website.
+  - Blocks: Sprint 009 documentation and website configuration handoff.
 
 ## Completion criteria
 
@@ -70,3 +74,5 @@ The initial API design is fully implemented when:
 - Upstream errors are not cached and are returned as stable JSON failures without exposing raw TMDB details.
 - Worker configuration documents TMDB secret, KV binding, and local/development/production environments.
 - Available API verification commands pass from the `api/` package.
+
+Deployment is ready when Sprint 009 replaces placeholder Cloudflare resource IDs, configures required secrets/environment variables, adds the API GitHub Actions deploy workflow, verifies the deployed Worker, and documents the resulting API URL(s).

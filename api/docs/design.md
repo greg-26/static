@@ -134,6 +134,10 @@ Guidelines:
 - Never cache upstream errors.
 - Version cache keys when the schema changes.
 - TTL should be configurable.
+- Normal requests may return stale cached data when TMDB is unavailable.
+- `cache=refresh` skips cache reads and replaces cached successful responses.
+- `cache=bypass` skips both cache reads and writes.
+- Production cache override modes are disabled unless explicitly enabled for operations.
 
 ---
 
@@ -209,10 +213,10 @@ These should not complicate the initial implementation.
 
 # Open Questions
 
-- Default cache TTL?
-- Manual cache invalidation?
-- Background refresh vs lazy refresh?
-- Response schema versioning?
+- Default cache TTL: 7 days, configurable by Worker environment.
+- Manual cache invalidation: out of initial scope; use restricted `cache=refresh` for operator refreshes.
+- Background refresh vs lazy refresh: initial implementation uses lazy refresh with stale fallback for normal requests.
+- Response schema versioning: initial implementation versions cache keys (`title:{imdbId}:v1`) and typed contracts, without a response-body `schemaVersion` field.
 
 ---
 

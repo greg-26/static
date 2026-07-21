@@ -1,4 +1,4 @@
-import { DEFAULT_TITLE_CACHE_TTL_SECONDS, readCachedTitle, writeCachedTitle, type TitleCacheBinding, type TitleCacheMode } from "../cache/titleCache";
+import { DEFAULT_TITLE_CACHE_TTL_SECONDS, readCachedTitleState, writeCachedTitle, type TitleCacheBinding, type TitleCacheMode } from "../cache/titleCache";
 import type { TitleResponse } from "../models/title";
 import type { TmdbTitleLookupResult } from "../tmdb/client";
 import { mapTmdbMovieToTitle, mapTmdbSeriesToTitle } from "../tmdb/title-mapper";
@@ -21,15 +21,18 @@ export interface TitleLookupOptions {
 export async function lookupTitle(imdbId: string, client: TitleLookupClient, options: TitleLookupOptions = {}): Promise<TitleLookupResult> {
   const cacheMode = options.cacheMode ?? "normal";
   const now = options.now ?? Date.now();
+  let staleTitle: TitleResponse | null = null;
 
   if (cacheMode === "normal") {
-    const cachedTitle = await readCachedTitle(options.cache, imdbId, now);
-    if (cachedTitle) return { ok: true, title: cachedTitle };
+    const cachedTitle = await readCachedTitleState(options.cache, imdbId, now);
+    if (cachedTitle.status === "fresh") return { ok: true, title: cachedTitle.title };
+    if (cachedTitle.status === "stale") staleTitle = cachedTitle.title;
   }
 
   const result = await client.fetchTitleByImdbId(imdbId);
 
   if (!result.ok) {
+    if (staleTitle && result.error.kind !== "not_found") return { ok: true, title: staleTitle };
     return { ok: false, error: { kind: result.error.kind === "not_found" ? "not_found" : "upstream_failure" } };
   }
 

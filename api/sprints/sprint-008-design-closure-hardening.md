@@ -2,7 +2,7 @@
 
 ## Status
 
-proposed
+complete
 
 ## Outcome
 
@@ -67,11 +67,17 @@ After the Worker, route, mapper, TMDB client, cache, and Wrangler config exist, 
 
 ## Acceptance criteria
 
-- [ ] Every initial-scope design requirement is either implemented and tested, or explicitly documented as blocked with a reason.
-- [ ] Future enhancements are not included in the initial implementation path.
-- [ ] API docs match observed behavior for route, responses, cache, and environment setup.
-- [ ] Sprint index reflects current status and next work accurately.
-- [ ] Full available API verification passes.
+- [x] Every initial-scope design requirement is either implemented and tested, or explicitly documented as blocked with a reason.
+- [x] Future enhancements are not included in the initial implementation path.
+- [x] API docs match observed behavior for route, responses, cache, and environment setup.
+- [x] Sprint index reflects current status and next work accurately.
+- [x] Full available API verification passes.
+
+## Completion notes
+
+- Added stale-cache fallback coverage for normal requests when TMDB is unavailable, while preserving strict refresh/bypass behavior.
+- Updated API documentation to reflect cache override behavior, stale fallback, default TTL, and schema-versioning decisions.
+- Verified the full API suite and Wrangler dry-run validation.
 
 ## Required tests
 

@@ -4,6 +4,25 @@ Small Cloudflare Worker API that returns normalized movie/series metadata by IMD
 
 The API intentionally hides TMDB behind an Ohana-owned response schema. Clients should use this API contract, not TMDB fields.
 
+## How to get the API
+
+- **Local API:** run `npm install`, set a TMDB secret, then start Wrangler:
+
+  ```sh
+  npx wrangler secret put TMDB_API_KEY
+  npx wrangler dev
+  ```
+
+  Wrangler prints the local Worker URL; use that as the API base.
+- **Deployed API:** deploy the Worker after replacing the placeholder KV namespace IDs and setting the TMDB secret for the target environment:
+
+  ```sh
+  npx wrangler deploy --env development
+  npx wrangler deploy --env production
+  ```
+
+  The deployed Worker URL is the API base. A push to `origin/main` does not currently deploy this Worker automatically; deployment wiring is tracked as follow-up planning.
+
 ## Endpoint
 
 ```http
@@ -26,6 +45,7 @@ curl "https://api.ohana.example/titles/tt0133093?cache=bypass"
 - `cache=refresh` skips cache read, fetches from TMDB, and writes a fresh successful response.
 - `cache=bypass` skips both cache read and cache write.
 - Production rejects cache override modes unless `ALLOW_CACHE_OVERRIDES=true` is explicitly configured.
+- Normal requests can return stale cached data when TMDB is unavailable; explicit refresh/bypass requests do not silently fall back to stale data.
 
 ## Example response
 

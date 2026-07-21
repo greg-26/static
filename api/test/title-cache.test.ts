@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { readCachedTitle, titleCacheKey, writeCachedTitle, type TitleCacheBinding } from "../src/cache/titleCache";
+import { readCachedTitle, readCachedTitleState, titleCacheKey, writeCachedTitle, type TitleCacheBinding } from "../src/cache/titleCache";
 import type { TitleResponse } from "../src/models/title";
 
 const title: TitleResponse = {
@@ -52,5 +52,13 @@ describe("title cache", () => {
     const stored = vi.mocked(binding.put).mock.calls[0]?.[1] as string;
 
     await expect(readCachedTitle(cache(stored), "tt0133093", 62_000)).resolves.toBeNull();
+  });
+
+  it("exposes stale cache entries for normal-request upstream fallback", async () => {
+    const binding = cache();
+    await writeCachedTitle(binding, "tt0133093", title, 60, 1_000);
+    const stored = vi.mocked(binding.put).mock.calls[0]?.[1] as string;
+
+    await expect(readCachedTitleState(cache(stored), "tt0133093", 62_000)).resolves.toEqual({ status: "stale", title });
   });
 });

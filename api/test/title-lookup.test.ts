@@ -161,6 +161,48 @@ describe("title lookup service", () => {
     expect(binding.put).toHaveBeenCalled();
   });
 
+  it("returns stale cached data for normal requests when TMDB fails", async () => {
+    const binding = cache();
+    await writeCachedTitle(binding, "tt0133093", cachedTitle, 60, 1_000);
+    const stored = vi.mocked(binding.put).mock.calls[0]?.[1] as string;
+    const readBinding = cache(stored);
+    const lookupClient = client({ ok: false, error: { kind: "upstream_failure", message: "Bad upstream." } });
+
+    const result = await lookupTitle("tt0133093", lookupClient, { cache: readBinding, cacheTtlSeconds: 60, now: 62_000 });
+
+    expect(result).toEqual({ ok: true, title: cachedTitle });
+    expect(lookupClient.fetchTitleByImdbId).toHaveBeenCalledWith("tt0133093");
+    expect(readBinding.put).not.toHaveBeenCalled();
+  });
+
+  it("does not return stale cached data for not-found, refresh, or bypass requests", async () => {
+    const binding = cache();
+    await writeCachedTitle(binding, "tt0133093", cachedTitle, 60, 1_000);
+    const stored = vi.mocked(binding.put).mock.calls[0]?.[1] as string;
+
+    await expect(
+      lookupTitle("tt0133093", client({ ok: false, error: { kind: "not_found", message: "Title not found." } }), { cache: cache(stored), cacheTtlSeconds: 60, now: 62_000 }),
+    ).resolves.toEqual({ ok: false, error: { kind: "not_found" } });
+
+    await expect(
+      lookupTitle("tt0133093", client({ ok: false, error: { kind: "upstream_failure", message: "Bad upstream." } }), {
+        cache: cache(stored),
+        cacheMode: "refresh",
+        cacheTtlSeconds: 60,
+        now: 62_000,
+      }),
+    ).resolves.toEqual({ ok: false, error: { kind: "upstream_failure" } });
+
+    await expect(
+      lookupTitle("tt0133093", client({ ok: false, error: { kind: "upstream_failure", message: "Bad upstream." } }), {
+        cache: cache(stored),
+        cacheMode: "bypass",
+        cacheTtlSeconds: 60,
+        now: 62_000,
+      }),
+    ).resolves.toEqual({ ok: false, error: { kind: "upstream_failure" } });
+  });
+
   it("refresh mode skips cache reads and replaces cached values", async () => {
     const binding = cache("not json");
 
