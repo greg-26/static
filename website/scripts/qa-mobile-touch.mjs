@@ -73,7 +73,7 @@ const checks = [
     pass: /\.modal-meta\s*\{[\s\S]*flex-wrap: wrap/.test(modal)
       && /\.imdb-link,[\s\S]*\.ext-site-link\s*\{[\s\S]*min-height: 34px/.test(modal)
       && /min-height: 34px/.test(providerChipCss)
-      && /\.provider-chip-remove\s*\{[\s\S]*min-width: 26px[\s\S]*min-height: 26px/.test(modal),
+      && /provider-list--custom/.test(modal),
   },
   {
     name: 'Settings Lists mobile rows keep boundaries, navigation affordance, and separated actions',

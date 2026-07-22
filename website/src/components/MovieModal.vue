@@ -331,52 +331,21 @@
               </div>
               <RouterLink v-if="availabilityDetail.action" to="/settings/streaming">Set services</RouterLink>
             </div>
-            <div class="provider-list">
+            <div v-if="providerNames.length" class="provider-list" aria-label="Streaming availability">
               <a v-for="p in providerNames" target="_blank" rel="noopener" :key="p" :href="providerWatchUrl" class="provider-chip">{{ p }}</a>
-
-              <!-- Custom provider chips -->
-              <span
-                v-for="cp in resolvedCustomProviders"
-                :key="cp.urlTemplate"
-                class="provider-chip-wrap"
-              >
+            </div>
+            <div v-if="resolvedCustomProviders.length" class="provider-custom-row" aria-label="Custom provider searches">
+              <span class="provider-custom-row__label">Custom searches</span>
+              <div class="provider-list provider-list--custom">
                 <a
-                :href="cp.url"
-                target="_blank"
-                rel="noopener"
-                class="provider-chip provider-chip--custom"
-                :title="cp.urlTemplate"
-              >
-                {{ cp.domain }}
-                </a>
-                <button
-                  class="provider-chip-remove"
-                  @click.prevent.stop="userStore.removeCustomProvider(cp.urlTemplate)"
-                  :aria-label="`Remove ${cp.domain} provider`"
-                >×</button>
-              </span>
-
-              <!-- Add custom provider button -->
-              <div v-if="userStore.isLoggedIn" class="custom-provider-add">
-                <button
-                  v-if="!showProviderForm"
-                  class="provider-chip provider-chip--add"
-                  @click="showProviderForm = true"
-                  aria-label="Add custom search provider"
-                >+ Add</button>
-
-                <div v-else class="provider-form">
-                  <input
-                    ref="providerInputRef"
-                    v-model="providerInput"
-                    class="provider-input"
-                    placeholder="e.g. netflix.com/search?q={title}&y={year}"
-                    @keydown.enter="commitProvider"
-                    @keydown.escape.stop="showProviderForm = false; providerInput = ''"
-                  />
-                  <button class="provider-form-btn provider-form-btn--ok" @click="commitProvider" aria-label="Add provider">✓</button>
-                  <button class="provider-form-btn provider-form-btn--cancel" @click="showProviderForm = false; providerInput = ''" aria-label="Cancel adding provider">×</button>
-                </div>
+                  v-for="cp in resolvedCustomProviders"
+                  :key="cp.urlTemplate"
+                  :href="cp.url"
+                  target="_blank"
+                  rel="noopener"
+                  class="provider-chip provider-chip--custom"
+                  :title="cp.urlTemplate"
+                >{{ cp.domain }}</a>
               </div>
             </div>
           </div>
@@ -395,6 +364,7 @@ import { useUserStore } from "@/stores/user.js";
 import { lockBodyScroll, unlockBodyScroll, trapTabKey } from "@/composables/modalGuards.js";
 import { profileById, profileLabel } from "@/lib/maturityProfiles.js";
 import { AVAILABILITY_CONTEXT_COPY } from "@/lib/availabilityContext.js";
+import { resolveCustomProviders } from "@/lib/customProviders.js";
 import { fetchOhanaTitleDetail, getOhanaApiConfig } from "@/lib/ohanaApi.js";
 import UiBadge from "@/components/UiBadge.vue";
 import UiChip from "@/components/UiChip.vue";
@@ -685,73 +655,7 @@ const availabilityDetail = computed(() => {
 });
 
 // ─── Custom providers ─────────────────────────────────────────────────────────
-const showProviderForm = ref(false);
-const providerInput    = ref("");
-const providerInputRef = ref(null);
-
-watch(showProviderForm, async (val) => {
-  if (val) {
-    await nextTick();
-    providerInputRef.value?.focus();
-  }
-});
-
-// Known brand overrides: hostname fragment → display name
-const DOMAIN_BRANDS = {
-  netflix: "Netflix", disney: "Disney+", hbo: "HBO", max: "Max",
-  prime: "Prime Video", amazon: "Prime Video", apple: "Apple TV+",
-  hulu: "Hulu", paramount: "Paramount+", peacock: "Peacock",
-  mubi: "MUBI", criterion: "Criterion", vudu: "Vudu",
-  googleplay: "Google Play", youtube: "YouTube", rakuten: "Rakuten",
-  skyshowtime: "SkyShowtime", filmin: "Filmin", movistar: "Movistar+",
-  atresplayer: "Atresplayer", mitele: "Mitele", rtve: "RTVE Play",
-};
-
-function extractDomain(urlTemplate) {
-  try {
-    const clean = urlTemplate.replace(/\{[^}]+\}/g, "X").trim();
-    const prefixed = /^https?:\/\//i.test(clean) ? clean : `https://${clean}`;
-    const hostname = new URL(prefixed).hostname.toLowerCase();
-    // Strip TLD(s) and split by dots
-    const parts = hostname.replace(/\.(com|net|org|io|tv|es|co|uk|de|fr|it|jp|au|ca|mx|br|ar|nl|be|pl|se|no|dk|fi|pt|ru|cn|in|app|me|co\.uk|com\.mx|com\.br|com\.ar)$/, "").split(".");
-    // Check each part against brand map (longest first)
-    for (const part of [...parts].reverse()) {
-      const key = part.replace(/[^a-z]/g, "");
-      if (DOMAIN_BRANDS[key]) return DOMAIN_BRANDS[key];
-    }
-    // Fallback: last meaningful part, capitalized
-    const name = parts[parts.length - 1] || parts[0];
-    return name.charAt(0).toUpperCase() + name.slice(1);
-  } catch {
-    return urlTemplate.split("/")[0].replace(/^www\./, "");
-  }
-}
-
-function fillProviderUrl(urlTemplate, movie) {
-  if (!movie) return "#";
-  const prefixed = /^https?:\/\//i.test(urlTemplate) ? urlTemplate : `https://${urlTemplate}`;
-  return prefixed
-    .replace(/\{title\}/gi, encodeURIComponent((movie.t || movie.ts || "").replace(/[^a-zA-Z0-9.]/g, " ").trim()))
-    .replace(/\{year\}/gi,  encodeURIComponent(movie.y || ""))
-    .replace(/\{imdb\}/gi,  encodeURIComponent(movie.id || ""));
-}
-
-const resolvedCustomProviders = computed(() => {
-  const templates = userStore.userData?.customProviders ?? [];
-  return templates.map(urlTemplate => ({
-    urlTemplate,
-    domain: extractDomain(urlTemplate),
-    url: fillProviderUrl(urlTemplate, props.movie),
-  }));
-});
-
-function commitProvider() {
-  const raw = providerInput.value.trim();
-  if (!raw) return;
-  userStore.addCustomProvider(raw);
-  providerInput.value = "";
-  showProviderForm.value = false;
-}
+const resolvedCustomProviders = computed(() => resolveCustomProviders(userStore.userData?.customProviders ?? [], props.movie));
 
 // ─── Watch for movie changes ──────────────────────────────────────────────────
 watch(() => props.movie, (movie) => {
@@ -1164,80 +1068,26 @@ onUnmounted(() => {
 }
 
 /* ── Custom providers ── */
-.provider-chip-wrap {
-  position: relative;
-  display: inline-flex;
+.provider-custom-row {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,0.08);
 }
+.provider-custom-row__label {
+  color: rgba(240,238,232,0.56);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.provider-list--custom { margin-top: 0; }
 .provider-chip--custom {
-  padding-right: 32px;
+  background: rgba(255,255,255,0.045);
+  border-color: rgba(255,255,255,0.12);
+  color: rgba(240,238,232,0.76);
 }
-.provider-chip-remove {
-  position: absolute;
-  right: 2px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 26px;
-  min-height: 26px;
-  background: none;
-  border: none;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1;
-  cursor: pointer;
-  padding: 0;
-  border-radius: 99px;
-  transition: color 0.12s;
-}
-.provider-chip-remove:hover { color: #f87171; }
-
-.provider-chip--add {
-  background: transparent;
-  border-style: dashed;
-  color: var(--muted);
-  cursor: pointer;
-  font-family: var(--font-body);
-  transition: color 0.15s, border-color 0.15s;
-}
-.provider-chip--add:hover { color: var(--teal); border-color: rgba(45,212,191,0.4); }
-
-.custom-provider-add { display: flex; align-items: center; }
-
-.provider-form {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.provider-input {
-  background: var(--surface3);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--white);
-  font-family: var(--font-body);
-  font-size: 12px;
-  padding: 4px 8px;
-  width: 220px;
-  outline: none;
-  transition: border-color 0.15s;
-}
-.provider-input:focus { border-color: rgba(45,212,191,0.5); }
-.provider-input::placeholder { color: var(--muted); opacity: 0.6; }
-
-.provider-form-btn {
-  background: var(--surface3);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--muted);
-  cursor: pointer;
-  font-size: 14px;
-  line-height: 1;
-  padding: 4px 7px;
-  transition: color 0.12s, border-color 0.12s;
-}
-.provider-form-btn--ok:hover   { color: var(--teal);  border-color: rgba(45,212,191,0.4); }
-.provider-form-btn--cancel:hover { color: #f87171; border-color: rgba(248,113,113,0.35); }
 
 /* ── Supporting parental-guide detail ── */
 .modal-maturity { margin-bottom: 18px; }

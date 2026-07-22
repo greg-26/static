@@ -94,6 +94,36 @@
               @click="movieStore.toggleProvider(provider.bit)"
             >{{ provider.name }}</UiChip>
           </div>
+          <div v-if="userStore.isLoggedIn" class="custom-provider-settings" aria-label="Custom provider searches">
+            <div class="custom-provider-settings__head">
+              <div>
+                <strong>Custom search providers</strong>
+                <p>Add search URL templates for sources Ohana does not track yet. Use <code>{title}</code>, <code>{year}</code>, or <code>{imdb}</code>.</p>
+              </div>
+            </div>
+            <div v-if="resolvedCustomProviders.length" class="custom-provider-list">
+              <div v-for="provider in resolvedCustomProviders" :key="provider.urlTemplate" class="custom-provider-row">
+                <div>
+                  <strong>{{ provider.domain }}</strong>
+                  <span>{{ provider.urlTemplate }}</span>
+                </div>
+                <button type="button" class="danger" @click="userStore.removeCustomProvider(provider.urlTemplate)">Remove</button>
+              </div>
+            </div>
+            <p v-else class="empty-note">No custom search providers yet.</p>
+            <div class="settings-form settings-form--inline custom-provider-form">
+              <label>
+                <span>Add provider template</span>
+                <input v-model="newCustomProvider" placeholder="e.g. filmin.es/search?query={title}" @keydown.enter="addCustomProvider" />
+              </label>
+              <button type="button" :disabled="!newCustomProvider.trim()" @click="addCustomProvider">Add</button>
+            </div>
+          </div>
+          <section v-else class="empty-state empty-state--inline" aria-label="Custom providers need a profile">
+            <p class="empty-title">Create or restore a profile for custom providers</p>
+            <p class="empty-copy">Custom search providers sync with your Ohana profile.</p>
+            <UiChip to="/settings/profile" size="sm" tone="safe">Go to Profile</UiChip>
+          </section>
         </article>
       </template>
 
@@ -213,6 +243,7 @@ import { useUserStore } from "@/stores/user.js";
 import { MATURITY_CATEGORIES, SEVERITY_LABELS } from "@/maturity.js";
 import { profileLabel } from "@/lib/maturityProfiles.js";
 import { AVAILABILITY_COUNTRY, AVAILABILITY_SETTINGS_COPY } from "@/lib/availabilityContext.js";
+import { resolveCustomProviders } from "@/lib/customProviders.js";
 import SettingsRow from "@/components/SettingsRow.vue";
 import UiChip from "@/components/UiChip.vue";
 
@@ -233,6 +264,7 @@ const addListToken = ref("");
 const listError = ref("");
 const creatingList = ref(false);
 const addingList = ref(false);
+const newCustomProvider = ref("");
 const newMaturityProfileName = ref("");
 const maturityProfileError = ref("");
 const availabilityCountry = AVAILABILITY_COUNTRY;
@@ -268,6 +300,7 @@ const severityLabels = SEVERITY_LABELS;
 const activeProfileId = computed(() => movieStore.activeMaturityProfileId);
 const activeProfileLabel = computed(() => profileLabel(movieStore.maturityProfiles, movieStore.activeMaturityProfileId));
 const activeMaturityProfile = computed(() => movieStore.maturityProfiles.find(profile => profile.id === movieStore.activeMaturityProfileId));
+const resolvedCustomProviders = computed(() => resolveCustomProviders(userStore.userData?.customProviders ?? []));
 
 watch(() => userStore.userData?.name, (name) => {
   editName.value = name ?? "";
@@ -431,6 +464,13 @@ async function addSharedList() {
     addingList.value = false;
   }
 }
+
+async function addCustomProvider() {
+  const template = newCustomProvider.value.trim();
+  if (!template) return;
+  await userStore.addCustomProvider(template);
+  newCustomProvider.value = "";
+}
 </script>
 
 <style scoped>
@@ -483,6 +523,32 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .availability-country strong { color: var(--white); font-size: 16px; }
 .availability-copy { margin-top: -10px; font-size: 13px; }
 .provider-grid, .profile-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.custom-provider-settings {
+  display: grid;
+  gap: 12px;
+  margin-top: 4px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.custom-provider-settings__head { display: flex; justify-content: space-between; gap: 12px; }
+.custom-provider-settings__head strong { color: var(--white); }
+.custom-provider-settings__head p { margin: 4px 0 0; font-size: 13px; line-height: 1.45; }
+.custom-provider-settings code { color: var(--teal); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.92em; }
+.custom-provider-list { display: grid; gap: 8px; }
+.custom-provider-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 14px;
+  background: rgba(255,255,255,0.035);
+}
+.custom-provider-row > div { display: grid; gap: 3px; min-width: 0; }
+.custom-provider-row strong { color: var(--white); }
+.custom-provider-row span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: 12px; }
+.custom-provider-form { padding-top: 2px; }
 .profile-actions-panel { display: grid; gap: 10px; padding: 12px 0; }
 .maturity-editor { display: grid; gap: 14px; }
 .maturity-row { display: grid; gap: 8px; }
@@ -528,5 +594,7 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   .settings-form--inline { grid-template-columns: 1fr; }
   .list-row { grid-template-columns: minmax(0, 1fr) auto; gap: 10px 12px; padding: 14px; }
   .list-row__actions { grid-column: 1 / -1; width: 100%; justify-content: flex-start; padding: 12px 0 0; border-left: 0; border-top: 1px solid rgba(255,255,255,0.08); }
+  .custom-provider-row { align-items: flex-start; flex-direction: column; }
 }
+
 </style>

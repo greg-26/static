@@ -1,7 +1,7 @@
 # Sprint 015 — Provider settings and custom source ownership
 
 ## Status
-proposed
+complete — implemented and verified 2026-07-22; addresses and closes working-fork issue #11.
 
 ## Outcome
 
@@ -69,13 +69,13 @@ Alex added working-fork issue [#11](https://github.com/greg-26/static/issues/11)
 
 ## Acceptance criteria
 
-- [ ] Custom-provider add/manage entry point is available from Settings → Streaming services / Providers.
-- [ ] Movie details no longer show the custom-provider **Add** button.
-- [ ] Movie details show standard provider availability together and custom providers separately when present.
-- [ ] Existing provider preferences and custom-provider persistence are preserved.
-- [ ] Sprint 010 country/source attribution remains clear and adjacent to Where-to-watch.
-- [ ] No Stream/Rent/Buy grouping or provider-icon work is introduced early.
-- [ ] Issue #11 has implementation evidence comments only after the sprint is complete.
+- [x] Custom-provider add/manage entry point is available from Settings → Streaming services / Providers.
+- [x] Movie details no longer show the custom-provider **Add** button.
+- [x] Movie details show standard provider availability together and custom providers separately when present.
+- [x] Existing provider preferences and custom-provider persistence are preserved.
+- [x] Sprint 010 country/source attribution remains clear and adjacent to Where-to-watch.
+- [x] No Stream/Rent/Buy grouping or provider-icon work is introduced early.
+- [x] Issue #11 has implementation evidence comments only after the sprint is complete.
 
 ## Required tests
 
@@ -87,8 +87,21 @@ Alex added working-fork issue [#11](https://github.com/greg-26/static/issues/11)
 
 ```bash
 cd website
+npm run qa:sprint15
+npm run qa:modal
+npm run qa:sprint10
+npm run qa:mobile-touch
 npm run build
 ```
+
+## Implementation evidence
+
+- Added Settings → Streaming services custom search provider management for logged-in profiles, with add/remove backed by the existing `customProviders` profile persistence.
+- Removed movie-detail custom provider configuration controls; details now render tracked provider availability first and custom search providers on a visually separate `Custom searches` row.
+- Extracted custom-provider domain/URL-template parsing into shared `src/lib/customProviders.js` so Settings and movie details use the same provider naming logic.
+- Added `npm run qa:sprint15` source QA covering Settings ownership, detail-page separation, persistence wiring, and Sprint 010 attribution adjacency.
+- Verification passed: `npm run qa:sprint15`, `npm run qa:modal`, `npm run qa:sprint10`, `npm run qa:mobile-touch`, `npm run build`.
+- Non-gating note: `npm run qa:phone-touch` still fails its Discover availability/dropdown source assertion against the current dev server/source contract; this sprint did not touch that Discover surface.
 
 ## Handoff
 
