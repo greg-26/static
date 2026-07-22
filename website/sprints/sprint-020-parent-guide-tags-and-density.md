@@ -1,7 +1,7 @@
 # Sprint 020 — Parent-guide tags and density
 
 ## Status
-ready
+complete — implemented and verified 2026-07-22; issue #16 closure delegated to the issue workflow.
 
 ## Outcome
 
@@ -84,6 +84,23 @@ git diff --check
 ## Handoff
 
 Do not close issue #15 yet unless Sprint 021 is also complete. Close issue #16 when this sprint is fully verified.
+
+### 2026-07-22 implementation notes
+
+- Restored parent-guide tags by falling back from local `/extra.json` to the canonical `https://ohana.tv/extra.json` enrichment source when local enrichment is absent.
+- Confirmed the canonical enrichment source has populated category tags for `tt0111161` (`SEXUAL_CONTENT`, `VIOLENCE`, `PROFANITY`, `ALCOHOL_DRUGS`; violence examples include `blood`, `gore`, `intense`).
+- Kept profile drill-down behavior intact; the selected detail profile still affects only local compatibility reasoning.
+- Reworked each parent-guide row into label/score, progress bar, one compact status/detail line, then horizontally-scannable tags.
+- Restyled IMDb guide and CSM actions as normal blue underlined external text links with focus states, not chip pills.
+
+Verification passed:
+
+```bash
+npm run qa:sprint20
+npm run qa:modal
+npm run build
+git diff --check
+```
 
 ## Dependencies unlocked
 

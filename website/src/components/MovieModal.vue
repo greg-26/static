@@ -209,9 +209,9 @@
                 <div class="compatibility-row-detail">
                   <strong>{{ row.statusLabel }}</strong>
                   <small>{{ row.allowedDetail }}</small>
-                  <div v-if="row.supportTags.length" class="compatibility-tags" :aria-label="`${row.label} details`">
-                    <span v-for="tag in row.supportTags" :key="tag">{{ tag }}</span>
-                  </div>
+                </div>
+                <div v-if="row.supportTags.length" class="compatibility-tags" :aria-label="`${row.label} details`">
+                  <span v-for="tag in row.supportTags" :key="tag">{{ tag }}</span>
                 </div>
               </div>
             </div>
@@ -449,6 +449,9 @@ const dialogRef = ref(null);
 const previouslyFocused = ref(null);
 const selectedDetailProfileId = ref(movieStore.activeMaturityProfileId);
 const availabilityContextCopy = AVAILABILITY_CONTEXT_COPY;
+// Parent-guide tags live in the optional static enrichment file. Local builds may
+// not ship it, so mirror the movies.json fallback pattern before omitting tags.
+const EXTRA_DETAIL_SOURCES = ["/extra.json", "https://ohana.tv/extra.json"];
 let bodyLocked = false;
 let apiLoadToken = 0;
 
@@ -543,25 +546,25 @@ const extraLoaded = ref(false);
 
 async function loadExtraJsonData() {
   if (extraLoaded.value) return; // Prevent multiple global fetches
-  try {
-    // extra.json is optional enrichment. Static hosts may serve index.html for
-    // missing files, so verify the response before attempting JSON parsing.
-    const res = await fetch("/extra.json", { headers: { Accept: "application/json" } });
-    const contentType = res.headers.get("content-type") || "";
+  for (const source of EXTRA_DETAIL_SOURCES) {
+    try {
+      // Static hosts may serve index.html for missing files, so verify the
+      // response before parsing JSON.
+      const res = await fetch(source, { headers: { Accept: "application/json" } });
+      const contentType = res.headers.get("content-type") || "";
 
-    if (!res.ok || !contentType.includes("application/json")) {
-      extraTable.value = {};
+      if (!res.ok || !contentType.includes("application/json")) continue;
+
+      const data = await res.json();
+      extraTable.value = data && typeof data === "object" ? data : {};
       extraLoaded.value = true;
       return;
+    } catch {
+      // Try the next source before falling back to no enrichment.
     }
-
-    const data = await res.json();
-    extraTable.value = data && typeof data === "object" ? data : {};
-  } catch {
-    extraTable.value = {};
-  } finally {
-    extraLoaded.value = true;
   }
+  extraTable.value = {};
+  extraLoaded.value = true;
 }
 
 // Automatically resolve details matching the current active movie ID
@@ -1322,18 +1325,23 @@ onUnmounted(() => {
 .mat-ext-link {
   display: inline-flex;
   align-items: center;
-  min-height: 34px;
-  font-size: 11px;
-  color: var(--muted);
-  text-decoration: none;
-  padding: 6px 10px;
-  border: 1px solid var(--border);
-  border-radius: 99px;
-  transition: color 0.15s, border-color 0.15s;
+  min-height: 28px;
+  color: #7dd3fc;
+  font-size: 12px;
+  font-weight: 750;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  padding: 2px 0;
+  border-radius: 4px;
+  transition: color 0.15s, box-shadow 0.15s;
   white-space: nowrap;
 }
-.mat-ext-link:hover { color: var(--white); border-color: rgba(255,255,255,0.3); }
-.mat-ext-link--csm:hover { color: #34d399; border-color: rgba(52,211,153,0.4); }
+.mat-ext-link:hover { color: #bae6fd; }
+.mat-ext-link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(125,211,252,0.22);
+}
 
 /* Score grid */
 .mat-score-grid {
@@ -1585,17 +1593,17 @@ onUnmounted(() => {
 .compatibility-grid { display: grid; gap: 8px; }
 .compatibility-row {
   display: grid;
-  grid-template-columns: minmax(112px, 0.75fr) minmax(96px, 1fr) minmax(150px, 1.2fr);
-  align-items: center;
-  gap: 12px;
+  gap: 6px;
   color: rgba(240,238,232,0.82);
   font-size: 12px;
 }
 .compatibility-row-title,
 .compatibility-row-detail {
   min-width: 0;
-  display: grid;
-  gap: 4px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
 }
 .compatibility-row-title span { color: var(--white); font-weight: 650; }
 .compatibility-row-title strong {
@@ -1608,7 +1616,6 @@ onUnmounted(() => {
   display: inline-flex;
   align-items: baseline;
   gap: 1px;
-  justify-self: end;
   line-height: 1;
 }
 .score-current {
@@ -1619,10 +1626,21 @@ onUnmounted(() => {
   color: rgba(255,255,255,0.72);
   font-size: 13px;
 }
-.compatibility-row-detail strong { color: var(--teal); font-size: 11px; }
+.compatibility-row-detail strong {
+  flex: 0 0 auto;
+  color: var(--teal);
+  font-size: 11px;
+}
 .compatibility-row.exceeded .compatibility-row-detail strong { color: #f5c842; }
 .compatibility-row.unknown .compatibility-row-detail strong { color: var(--muted); }
-.compatibility-row small { color: var(--teal); }
+.compatibility-row small {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--teal);
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .compatibility-row.exceeded small { color: #f5c842; }
 .compatibility-row.unknown small { color: var(--muted); }
 .compatibility-row-meter { min-width: 0; }
@@ -1636,6 +1654,7 @@ onUnmounted(() => {
   display: flex;
   gap: 5px;
   overflow-x: auto;
+  overscroll-behavior-inline: contain;
   scrollbar-width: none;
 }
 .compatibility-tags::-webkit-scrollbar { display: none; }
@@ -1714,10 +1733,6 @@ onUnmounted(() => {
   .api-season-toggle { align-self: flex-start; }
   .compatibility-summary-head { flex-direction: column; }
   .compatibility-actions { justify-content: flex-start; }
-  .compatibility-row { grid-template-columns: 1fr; gap: 6px; }
-  .compatibility-row-title {
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: baseline;
-  }
+  .compatibility-row small { max-width: 62%; }
 }
 </style>

@@ -69,6 +69,8 @@ Data loading order:
 2. `https://ohana.tv/movies.json` — production fallback used by Netlify when the file is not deployed with this static site
 3. 500 mock movies — development fallback if both real-data sources fail
 
+Optional movie-detail enrichment such as English synopsis, TMDB/CSM links, and parent-guide tags loads from `extra.json` at the current site root, then falls back to `https://ohana.tv/extra.json` when local enrichment is missing.
+
 ## Architecture
 
 ```
