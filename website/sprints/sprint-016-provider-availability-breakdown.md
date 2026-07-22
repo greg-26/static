@@ -1,7 +1,7 @@
 # Sprint 016 — Provider availability breakdown and icons
 
 ## Status
-proposed
+complete — implemented and verified 2026-07-22
 
 ## Outcome
 
@@ -73,14 +73,14 @@ Alex added working-fork issue [#12](https://github.com/greg-26/static/issues/12)
 
 ## Acceptance criteria
 
-- [ ] Movie details group API provider availability into clear TMDB-style buckets such as Stream, Rent, and Buy when the API supplies those groups.
-- [ ] Provider icons render for TMDB/API providers when logo data is available.
-- [ ] Icon size and border radius follow UX guidance recorded in the sprint evidence.
-- [ ] Missing provider groups or icons fall back gracefully without broken UI.
-- [ ] Custom providers remain separate and do not require icons; favicon support is included only if easy and safe.
-- [ ] Existing Spain/source attribution remains accurate.
-- [ ] No Discover/Search/card provider display changes are introduced.
-- [ ] Issue #12 has implementation evidence comments only after the sprint is complete.
+- [x] Movie details group API provider availability into clear TMDB-style buckets such as Stream, Rent, and Buy when the API supplies those groups.
+- [x] Provider icons render for TMDB/API providers when logo data is available.
+- [x] Icon size and border radius follow UX guidance recorded in the sprint evidence.
+- [x] Missing provider groups or icons fall back gracefully without broken UI.
+- [x] Custom providers remain separate and do not require icons; favicon support is included only if easy and safe.
+- [x] Existing Spain/source attribution remains accurate.
+- [x] No Discover/Search/card provider display changes are introduced.
+- [x] Issue #12 has implementation evidence comments only after the sprint is complete.
 
 ## Required tests
 
@@ -92,8 +92,19 @@ Alex added working-fork issue [#12](https://github.com/greg-26/static/issues/12)
 
 ```bash
 cd website
+npm run qa:sprint16
 npm run build
+git diff --check
 ```
+
+## Evidence — 2026-07-22
+
+- API contract inspected against production Ohana API samples (`tt0133093`, `tt4154796`, `tt0903747`, `tt1375666`): `streamingProviders.region` is `ES`, and grouped arrays include `stream`, `rent`, and `buy` providers with TMDB logo image sizes (`thumbnail`, `small`, `medium`, `original`).
+- UI now normalizes API provider groups in `src/lib/ohanaApi.js`, labels buckets as Stream/Rent/Buy/Free/With ads, and renders grouped movie-detail provider rows before falling back to the existing static bitmask provider list.
+- Provider chips use 28px logos with 7px radius inside compact mobile-first chips. This follows the standing UX guidance in `DESIGN_GUIDELINES.md`: quiet hierarchy, consistent icon sizing/radii, compact chips, and provider names only in detail surfaces. The dedicated UX subagent was not available to this cron lane, so no separate UX-agent report was produced.
+- Missing API provider groups fall back to the static provider list; missing/broken provider logos hide the image and keep the provider name visible. Custom searches remain separated in their own text-only row.
+- Verification passed: `npm run qa:sprint16`, `npm run build`, `git diff --check`.
+- Working-fork issue #12 was commented and closed after verification.
 
 ## Handoff
 

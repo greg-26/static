@@ -59,6 +59,50 @@ function normalizeSeason(season) {
   };
 }
 
+const PROVIDER_GROUP_LABELS = {
+  stream: "Stream",
+  flatrate: "Stream",
+  rent: "Rent",
+  buy: "Buy",
+  free: "Free",
+  ads: "With ads",
+};
+
+const PROVIDER_GROUP_ORDER = ["stream", "flatrate", "rent", "buy", "free", "ads"];
+
+function normalizeProvider(provider, fallbackGroup) {
+  if (!provider || typeof provider !== "object" || !provider.name) return null;
+  const id = provider.id ? String(provider.id) : `${fallbackGroup}-${provider.name}`;
+  return {
+    id,
+    name: String(provider.name).trim(),
+    logoUrl: bestImageUrl(provider.logo, ["thumbnail", "small", "medium", "original"]),
+  };
+}
+
+function normalizeProviderGroups(streamingProviders) {
+  if (!streamingProviders || typeof streamingProviders !== "object") return [];
+
+  const orderedKeys = [
+    ...PROVIDER_GROUP_ORDER,
+    ...Object.keys(streamingProviders).filter(key => !PROVIDER_GROUP_ORDER.includes(key) && Array.isArray(streamingProviders[key])),
+  ];
+
+  return orderedKeys
+    .map(key => {
+      const providers = Array.isArray(streamingProviders[key])
+        ? streamingProviders[key].map(provider => normalizeProvider(provider, key)).filter(Boolean)
+        : [];
+      if (!providers.length) return null;
+      return {
+        key,
+        label: PROVIDER_GROUP_LABELS[key] || key.replace(/[_-]+/g, " ").replace(/\b\w/g, c => c.toUpperCase()),
+        providers,
+      };
+    })
+    .filter(Boolean);
+}
+
 function normalizeTitleDetail(data) {
   if (!data || typeof data !== "object") return null;
   const cast = Array.isArray(data.cast) ? data.cast.map(normalizeCastMember).filter(Boolean).slice(0, 8) : [];
@@ -83,6 +127,8 @@ function normalizeTitleDetail(data) {
     seasons,
     cast,
     artwork: data.artwork || null,
+    providerRegion: data.streamingProviders?.region || null,
+    providerGroups: normalizeProviderGroups(data.streamingProviders),
     collection: data.collection ? {
       id: data.collection.id || null,
       name: data.collection.name || "Collection",
@@ -134,4 +180,4 @@ export async function fetchOhanaTitleDetail(imdbId, options = {}) {
   }
 }
 
-export { normalizeTitleDetail };
+export { normalizeProviderGroups, normalizeTitleDetail };

@@ -323,7 +323,7 @@
             </div>
           </details>
 
-          <div class="modal-providers" v-if="providerNames.length || userStore.isLoggedIn">
+          <div class="modal-providers" v-if="apiProviderGroups.length || providerNames.length || userStore.isLoggedIn">
             <div class="providers-head">
               <div>
                 <p class="modal-section-label">Where to watch</p>
@@ -331,7 +331,33 @@
               </div>
               <RouterLink v-if="availabilityDetail.action" to="/settings/streaming">Set services</RouterLink>
             </div>
-            <div v-if="providerNames.length" class="provider-list" aria-label="Streaming availability">
+            <div v-if="apiProviderGroups.length" class="provider-groups" aria-label="Streaming availability by option">
+              <div v-for="group in apiProviderGroups" :key="group.key" class="provider-group">
+                <span class="provider-group__label">{{ group.label }}</span>
+                <div class="provider-list provider-list--grouped">
+                  <a
+                    v-for="provider in group.providers"
+                    :key="`${group.key}-${provider.id}`"
+                    target="_blank"
+                    rel="noopener"
+                    :href="providerWatchUrl"
+                    class="provider-chip provider-chip--with-logo"
+                    :title="provider.name"
+                  >
+                    <img
+                      v-if="provider.logoUrl"
+                      :src="provider.logoUrl"
+                      alt=""
+                      aria-hidden="true"
+                      loading="lazy"
+                      @error="hideBrokenProviderLogo"
+                    />
+                    <span>{{ provider.name }}</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div v-else-if="providerNames.length" class="provider-list" aria-label="Streaming availability">
               <a v-for="p in providerNames" target="_blank" rel="noopener" :key="p" :href="providerWatchUrl" class="provider-chip">{{ p }}</a>
             </div>
             <div v-if="resolvedCustomProviders.length" class="provider-custom-row" aria-label="Custom provider searches">
@@ -521,6 +547,7 @@ const showAllApiSeasons = ref(false);
 const apiCastPreview = computed(() => apiDetail.value?.cast?.slice(0, 6) || []);
 const apiCollectionItems = computed(() => apiDetail.value?.collection?.items || []);
 const apiSeasons = computed(() => apiDetail.value?.seasons || []);
+const apiProviderGroups = computed(() => apiDetail.value?.providerGroups || []);
 const regularApiSeasons = computed(() => apiSeasons.value.filter(season => !season.isSpecials));
 const apiSeasonSummary = computed(() => {
   const count = apiDetail.value?.seasonCount;
@@ -549,6 +576,10 @@ function seasonMeta(season) {
   if (season.episodeCount) parts.push(`${season.episodeCount} episode${season.episodeCount === 1 ? "" : "s"}`);
   if (season.isSpecials) parts.push("bonus material");
   return parts.join(" · ") || "Season details from Ohana API";
+}
+
+function hideBrokenProviderLogo(event) {
+  event.currentTarget.hidden = true;
 }
 
 async function loadApiDetail(movie) {
@@ -1054,9 +1085,27 @@ onUnmounted(() => {
   line-height: 1.35;
 }
 .provider-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.provider-groups {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+.provider-group {
+  display: grid;
+  gap: 6px;
+}
+.provider-group__label {
+  color: rgba(240,238,232,0.62);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.provider-list--grouped { margin-top: 0; }
 .provider-chip {
   display: inline-flex;
   align-items: center;
+  gap: 8px;
   min-height: 34px;
   padding: 6px 12px;
   background: rgba(45,212,191,0.12);
@@ -1065,6 +1114,15 @@ onUnmounted(() => {
   font-size: 12px;
   text-decoration: none;
   color: var(--teal);
+}
+.provider-chip--with-logo { padding: 4px 10px 4px 4px; }
+.provider-chip img {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  object-fit: cover;
+  background: rgba(255,255,255,0.08);
+  flex: 0 0 auto;
 }
 
 /* ── Custom providers ── */
