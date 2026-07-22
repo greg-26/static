@@ -196,7 +196,7 @@ Configuration is in `wrangler.toml`:
 - `ENVIRONMENT` — `local`, `development`, or `production`.
 - `ALLOW_CACHE_OVERRIDES` — enables `cache=refresh|bypass`; keep disabled in production unless intentionally operating the cache.
 - `TMDB_BASE_URL` / `TMDB_TIMEOUT_MS` — TMDB integration settings.
-- `CORS_ALLOWED_ORIGINS` — deployment input for the future CORS allowlist. The Worker does not enforce CORS yet.
+- `CORS_ALLOWED_ORIGINS` — optional comma-separated browser origins. Matching origins are echoed in CORS responses; when omitted, public read-only API responses use `Access-Control-Allow-Origin: *`.
 
 Development and production use real Cloudflare KV namespace IDs for `TITLE_CACHE`. The top-level local namespace ID remains a dry-run/local placeholder.
 

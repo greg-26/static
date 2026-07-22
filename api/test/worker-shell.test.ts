@@ -80,6 +80,7 @@ describe("worker routing and errors", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toBe("application/json; charset=utf-8");
+    expect(response.headers.get("access-control-allow-origin")).toBe("*");
     expect(await readJson(response)).toMatchObject({
       imdbId: "tt0133093",
       type: "movie",
@@ -289,13 +290,26 @@ describe("worker routing and errors", () => {
     const response = await worker.fetch(new Request("https://api.example.test/titles/tt0133093", { method: "POST" }), env);
 
     expect(response.status).toBe(405);
-    expect(response.headers.get("allow")).toBe("GET");
+    expect(response.headers.get("allow")).toBe("GET, OPTIONS");
     expect(response.headers.get("content-type")).toBe("application/json; charset=utf-8");
+    expect(response.headers.get("access-control-allow-origin")).toBe("*");
     expect(await readJson(response)).toEqual({
       error: {
         code: "method_not_allowed",
         message: "Method not allowed.",
       },
     });
+  });
+
+  it("returns CORS preflight headers for browser API calls", async () => {
+    const response = await worker.fetch(new Request("https://api.example.test/titles/tt0133093", {
+      method: "OPTIONS",
+      headers: { origin: "https://ohana.tv" },
+    }), { ...env, CORS_ALLOWED_ORIGINS: "https://ohana.tv" });
+
+    expect(response.status).toBe(204);
+    expect(response.headers.get("access-control-allow-origin")).toBe("https://ohana.tv");
+    expect(response.headers.get("access-control-allow-methods")).toBe("GET, OPTIONS");
+    expect(response.headers.get("access-control-allow-headers")).toContain("accept");
   });
 });

@@ -1,7 +1,7 @@
 # Sprint 012 — API TV seasons and detail hardening
 
 ## Status
-proposed
+ready/backlog — Sprint 011 API client/cache foundation is complete.
 
 ## Outcome
 
@@ -19,7 +19,7 @@ Issue [#6](https://github.com/greg-26/static/issues/6) explicitly includes seaso
 
 ## Starting context
 
-- Sprint 011 should provide lazy API fetch, error fallback, session cache, overview, cast, and collection rendering.
+- Sprint 011 provides lazy API fetch, error fallback, session cache, overview, cast, and collection rendering.
 - Static catalog browsing remains the source for Discover/Search.
 - TV/static catalog entries may have sparser local data than API responses.
 

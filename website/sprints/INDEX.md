@@ -5,8 +5,8 @@ Focused sprint files live here so agents read only the slice they are working on
 ## Status
 
 - Current planning status: issue-driven website roadmap refreshed; active working-fork issues are #6, #7, #11, #12, and #13 after closing #8, #9, and #10.
-- Current implementation phase: Sprint 14 is implemented and verified; Sprint 13 and Sprint 10 are complete and Sprint 9 has been removed from the active planner and archived as historical evidence.
-- Next executable sprint: Sprint 11 — API detail foundation for issue #6, unless Alex prioritizes non-API issue #7 before the next implementation loop.
+- Current implementation phase: Sprint 11 is implemented and verified; Sprint 14, Sprint 13, and Sprint 10 are complete and Sprint 9 has been removed from the active planner and archived as historical evidence.
+- Next executable sprint: Sprint 12 — API-enriched TV seasons and API-state hardening for issue #6, unless Alex prioritizes non-API issue #7 before the next implementation loop.
 - Latest planning update: 2026-07-22.
 
 ## Roadmap
@@ -14,8 +14,8 @@ Focused sprint files live here so agents read only the slice they are working on
 | Sprint | Outcome | Status | Depends on |
 | --- | --- | --- | --- |
 | 10 | Make Where-to-watch country/source context explicit with Spain read-only provider settings and JustWatch/TMDB attribution. | `complete` — implemented and verified 2026-07-22; addresses working-fork issues #1 and #2. | Alex escalation from 2026-07-21 planning run |
-| 11 | Integrate the Ohana API into movie details for overview, cast, and collection context. | `ready/backlog` — addresses the movie-detail API foundation for issue #6, but is temporarily behind Alex's latest non-API polish requests. | Sprint 10 complete |
-| 12 | Finish API-enriched detail surfaces for TV seasons and API-state hardening. | `proposed` — completes issue #6 after Sprint 11 foundation. | Sprint 11 complete |
+| 11 | Integrate the Ohana API into movie details for overview, cast, and collection context. | `complete` — implemented and verified 2026-07-22; issue #6 remains open for Sprint 12 seasons/API-state completion. | Sprint 10 complete |
+| 12 | Finish API-enriched detail surfaces for TV seasons and API-state hardening. | `ready/backlog` — completes issue #6 after Sprint 11 foundation. | Sprint 11 complete |
 | 13 | Convert Search recent-search chips into focus-gated autocomplete suggestions and align recent/result row radii. | `complete` — implemented and verified 2026-07-22; addresses working-fork issues #8 and #9. | Sprint 10 complete; independent of API Sprints 11/12 |
 | 14 | Remove low-value subtitles from Discover filter chip dropdown options so the menus feel less wide/fat. | `complete` — implemented and verified 2026-07-22; addresses and closes working-fork issue #10. | Sprint 13 complete |
 | 15 | Move custom-provider add/manage ownership to Settings and separate custom providers from normal availability in movie details. | `proposed` — addresses issue #11 and prepares the provider detail surface for grouped API availability. | Sprint 10 complete; recommended before Sprint 16 |
@@ -39,7 +39,7 @@ Focused sprint files live here so agents read only the slice they are working on
 - Upstream/original issues are not touched by automation unless Alex explicitly asks.
 - Sprint 9 was removed from the active planner on 2026-07-22 at Alex's request; its historical implementation evidence is archived at [`../docs/vision-execution/archive/sprint-09-trust-retrieval-accessibility-archived.md`](../docs/vision-execution/archive/sprint-09-trust-retrieval-accessibility-archived.md).
 - Sprint 10 assumes Spain-only provider availability until scraper/data inspection proves multi-country support.
-- Sprint 11 assumes the deployed Ohana API title endpoint can be consumed read-only by the static website with graceful fallback to existing catalog fields.
+- Sprint 11 added the deployed Ohana API client/cache and found/fixed the read-only CORS requirement in the API Worker so the static website can consume it from the browser.
 - Sprint 12 keeps TV season rendering separate from the first API integration slice so the movie-detail page remains reviewable after Sprint 11.
 - Sprint 13 intentionally jumped ahead of API implementation because Alex's latest two non-API issues were small, user-visible Search/recents fixes with shared code paths; it is complete as of 2026-07-22.
 - Sprint 14 was completed separately from Sprint 13 because Discover chip dropdown density is a different surface from Search recents/autocomplete.

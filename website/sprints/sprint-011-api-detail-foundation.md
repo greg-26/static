@@ -1,7 +1,7 @@
 # Sprint 011 — API detail foundation for movie details
 
 ## Status
-proposed
+complete — implemented and verified 2026-07-22; issue #6 remains open for Sprint 012 TV seasons/hardening.
 
 ## Outcome
 
@@ -24,6 +24,7 @@ Working-fork issue [#6](https://github.com/greg-26/static/issues/6) asks the web
 - Movie details currently render from static catalog/maturity/provider fields only.
 - Production API URLs recorded in project memory: `https://ohanamovies-api.ohanamovies-api.workers.dev` and development `https://ohanamovies-api-development.ohanamovies-api.workers.dev`.
 - The website has no API client/cache layer today.
+- Implementation note: production API responses did not include browser CORS headers during this sprint, so the same commit adds minimal read-only API CORS support (`GET, OPTIONS`) to unblock the static website client.
 
 ## Scope
 
@@ -88,14 +89,22 @@ Working-fork issue [#6](https://github.com/greg-26/static/issues/6) asks the web
 
 ## Acceptance criteria
 
-- [ ] Opening a movie detail fetches API metadata lazily by IMDb id when available.
-- [ ] The modal remains usable if the API request is slow, fails, or returns partial/null fields.
-- [ ] Overview appears for titles with API overview data.
-- [ ] Cast preview appears for titles with API cast data and stays compact on mobile.
-- [ ] Movie collection context appears when `collection.items[]` exists.
-- [ ] Existing static Discover/Search behavior does not depend on the API.
-- [ ] Existing suitability, list, provider, and external-link surfaces still work.
-- [ ] Issue #6 remains open with a comment only if Sprint 012 is still required.
+- [x] Opening a movie detail fetches API metadata lazily by IMDb id when available.
+- [x] The modal remains usable if the API request is slow, fails, or returns partial/null fields.
+- [x] Overview appears for titles with API overview data.
+- [x] Cast preview appears for titles with API cast data and stays compact on mobile.
+- [x] Movie collection context appears when `collection.items[]` exists.
+- [x] Existing static Discover/Search behavior does not depend on the API.
+- [x] Existing suitability, list, provider, and external-link surfaces still work.
+- [x] Issue #6 remains open with a comment only because Sprint 012 is still required.
+
+## Implementation evidence
+
+- Added `src/lib/ohanaApi.js`, defaulting to `https://ohanamovies-api.ohanamovies-api.workers.dev` with `VITE_OHANA_API_BASE_URL`, language/country, timeout, AbortController cancellation, and in-memory session cache keyed by endpoint/config/title.
+- `MovieModal.vue` now lazily fetches title metadata on modal open, uses API overview through the existing synopsis slot, renders compact cast previews, and renders ordered collection items with poster thumbnails and IMDb links when available.
+- Fallback behavior: invalid/missing IDs skip fetch; slow/failed API requests show a small “Ohana detail unavailable; showing static info.” message while preserving all static maturity/provider/list/external-link surfaces.
+- Browser API availability blocker found and fixed in `api/src/index.ts`: read-only CORS headers and `OPTIONS` preflight are now emitted; `api/README.md` documents `CORS_ALLOWED_ORIGINS` behavior.
+- Sample API contract checked with `tt0133093` (Matrix): Spanish overview, cast, collection items, artwork, and ES provider payload exist. Sprint 011 intentionally does not render seasons or replace provider truth.
 
 ## Required tests
 
@@ -107,7 +116,13 @@ Working-fork issue [#6](https://github.com/greg-26/static/issues/6) asks the web
 
 ```bash
 cd website
+npm run qa:sprint11
 npm run build
+git diff --check
+cd ../api
+npm run typecheck
+npm test
+npm run wrangler:dry-run
 ```
 
 ## Handoff

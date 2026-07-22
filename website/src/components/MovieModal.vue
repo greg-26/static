@@ -197,6 +197,40 @@
             </p>
           </div>
 
+          <div v-if="apiDetailLoading" class="api-detail-status">Loading Ohana detail…</div>
+          <div v-else-if="apiDetailError" class="api-detail-status api-detail-status--error">{{ apiDetailError }}</div>
+
+          <section v-if="apiCastPreview.length" class="api-detail-section" aria-labelledby="api-cast-label">
+            <p id="api-cast-label" class="modal-section-label">Cast</p>
+            <div class="api-cast-list">
+              <div v-for="person in apiCastPreview" :key="person.id" class="api-cast-person">
+                <strong>{{ person.name }}</strong>
+                <span v-if="person.roles.length">{{ person.roles.join(', ') }}</span>
+              </div>
+            </div>
+          </section>
+
+          <section v-if="apiCollectionItems.length" class="api-detail-section" aria-labelledby="api-collection-label">
+            <p id="api-collection-label" class="modal-section-label">{{ apiDetail.collection.name }}</p>
+            <div class="api-collection-list">
+              <a
+                v-for="item in apiCollectionItems"
+                :key="item.id"
+                class="api-collection-item"
+                :href="item.imdbId ? `https://www.imdb.com/title/${item.imdbId}/` : undefined"
+                :target="item.imdbId ? '_blank' : undefined"
+                :rel="item.imdbId ? 'noopener' : undefined"
+              >
+                <img v-if="item.posterUrl" :src="item.posterUrl" :alt="`${item.title} poster`" loading="lazy" />
+                <span v-else class="api-collection-poster-fallback" aria-hidden="true"></span>
+                <span class="api-collection-copy">
+                  <strong>{{ item.title }}</strong>
+                  <small v-if="item.year">{{ item.year }}</small>
+                </span>
+              </a>
+            </div>
+          </section>
+
           <!-- User actions (watched + lists) -->
           <div v-if="userStore.isLoggedIn" class="modal-user-actions">
             <div class="user-actions-row">
@@ -325,6 +359,7 @@ import { useUserStore } from "@/stores/user.js";
 import { lockBodyScroll, unlockBodyScroll, trapTabKey } from "@/composables/modalGuards.js";
 import { profileById, profileLabel } from "@/lib/maturityProfiles.js";
 import { AVAILABILITY_CONTEXT_COPY } from "@/lib/availabilityContext.js";
+import { fetchOhanaTitleDetail, getOhanaApiConfig } from "@/lib/ohanaApi.js";
 import UiBadge from "@/components/UiBadge.vue";
 import UiChip from "@/components/UiChip.vue";
 
@@ -339,6 +374,7 @@ const previouslyFocused = ref(null);
 const selectedDetailProfileId = ref(movieStore.activeMaturityProfileId);
 const availabilityContextCopy = AVAILABILITY_CONTEXT_COPY;
 let bodyLocked = false;
+let apiLoadToken = 0;
 
 const titleId = computed(() => props.movie?.id ? `movie-dialog-title-${props.movie.id}` : "movie-dialog-title");
 const selectedDetailProfile = computed(() => profileById(movieStore.maturityProfiles, selectedDetailProfileId.value));
@@ -460,6 +496,7 @@ const extraDetails = computed(() => {
 // Fallback cascade logic for handling overview
 const synopsis = computed(() => {
   if (!props.movie) return null;
+  if (apiDetail.value?.overview) return apiDetail.value.overview;
   // 1. Check if the active movie element already contains an overview variant
   if (props.movie.overviewEs || props.movie.overviewEn) {
     return props.movie.overviewEs || props.movie.overviewEn;
@@ -467,6 +504,35 @@ const synopsis = computed(() => {
   // 2. Return the pre-scraped English synopsis retrieved from our table
   return extraDetails.value?.synopsisEn || null;
 });
+
+// ─── Ohana API title detail enrichment ───────────────────────────────────────
+const apiDetail = ref(null);
+const apiDetailLoading = ref(false);
+const apiDetailError = ref(null);
+const apiConfig = getOhanaApiConfig();
+
+const apiCastPreview = computed(() => apiDetail.value?.cast?.slice(0, 6) || []);
+const apiCollectionItems = computed(() => apiDetail.value?.collection?.items || []);
+
+async function loadApiDetail(movie) {
+  const token = ++apiLoadToken;
+  apiDetail.value = null;
+  apiDetailError.value = null;
+  if (!movie?.id) return;
+
+  apiDetailLoading.value = true;
+  try {
+    const detail = await fetchOhanaTitleDetail(movie.id);
+    if (token !== apiLoadToken) return;
+    apiDetail.value = detail;
+  } catch (e) {
+    if (token !== apiLoadToken) return;
+    apiDetailError.value = "Ohana detail unavailable; showing static info.";
+    console.warn(`Ohana API detail fetch failed from ${apiConfig.baseUrl}:`, e.message);
+  } finally {
+    if (token === apiLoadToken) apiDetailLoading.value = false;
+  }
+}
 
 // ─── IMDb community reviews (raw text only — no severity computed in browser) ─
 const matReviews        = ref(null);
@@ -630,12 +696,17 @@ watch(() => props.movie, (movie) => {
     }
     //loadSynopsis(movie);
     loadExtraJsonData()
+    loadApiDetail(movie);
     //loadReviews(movie.id);
     nextTick(focusDialog);
   } else {
     //synopsis.value = null;
     matReviews.value = null;
     matReviewsError.value = null;
+    apiLoadToken += 1;
+    apiDetail.value = null;
+    apiDetailLoading.value = false;
+    apiDetailError.value = null;
     if (bodyLocked) {
       unlockBodyScroll();
       bodyLocked = false;
@@ -831,6 +902,72 @@ onUnmounted(() => {
   /*opacity: 0.6;*/
   letter-spacing: 0.01em;
 }
+
+.api-detail-status {
+  margin: -4px 0 18px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.api-detail-status--error { color: rgba(248,113,113,0.72); }
+.api-detail-section { margin-bottom: 18px; }
+.api-cast-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 9px;
+}
+.api-cast-person {
+  min-width: 0;
+  padding: 9px 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.035);
+}
+.api-cast-person strong,
+.api-cast-person span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.api-cast-person strong { color: var(--white); font-size: 12px; }
+.api-cast-person span { margin-top: 3px; color: var(--muted); font-size: 11px; }
+.api-collection-list {
+  display: flex;
+  gap: 8px;
+  margin-top: 9px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  overscroll-behavior-inline: contain;
+}
+.api-collection-list::-webkit-scrollbar { display: none; }
+.api-collection-item {
+  flex: 0 0 118px;
+  color: var(--white);
+  text-decoration: none;
+}
+.api-collection-item img,
+.api-collection-poster-fallback {
+  display: block;
+  width: 64px;
+  aspect-ratio: 2 / 3;
+  border-radius: 8px;
+  object-fit: cover;
+  background: var(--surface3);
+}
+.api-collection-copy {
+  display: grid;
+  gap: 2px;
+  margin-top: 6px;
+}
+.api-collection-copy strong,
+.api-collection-copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.api-collection-copy strong { font-size: 11px; }
+.api-collection-copy small { color: var(--muted); font-size: 10px; }
 
 .modal-section-label {
   font-size: 11px;
@@ -1350,6 +1487,8 @@ onUnmounted(() => {
     box-shadow: 0 8px 24px rgba(0,0,0,0.32);
   }
   .modal-close--mobile svg { width: 18px; height: 18px; }
+  .api-cast-list { grid-template-columns: 1fr; }
+  .api-collection-item { flex-basis: 104px; }
   .compatibility-summary-head { flex-direction: column; }
   .compatibility-actions { justify-content: flex-start; }
   .compatibility-row { grid-template-columns: 1fr; gap: 6px; }

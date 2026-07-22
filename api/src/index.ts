@@ -13,11 +13,44 @@ function routeTitleRequest(pathname: string): string | undefined {
   return match?.[1];
 }
 
+function allowedCorsOrigin(request: Request, env: ApiEnv): string {
+  const requestOrigin = request.headers.get("origin");
+  const configuredOrigins = (env.CORS_ALLOWED_ORIGINS || "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  if (requestOrigin && configuredOrigins.includes(requestOrigin)) return requestOrigin;
+  return configuredOrigins[0] || "*";
+}
+
+function withCors(response: Response, request: Request, env: ApiEnv): Response {
+  const headers = new Headers(response.headers);
+  headers.set("access-control-allow-origin", allowedCorsOrigin(request, env));
+  headers.set("access-control-allow-methods", "GET, OPTIONS");
+  headers.set("access-control-allow-headers", "accept, content-type");
+  headers.append("vary", "Origin");
+
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
+function corsPreflightResponse(request: Request, env: ApiEnv): Response {
+  return new Response(null, { status: 204 });
+}
+
 async function handleRequest(request: Request, env: ApiEnv): Promise<Response> {
+  if (request.method === "OPTIONS") {
+    return corsPreflightResponse(request, env);
+  }
+
   if (request.method !== "GET") {
     return errorResponse("method_not_allowed", "Method not allowed.", 405, {
       headers: {
-        allow: "GET",
+        allow: "GET, OPTIONS",
       },
     });
   }
@@ -66,10 +99,11 @@ async function handleRequest(request: Request, env: ApiEnv): Promise<Response> {
 export default {
   async fetch(request: Request, env: ApiEnv = {}): Promise<Response> {
     try {
-      return await handleRequest(request, env);
+      const response = await handleRequest(request, env);
+      return withCors(response, request, env);
     } catch (error) {
       console.error("unexpected request failure", { error: error instanceof Error ? error.name : typeof error });
-      return errorResponse("unexpected_failure", "Unexpected failure.", 500);
+      return withCors(errorResponse("unexpected_failure", "Unexpected failure.", 500), request, env);
     }
   },
 } satisfies ExportedHandler<ApiEnv>;
