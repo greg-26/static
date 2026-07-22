@@ -18,17 +18,29 @@
           </svg>
         </button>
 
-        <div class="modal-poster">
-          <img v-if="movie.p" :src="movie.p.replace('w342', 'w500')" :alt="movie.t" />
-          <div v-else class="modal-poster-placeholder" :style="{ background: movie._mockColor || '#16161f' }">
-            <span>{{ movie.t }}</span>
+        <div class="modal-visuals">
+          <div class="modal-hero" :class="{ 'modal-hero--fallback': !selectedHeroImage }">
+            <img
+              v-if="selectedHeroImage"
+              :src="selectedHeroImage.url"
+              :alt="`${movie.t} backdrop`"
+              loading="eager"
+              @error="hideBrokenHeroImage"
+            />
+            <div v-else class="modal-hero-fallback" :style="{ background: movie._mockColor || '#16161f' }" aria-hidden="true"></div>
+            <!-- Mobile: button overlaps the hero/backdrop, not the portrait poster -->
+            <button class="modal-close modal-close--mobile" @click="emit('close')" aria-label="Close movie details">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+            </button>
           </div>
-          <!-- Mobile: button overlaps the poster -->
-          <button class="modal-close modal-close--mobile" @click="emit('close')" aria-label="Close movie details">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-          </button>
+          <div class="modal-poster">
+            <img v-if="posterImageSrc" :src="posterImageSrc" :alt="`${movie.t} poster`" loading="eager" />
+            <div v-else class="modal-poster-placeholder" :style="{ background: movie._mockColor || '#16161f' }">
+              <span>{{ movie.t }}</span>
+            </div>
+          </div>
         </div>
 
         <div class="modal-body">
@@ -543,6 +555,19 @@ const apiDetailLoading = ref(false);
 const apiDetailError = ref(null);
 const apiConfig = getOhanaApiConfig();
 const showAllApiSeasons = ref(false);
+const heroImageSeed = ref(0);
+const brokenHeroImageUrls = ref(new Set());
+
+const posterImageSrc = computed(() => apiDetail.value?.posterImage?.url || props.movie?.p?.replace('w342', 'w500') || null);
+const heroImageCandidates = computed(() => {
+  const blocked = brokenHeroImageUrls.value;
+  return (apiDetail.value?.heroImageCandidates || []).filter(image => image.url && !blocked.has(image.url));
+});
+const selectedHeroImage = computed(() => {
+  if (!heroImageCandidates.value.length) return null;
+  const index = Math.floor(heroImageSeed.value * heroImageCandidates.value.length) % heroImageCandidates.value.length;
+  return heroImageCandidates.value[index];
+});
 
 const apiCastPreview = computed(() => apiDetail.value?.cast?.slice(0, 6) || []);
 const apiCollectionItems = computed(() => apiDetail.value?.collection?.items || []);
@@ -580,6 +605,12 @@ function seasonMeta(season) {
 
 function hideBrokenProviderLogo(event) {
   event.currentTarget.hidden = true;
+}
+
+function hideBrokenHeroImage(event) {
+  const url = event.currentTarget?.currentSrc || event.currentTarget?.src;
+  if (!url) return;
+  brokenHeroImageUrls.value = new Set([...brokenHeroImageUrls.value, url]);
 }
 
 async function loadApiDetail(movie) {
@@ -692,6 +723,8 @@ const resolvedCustomProviders = computed(() => resolveCustomProviders(userStore.
 watch(() => props.movie, (movie) => {
   if (movie) {
     selectedDetailProfileId.value = movieStore.activeMaturityProfileId;
+    heroImageSeed.value = Math.random();
+    brokenHeroImageUrls.value = new Set();
     if (!bodyLocked) {
       previouslyFocused.value = document.activeElement;
       lockBodyScroll();
@@ -710,6 +743,7 @@ watch(() => props.movie, (movie) => {
     apiDetail.value = null;
     apiDetailLoading.value = false;
     apiDetailError.value = null;
+    brokenHeroImageUrls.value = new Set();
     if (bodyLocked) {
       unlockBodyScroll();
       bodyLocked = false;
@@ -832,16 +866,41 @@ onUnmounted(() => {
 .modal-close--mobile svg { width: 14px; height: 14px; }
 .modal-close--mobile:hover { background: rgba(0,0,0,0.8); }
 
-.modal-poster {
-  flex-shrink: 0;
-  width: 140px;
-  height: 210px;
+.modal-visuals {
+  flex: 0 0 220px;
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  position: relative;
+}
+.modal-hero {
+  width: 100%;
+  aspect-ratio: 16 / 9;
   border-radius: var(--radius);
   overflow: hidden;
   position: relative;
-  align-self: flex-start;
+  background: rgba(255,255,255,0.045);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.24);
 }
-.modal-poster img { width: 100%; height: 100%; object-fit: cover; }
+.modal-hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.modal-hero-fallback {
+  width: 100%;
+  height: 100%;
+  background-image:
+    radial-gradient(circle at 24% 20%, rgba(255,255,255,0.13), transparent 32%),
+    linear-gradient(135deg, rgba(45,212,191,0.16), rgba(245,200,66,0.08));
+}
+.modal-poster {
+  width: 140px;
+  aspect-ratio: 2 / 3;
+  border-radius: var(--radius);
+  overflow: hidden;
+  position: relative;
+  justify-self: start;
+  background: var(--surface3);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.32);
+}
+.modal-poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .modal-poster-placeholder {
   width: 100%; height: 100%;
   display: flex; align-items: flex-end; padding: 10px;
@@ -1525,8 +1584,24 @@ onUnmounted(() => {
     gap: 16px;
     max-width: none;
   }
-  .modal-poster { width: 100%; height: 200px; }
-  .modal-poster img { object-position: center top; }
+  .modal-visuals {
+    width: 100%;
+    flex-basis: auto;
+    gap: 0;
+    margin-bottom: 2px;
+  }
+  .modal-hero {
+    width: calc(100% + 32px);
+    margin: calc(-48px - env(safe-area-inset-top, 0px)) -16px 0;
+    border-radius: 0 0 18px 18px;
+  }
+  .modal-poster {
+    width: 108px;
+    margin-top: -58px;
+    margin-left: 12px;
+    border-radius: 12px;
+    border: 2px solid rgba(8,8,16,0.88);
+  }
   .modal-close--desktop { display: none; }
   .modal-close--mobile  {
     position: fixed;

@@ -17,7 +17,8 @@
     "qa:sprint13": "node scripts/qa-sprint13-search-recents.mjs",
     "qa:sprint14": "node scripts/qa-sprint14-discover-chip-density.mjs",
     "qa:sprint15": "node scripts/qa-sprint15-provider-settings.mjs",
-    "qa:sprint16": "node scripts/qa-sprint16-provider-groups.mjs"
+    "qa:sprint16": "node scripts/qa-sprint16-provider-groups.mjs",
+    "qa:sprint17": "node scripts/qa-sprint17-imagery.mjs"
   },
   "dependencies": {
     "fuse.js": "^7.0.0",

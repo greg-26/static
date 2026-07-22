@@ -103,6 +103,48 @@ function normalizeProviderGroups(streamingProviders) {
     .filter(Boolean);
 }
 
+function normalizeArtworkImage(image, preferred, type) {
+  const url = bestImageUrl(image, preferred);
+  if (!url) return null;
+  return {
+    id: image.id ? String(image.id) : url,
+    url,
+    originalUrl: bestImageUrl(image, ["original", "large", "medium", "small"]),
+    width: Number.isFinite(image.width) ? image.width : null,
+    height: Number.isFinite(image.height) ? image.height : null,
+    language: image.language || null,
+    type,
+  };
+}
+
+function uniqueImages(images) {
+  const seen = new Set();
+  return images.filter(image => {
+    if (!image?.url || seen.has(image.url)) return false;
+    seen.add(image.url);
+    return true;
+  });
+}
+
+function normalizeHeroImageCandidates(artwork) {
+  if (!artwork || typeof artwork !== "object") return [];
+  const candidates = [
+    normalizeArtworkImage(artwork.backdrop, ["large", "medium", "original", "small"], "backdrop"),
+    ...(Array.isArray(artwork.backdrops)
+      ? artwork.backdrops.map(image => normalizeArtworkImage(image, ["large", "medium", "original", "small"], "backdrop"))
+      : []),
+    ...(Array.isArray(artwork.stills)
+      ? artwork.stills.map(image => normalizeArtworkImage(image, ["large", "medium", "original", "small"], "still"))
+      : []),
+  ].filter(Boolean);
+  return uniqueImages(candidates);
+}
+
+function normalizePosterImage(artwork) {
+  if (!artwork || typeof artwork !== "object") return null;
+  return normalizeArtworkImage(artwork.poster, ["medium", "large", "small", "original"], "poster");
+}
+
 function normalizeTitleDetail(data) {
   if (!data || typeof data !== "object") return null;
   const cast = Array.isArray(data.cast) ? data.cast.map(normalizeCastMember).filter(Boolean).slice(0, 8) : [];
@@ -127,6 +169,8 @@ function normalizeTitleDetail(data) {
     seasons,
     cast,
     artwork: data.artwork || null,
+    posterImage: normalizePosterImage(data.artwork),
+    heroImageCandidates: normalizeHeroImageCandidates(data.artwork),
     providerRegion: data.streamingProviders?.region || null,
     providerGroups: normalizeProviderGroups(data.streamingProviders),
     collection: data.collection ? {

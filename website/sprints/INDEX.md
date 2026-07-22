@@ -4,9 +4,9 @@ Focused sprint files live here so agents read only the slice they are working on
 
 ## Status
 
-- Current planning status: issue-driven website roadmap refreshed; active working-fork issues are #7 and #13 after closing #6, #8, #9, #10, #11, and #12.
-- Current implementation phase: Sprint 16, Sprint 15, Sprint 12, Sprint 11, Sprint 14, Sprint 13, and Sprint 10 are implemented and verified; Sprint 9 has been removed from the active planner and archived as historical evidence.
-- Next executable sprint: Sprint 17 — split movie-detail imagery into a horizontal TMDB/API hero image plus a proper portrait poster treatment, unless Alex prioritizes non-API issue #7 before the next implementation loop.
+- Current planning status: issue-driven website roadmap refreshed; active working-fork issues were empty during Sprint 17 completion checks after closing/handling the planned tranche.
+- Current implementation phase: Sprints 10–17 are implemented and verified; Sprint 9 has been removed from the active planner and archived as historical evidence.
+- Next executable sprint: none currently planned in this website sprint index; ask Alex/planner for a new sprint if more work is desired.
 - Latest planning update: 2026-07-22.
 
 ## Roadmap
@@ -20,7 +20,7 @@ Focused sprint files live here so agents read only the slice they are working on
 | 14 | Remove low-value subtitles from Discover filter chip dropdown options so the menus feel less wide/fat. | `complete` — implemented and verified 2026-07-22; addresses and closes working-fork issue #10. | Sprint 13 complete |
 | 15 | Move custom-provider add/manage ownership to Settings and separate custom providers from normal availability in movie details. | `complete` — implemented and verified 2026-07-22; addresses and closes working-fork issue #11. | Sprint 10 complete; recommended before Sprint 16 |
 | 16 | Break movie-detail provider availability into TMDB-style stream/rent/buy groups with provider icons and graceful fallback. | `complete` — implemented and verified 2026-07-22; addresses and closes working-fork issue #12. | Sprints 11, 12, and 15 complete; UX icon sizing/radius guidance |
-| 17 | Split movie-detail imagery into a horizontal TMDB/API hero image plus a proper portrait poster treatment. | `proposed` — addresses issue #13 as a distinct movie-detail image hierarchy/API-image slice. | Sprint 11 API detail foundation complete; image/backdrop contract verified |
+| 17 | Split movie-detail imagery into a horizontal TMDB/API hero image plus a proper portrait poster treatment. | `complete` — implemented and verified 2026-07-22; issue #13 was not present in the active tracker during close attempt. | Sprint 11 API detail foundation complete; image/backdrop contract verified |
 
 ## Sprint files
 
@@ -45,7 +45,7 @@ Focused sprint files live here so agents read only the slice they are working on
 - Sprint 14 was completed separately from Sprint 13 because Discover chip dropdown density is a different surface from Search recents/autocomplete.
 - Sprint 15 moved custom-provider configuration to Settings before Sprint 16 adds richer provider availability grouping, so movie details no longer mix configuration controls with availability display.
 - Sprint 16 uses the Ohana API `streamingProviders` contract (`region`, `stream`, `rent`, `buy`, and provider `logo.sizes`) and falls back to the static provider bitmask when grouped API data is unavailable.
-- Sprint 17 should not be folded into provider grouping: issue #13 is about movie-detail image hierarchy and should use API/TMDB backdrop/still images when available while preserving poster aspect ratio.
+- Sprint 17 was completed separately from provider grouping: movie details now use API/TMDB backdrop images for the horizontal hero when available and preserve the poster as portrait.
 - Issue #7 (Discover movie duplication) is open and non-API, but is not part of the Search/recents or chip-density sprints; plan it as a separate Discover deduplication sprint if Alex prioritizes it next.
 
 ## Open questions
@@ -53,7 +53,7 @@ Focused sprint files live here so agents read only the slice they are working on
 - API endpoint configuration: use production API by default or an environment-configured base URL? Recommended default: add a small config constant/env fallback and keep local development overrideable.
 - API payload limits: cast/collection/seasons may be long. Recommended default: render compact previews first, with progressive disclosure only if the data volume demands it.
 - Search recents autocomplete semantics: prefer an input-attached, focus-gated suggestion list over permanent chips; keep mobile keyboard behavior from prior Search polish intact.
-- Movie-detail image contract: confirm the Ohana API exposes backdrop/still/image candidates for Sprint 17. Recommended default: split the layout safely, but block backdrop/randomization instead of fabricating image URLs if no contract exists.
+- Movie-detail image contract: production Ohana API exposes `artwork.poster`, `artwork.backdrop`, and `artwork.backdrops[]`; Sprint 17 uses those fields and falls back safely without fabricating URLs.
 
 ## Completion criteria
 
@@ -65,7 +65,7 @@ The current website issue tranche is complete when:
 - Sprint 11 and Sprint 12 API enrichment are implemented and verified, and issue #6 was commented and closed by the implementation workflow.
 - Sprint 15 provider settings/custom-source ownership is implemented and verified, and issue #11 was commented and closed by the implementation workflow.
 - Sprint 16 provider availability grouping/icons is implemented and verified, and issue #12 was commented and closed by the implementation workflow.
-- Sprint 17 movie-detail imagery hierarchy is implemented and verified, and issue #13 is commented and closed by the implementation workflow when fully satisfied or left open with an API image-contract blocker.
+- Sprint 17 movie-detail imagery hierarchy is implemented and verified; issue #13 could not be commented/closed because it was not present in the active working-fork tracker.
 - The dev server remains reviewable for Alex over Tailscale after implementation slices.
 
 ## Maintenance rules

@@ -1,7 +1,7 @@
 # Sprint 017 — Movie-detail imagery hierarchy
 
 ## Status
-proposed
+complete — implemented and verified 2026-07-22; working-fork issue #13 was not present in the active tracker, so no close action was possible.
 
 ## Outcome
 
@@ -73,14 +73,14 @@ Alex added working-fork issue [#13](https://github.com/greg-26/static/issues/13)
 
 ## Acceptance criteria
 
-- [ ] Mobile movie details no longer crop portrait posters into a wide rectangle.
-- [ ] A horizontal TMDB/API backdrop/still image is used for the wide detail image area when available.
-- [ ] The title poster remains visible in proper portrait aspect ratio on mobile and desktop.
-- [ ] Multiple suitable TMDB/API images are selected randomly without flicker during an open modal session.
-- [ ] Missing backdrop/image data falls back gracefully without broken image boxes or poster distortion.
-- [ ] Suitability, where-to-watch, list actions, and API metadata sections remain usable and not visually buried.
-- [ ] Carousel/swipe behavior is not implemented in this sprint and is left as a future follow-up only if image volume justifies it.
-- [ ] Issue #13 has implementation evidence comments only after the sprint is complete.
+- [x] Mobile movie details no longer crop portrait posters into a wide rectangle.
+- [x] A horizontal TMDB/API backdrop/still image is used for the wide detail image area when available.
+- [x] The title poster remains visible in proper portrait aspect ratio on mobile and desktop.
+- [x] Multiple suitable TMDB/API images are selected randomly without flicker during an open modal session.
+- [x] Missing backdrop/image data falls back gracefully without broken image boxes or poster distortion.
+- [x] Suitability, where-to-watch, list actions, and API metadata sections remain usable and not visually buried.
+- [x] Carousel/swipe behavior is not implemented in this sprint and is left as a future follow-up only if image volume justifies it.
+- [x] Issue #13 handling was attempted after completion; the active working-fork tracker currently has no issue #13 to comment/close.
 
 ## Required tests
 
@@ -92,12 +92,44 @@ Alex added working-fork issue [#13](https://github.com/greg-26/static/issues/13)
 
 ```bash
 cd website
+npm run qa:sprint17
+npm run qa:modal
+npm run qa:sprint11
+npm run qa:sprint12
+npm run qa:sprint16
 npm run build
+git diff --check
 ```
+
+## Implementation evidence
+
+Implemented 2026-07-22:
+
+- Inspected production Ohana API artwork responses for `tt0133093`, `tt0111161`, and `tt0944947`; title detail exposes `artwork.poster`, `artwork.backdrop`, and `artwork.backdrops[]` with TMDB image sizes suitable for separate portrait and horizontal treatments.
+- `src/lib/ohanaApi.js` now normalizes `posterImage` and `heroImageCandidates` from API artwork, preferring TMDB backdrop/still images for horizontal hero use and de-duplicating candidates.
+- `MovieModal.vue` now renders a 16:9 `modal-hero` separately from a real portrait `modal-poster` with `aspect-ratio: 2 / 3`; the old mobile `.modal-poster { width: 100%; height: 200px; }` crop path is gone.
+- Hero image selection uses a per-open `heroImageSeed`, so multiple API backdrop/still candidates vary without flickering while the modal remains open.
+- Missing or broken hero images fall back to a neutral visual panel; the poster remains portrait and visible. Carousel/swipe behavior was intentionally not implemented.
+- Added `npm run qa:sprint17` for source-level checks covering API image normalization, portrait aspect preservation, per-open randomization, fallback behavior, and mobile layout.
+
+Verification passed:
+
+```bash
+cd website
+npm run qa:sprint17
+npm run build
+git diff --check
+npm run qa:modal
+npm run qa:sprint11
+npm run qa:sprint12
+npm run qa:sprint16
+```
+
+Issue handling: `gh issue list --state open` returned no open working-fork issues, and `gh issue view 13` could not resolve an issue/PR in the active repository, so no comment/close action was possible.
 
 ## Handoff
 
-Report the API/static image fields used, randomization strategy, fallback behavior, sample titles checked, verification commands, and whether issue #13 was closed or left open with an API/image-contract blocker.
+API fields used: `artwork.poster`, `artwork.backdrop`, `artwork.backdrops[]`, and defensive `artwork.stills[]` support if it appears later. Randomization is per modal open via `heroImageSeed`; fallback is a neutral hero panel plus portrait poster. Issue #13 was not present in the active tracker.
 
 ## Dependencies unlocked
 
