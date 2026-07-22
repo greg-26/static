@@ -3,6 +3,7 @@ import { ref, computed, shallowRef } from "vue";
 import Fuse from "fuse.js";
 import { MATURITY_CATEGORIES, getScore } from "@/maturity.js";
 import { DEFAULT_MATURITY_PROFILES, normalizeMaturityProfiles, normalizeMaturityValues, profileById, profileLabel } from "@/lib/maturityProfiles.js";
+import { diversifyDiscoverRowStarts } from "@/lib/discoverRows.js";
 
 // ── Genres: exact IMDb strings as keys, bitmask values ───────────────────────
 export const GENRES = {
@@ -247,30 +248,8 @@ export const useMovieStore = defineStore("movies", () => {
 
     if (!selectedProviders.value) rows.push(...providerRows);
 
-    return diversifyRowStarts(rows);
+    return diversifyDiscoverRowStarts(rows);
   });
-
-  function movieKey(movie) {
-    return movie?.id || `${movie?.t || ""}-${movie?.y || ""}`.toLowerCase();
-  }
-
-  function diversifyRowStarts(rows) {
-    const seenPreviousRows = new Set();
-
-    return rows.map((row) => {
-      const fresh = [];
-      const repeated = [];
-
-      for (const movie of row.movies) {
-        (seenPreviousRows.has(movieKey(movie)) ? repeated : fresh).push(movie);
-      }
-
-      const movies = [...fresh, ...repeated];
-      for (const movie of row.movies) seenPreviousRows.add(movieKey(movie));
-
-      return { ...row, movies };
-    });
-  }
 
   // ── Filter helpers ────────────────────────────────────────
   function toggleGenre(g) {

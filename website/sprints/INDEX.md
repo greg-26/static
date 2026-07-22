@@ -1,72 +1,62 @@
 # Sprint index
 
-Focused sprint files live here so agents read only the slice they are working on. This file is the single source of truth for active/next sprint status.
+Focused active sprint files live here. Completed or superseded sprint history lives under [`archive/`](archive/) so implementation agents do not mistake old plans for the next executable work.
 
 ## Status
 
-- Current planning status: issue-driven website roadmap refreshed; active working-fork issues were empty during Sprint 17 completion checks after closing/handling the planned tranche.
-- Current implementation phase: Sprints 10–17 are implemented and verified; Sprint 9 has been removed from the active planner and archived as historical evidence.
-- Next executable sprint: none currently planned in this website sprint index; ask Alex/planner for a new sprint if more work is desired.
+- Current planning status: issue-driven website roadmap refreshed from open working-fork issues #7 and #13–#17.
+- Current implementation phase: Sprints 10–18 are implemented; Sprints 10–17 are archived.
+- Next executable sprint: Sprint 019 — Movie-detail overview, loading, and links.
 - Latest planning update: 2026-07-22.
 
 ## Roadmap
 
 | Sprint | Outcome | Status | Depends on |
 | --- | --- | --- | --- |
-| 10 | Make Where-to-watch country/source context explicit with Spain read-only provider settings and JustWatch/TMDB attribution. | `complete` — implemented and verified 2026-07-22; addresses working-fork issues #1 and #2. | Alex escalation from 2026-07-21 planning run |
-| 11 | Integrate the Ohana API into movie details for overview, cast, and collection context. | `complete` — implemented and verified 2026-07-22; paired with Sprint 12 to close issue #6. | Sprint 10 complete |
-| 12 | Finish API-enriched detail surfaces for TV seasons and API-state hardening. | `complete` — implemented and verified 2026-07-22; closes working-fork issue #6 after Sprint 11 foundation. | Sprint 11 complete |
-| 13 | Convert Search recent-search chips into focus-gated autocomplete suggestions and align recent/result row radii. | `complete` — implemented and verified 2026-07-22; addresses working-fork issues #8 and #9. | Sprint 10 complete; independent of API Sprints 11/12 |
-| 14 | Remove low-value subtitles from Discover filter chip dropdown options so the menus feel less wide/fat. | `complete` — implemented and verified 2026-07-22; addresses and closes working-fork issue #10. | Sprint 13 complete |
-| 15 | Move custom-provider add/manage ownership to Settings and separate custom providers from normal availability in movie details. | `complete` — implemented and verified 2026-07-22; addresses and closes working-fork issue #11. | Sprint 10 complete; recommended before Sprint 16 |
-| 16 | Break movie-detail provider availability into TMDB-style stream/rent/buy groups with provider icons and graceful fallback. | `complete` — implemented and verified 2026-07-22; addresses and closes working-fork issue #12. | Sprints 11, 12, and 15 complete; UX icon sizing/radius guidance |
-| 17 | Split movie-detail imagery into a horizontal TMDB/API hero image plus a proper portrait poster treatment. | `complete` — implemented and verified 2026-07-22; issue #13 was not present in the active tracker during close attempt. | Sprint 11 API detail foundation complete; image/backdrop contract verified |
+| 018 | Prevent repeated titles across the first visible positions of Discover rows and document the row-deduplication model. | `complete` — implemented and verified 2026-07-22; addresses working-fork issue #7. | Current Discover row generation remains static/fetch based |
+| 019 | Reorder movie-detail content around overview-first reading, add read-more disclosure, improve API hero loading feedback, and restore the TMDB external link affordance. | `ready` — addresses the layout/link/loading parts of issue #15. | Sprint 017 imagery hierarchy complete |
+| 020 | Restore parent-guide category tags and make the guide score/link rows compact, legible, and link-like. | `ready` — addresses issue #16 and the parent-guide link/row parts of issue #15. | Sprint 019 preferred first so parent guide lands in the new detail order |
+| 021 | Add cast profile photos and enlarge collection movie posters without making the detail modal noisy on mobile. | `ready` — addresses issue #14 and the collection-poster part of issue #15. | Sprint 019 complete; API already exposes cast `profile` images |
+| 022 | Unblock local/Tailscale and production website API CORS verification by updating API-origin handling and documenting the smoke check. | `ready` — addresses cross-project issue #17. | API Worker deploy path from API Sprint 009; coordinate with API planner if another API sprint is active |
+| 017 | Split movie-detail imagery into a horizontal TMDB/API hero image plus a proper portrait poster treatment. | `complete` — implemented and verified 2026-07-22; issue #13 remains open in GitHub and needs implementation-workflow closure/comment evidence. | Sprint 11 API detail foundation complete |
 
 ## Sprint files
 
-- Sprint 10: [`sprint-010-where-to-watch-country-context.md`](sprint-010-where-to-watch-country-context.md)
-- Sprint 11: [`sprint-011-api-detail-foundation.md`](sprint-011-api-detail-foundation.md)
-- Sprint 12: [`sprint-012-api-tv-seasons-hardening.md`](sprint-012-api-tv-seasons-hardening.md)
-- Sprint 13: [`sprint-013-search-recents-autocomplete-polish.md`](sprint-013-search-recents-autocomplete-polish.md)
-- Sprint 14: [`sprint-014-discover-chip-dropdown-density.md`](sprint-014-discover-chip-dropdown-density.md)
-- Sprint 15: [`sprint-015-provider-settings-and-custom-sources.md`](sprint-015-provider-settings-and-custom-sources.md)
-- Sprint 16: [`sprint-016-provider-availability-breakdown.md`](sprint-016-provider-availability-breakdown.md)
-- Sprint 17: [`sprint-017-movie-detail-imagery-hierarchy.md`](sprint-017-movie-detail-imagery-hierarchy.md)
+- Sprint 018: [`sprint-018-discover-visible-row-deduplication.md`](sprint-018-discover-visible-row-deduplication.md)
+- Sprint 019: [`sprint-019-movie-detail-overview-loading-links.md`](sprint-019-movie-detail-overview-loading-links.md)
+- Sprint 020: [`sprint-020-parent-guide-tags-and-density.md`](sprint-020-parent-guide-tags-and-density.md)
+- Sprint 021: [`sprint-021-cast-and-collection-media-polish.md`](sprint-021-cast-and-collection-media-polish.md)
+- Sprint 022: [`sprint-022-api-cors-website-origins.md`](sprint-022-api-cors-website-origins.md)
+- Archived completed sprints: [`archive/`](archive/)
 
 ## Decisions and assumptions
 
 - Working-fork issues (`origin`, currently `greg-26/static`) are the active issue tracker for agent-driven work.
 - Upstream/original issues are not touched by automation unless Alex explicitly asks.
-- Sprint 9 was removed from the active planner on 2026-07-22 at Alex's request; its historical implementation evidence is archived at [`../docs/vision-execution/archive/sprint-09-trust-retrieval-accessibility-archived.md`](../docs/vision-execution/archive/sprint-09-trust-retrieval-accessibility-archived.md).
-- Sprint 10 assumes Spain-only provider availability until scraper/data inspection proves multi-country support.
-- Sprint 11 added the deployed Ohana API client/cache and found/fixed the read-only CORS requirement in the API Worker so the static website can consume it from the browser.
-- Sprint 12 kept TV season rendering separate from the first API integration slice; it now renders season counts, compact season summaries, Specials handling, and long-list disclosure from the existing API detail fetch.
-- Sprint 13 intentionally jumped ahead of API implementation because Alex's latest two non-API issues were small, user-visible Search/recents fixes with shared code paths; it is complete as of 2026-07-22.
-- Sprint 14 was completed separately from Sprint 13 because Discover chip dropdown density is a different surface from Search recents/autocomplete.
-- Sprint 15 moved custom-provider configuration to Settings before Sprint 16 adds richer provider availability grouping, so movie details no longer mix configuration controls with availability display.
-- Sprint 16 uses the Ohana API `streamingProviders` contract (`region`, `stream`, `rent`, `buy`, and provider `logo.sizes`) and falls back to the static provider bitmask when grouped API data is unavailable.
-- Sprint 17 was completed separately from provider grouping: movie details now use API/TMDB backdrop images for the horizontal hero when available and preserve the poster as portrait.
-- Issue #7 (Discover movie duplication) is open and non-API, but is not part of the Search/recents or chip-density sprints; plan it as a separate Discover deduplication sprint if Alex prioritizes it next.
+- Completed Sprints 10–17 were moved to `sprints/archive/` on 2026-07-22 without rewriting their history or completion evidence.
+- Issue #13 is already covered by completed Sprint 017. Do not create a duplicate sprint; the next implementation agent should comment/close with evidence if the current code still satisfies the issue.
+- Issue #15 is intentionally split across Sprints 019–021 because it mixes detail ordering, loading state, external links, parent-guide presentation, collection sizing, and cast/media polish.
+- Issue #14 does not currently require a new API issue: the production Ohana API response includes cast `profile` images and `website/src/lib/ohanaApi.js` already normalizes `profileUrl`; the UI simply does not render it yet.
+- Issue #17 is API-owned but website-relevant because it blocks local/Tailscale website review against the deployed API. Keep it as a small cross-project unblocker instead of mixing CORS changes into UI sprints.
 
 ## Open questions
 
-- API endpoint configuration: use production API by default or an environment-configured base URL? Recommended default: add a small config constant/env fallback and keep local development overrideable.
-- API payload limits: cast/collection/seasons may be long. Recommended default: render compact previews first, with progressive disclosure only if the data volume demands it.
-- Search recents autocomplete semantics: prefer an input-attached, focus-gated suggestion list over permanent chips; keep mobile keyboard behavior from prior Search polish intact.
-- Movie-detail image contract: production Ohana API exposes `artwork.poster`, `artwork.backdrop`, and `artwork.backdrops[]`; Sprint 17 uses those fields and falls back safely without fabricating URLs.
+- Discover visible threshold for issue #7: recommended default is the first two poster slots per row for the source-level gate, plus documented code structured so a later viewport-aware removal pass can use fully-visible IntersectionObserver evidence.
+- Overview read-more threshold for issue #15: recommended default is a compact 3–4 line clamp on mobile, expanded by an inline button without losing scroll position.
+- Parent-guide tags for issue #16: restore concise dimension tags from existing/upstream data if present; if upstream tags are not available in current data, implement the compact row layout and record the missing tag source as a data/API follow-up.
+- CORS origins for issue #17: recommended default is to allow `https://ohana.tv`, `https://ohana-tv.netlify.app`, `https://ohana-tv.pages.dev`, and the known Tailscale/dev origins needed for review, without using wildcard credentials.
 
 ## Completion criteria
 
-The current website issue tranche is complete when:
+The current planned tranche is complete when:
 
-- Sprint 10 country/source context is implemented, verified, and issues #1 and #2 are commented and closed by the implementation workflow when fully satisfied.
-- Sprint 13 Search/recents polish is implemented and verified, and issues #8 and #9 were commented and closed by the implementation workflow.
-- Sprint 14 Discover chip dropdown density is implemented and verified, and issue #10 was commented and closed by the implementation workflow.
-- Sprint 11 and Sprint 12 API enrichment are implemented and verified, and issue #6 was commented and closed by the implementation workflow.
-- Sprint 15 provider settings/custom-source ownership is implemented and verified, and issue #11 was commented and closed by the implementation workflow.
-- Sprint 16 provider availability grouping/icons is implemented and verified, and issue #12 was commented and closed by the implementation workflow.
-- Sprint 17 movie-detail imagery hierarchy is implemented and verified; issue #13 could not be commented/closed because it was not present in the active working-fork tracker.
-- The dev server remains reviewable for Alex over Tailscale after implementation slices.
+- Issue #7 is implemented, verified on mobile-width Discover, documented in README/code, and closed by the implementation workflow.
+- Issue #13 has a fresh evidence comment/closure if the archived Sprint 017 implementation still satisfies it.
+- Issue #15 is fully covered by Sprints 019–021: loading feedback, collection sizing, overview ordering/read-more, external TMDB link/logo, actual parent-guide links, and section order.
+- Issue #16 is implemented by Sprint 020 with restored tags and compact parent-guide scoring rows.
+- Issue #14 is implemented by Sprint 021 using API cast profile images, or blocked with a new API issue only if the contract regresses.
+- Issue #17 is implemented by Sprint 022 with local/Tailscale and production-origin CORS smoke evidence.
+- Each implementation sprint runs its listed verification commands and keeps the dev server reviewable for Alex over Tailscale when UI changes are made.
 
 ## Maintenance rules
 

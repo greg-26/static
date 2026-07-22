@@ -17,6 +17,7 @@ Historical human/PMT feedback is now PMT-owned and lives under `reports/pmt/huma
 
 Historical planning reports may live under the old `reports/principal-engineer/` path; new planning reports belong in `reports/sprint-planner/`.
 
+- [`reports/sprint-planner/2026-07-22-sprint-planner-next-issue-tranche.md`](../../reports/sprint-planner/2026-07-22-sprint-planner-next-issue-tranche.md) — current open issue tranche mapped to Sprints 018–022 and completed Sprints 010–017 archived.
 - [`reports/sprint-planner/2026-07-22-sprint-planner-issue-13.md`](../../reports/sprint-planner/2026-07-22-sprint-planner-issue-13.md) — working-fork issue #13 mapped to Sprint 017 movie-detail imagery hierarchy.
 - [`reports/sprint-planner/2026-07-22-sprint-planner-more-issues.md`](../../reports/sprint-planner/2026-07-22-sprint-planner-more-issues.md) — post-Sprint-013 working-fork issues #10–#12 mapped to Sprints 014–016.
 - [`reports/sprint-planner/2026-07-21-sprint-planner-plan.md`](../../reports/sprint-planner/2026-07-21-sprint-planner-plan.md) — open working-fork issue map to Sprints 010–012.

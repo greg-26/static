@@ -95,6 +95,10 @@ src/
 
 All filtering is computed in the Pinia store. Current roadmap direction keeps search broad for now: once title search is active, it may ignore browse filters like the existing behavior.
 
+### Discover row deduplication
+
+Discover rows use `src/lib/discoverRows.js` from `src/stores/movies.js` to keep the first two poster slots diverse across rows. Stable IDs are preferred, with normalized title/year fallback; duplicates from earlier visible row starts are pushed deeper when alternatives exist, and only removed from the visible start when a row has no fresh alternatives. This is source-level visible-slot dedupe, not runtime viewport measurement.
+
 ```
 allMovies (20k)
   → genre bitmask filter     O(n), ~0.2ms
