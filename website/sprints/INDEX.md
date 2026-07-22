@@ -14,7 +14,7 @@ Focused sprint files live here so agents read only the slice they are working on
 | Sprint | Outcome | Status | Depends on |
 | --- | --- | --- | --- |
 | 10 | Make Where-to-watch country/source context explicit with Spain read-only provider settings and JustWatch/TMDB attribution. | `complete` — implemented and verified 2026-07-22; addresses working-fork issues #1 and #2. | Alex escalation from 2026-07-21 planning run |
-| 11 | Integrate the Ohana API into movie details for overview, cast, and collection context. | `complete` — implemented and verified 2026-07-22; issue #6 remains open for Sprint 12 seasons/API-state completion. | Sprint 10 complete |
+| 11 | Integrate the Ohana API into movie details for overview, cast, and collection context. | `complete` — implemented and verified 2026-07-22; paired with Sprint 12 to close issue #6. | Sprint 10 complete |
 | 12 | Finish API-enriched detail surfaces for TV seasons and API-state hardening. | `complete` — implemented and verified 2026-07-22; closes working-fork issue #6 after Sprint 11 foundation. | Sprint 11 complete |
 | 13 | Convert Search recent-search chips into focus-gated autocomplete suggestions and align recent/result row radii. | `complete` — implemented and verified 2026-07-22; addresses working-fork issues #8 and #9. | Sprint 10 complete; independent of API Sprints 11/12 |
 | 14 | Remove low-value subtitles from Discover filter chip dropdown options so the menus feel less wide/fat. | `complete` — implemented and verified 2026-07-22; addresses and closes working-fork issue #10. | Sprint 13 complete |
