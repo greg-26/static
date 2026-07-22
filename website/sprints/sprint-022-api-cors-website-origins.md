@@ -1,7 +1,7 @@
 # Sprint 022 — API CORS website origins
 
 ## Status
-ready
+complete — verified 2026-07-22
 
 ## Outcome
 
@@ -84,7 +84,34 @@ git diff --check
 
 ## Handoff
 
-This sprint is website-relevant but API-owned in implementation mechanics. If the API planner claims issue #17 first, mark this sprint `superseded` and link the API sprint/report.
+Completed 2026-07-22 by Greg.
+
+Repository state already contained the needed explicit API CORS allowlist and tests before this website cadence run selected Sprint 022. This run verified the implementation rather than duplicating API work.
+
+Evidence:
+
+- `api/wrangler.toml` keeps exact allowed browser origins for production/development, including `https://ohana.tv`, `https://www.ohana.tv`, `https://ohana-tv.pages.dev`, and `http://100.85.92.106:5173`.
+- `api/test/worker-shell.test.ts` covers configured-origin echoing for GET responses, OPTIONS preflight behavior, disallowed-origin omission, and wildcard fallback only when no allowlist is configured.
+- Live deployed Worker smoke checks against `https://ohanamovies-api.ohanamovies-api.workers.dev/titles/tt0120737?lang=es-ES&country=ES` returned matching `Access-Control-Allow-Origin` for:
+  - `http://100.85.92.106:5173`
+  - `https://ohana.tv`
+  - `https://www.ohana.tv`
+  - `https://ohana-tv.pages.dev`
+
+Verification:
+
+```bash
+cd api && npm run typecheck
+cd api && npm test
+cd api && npm run wrangler:dry-run
+cd api && cd .. && git diff --check
+cd website && npm run build
+curl -fsS -o /dev/null -D - -X OPTIONS -H "Origin: http://100.85.92.106:5173" -H "Access-Control-Request-Method: GET" 'https://ohanamovies-api.ohanamovies-api.workers.dev/titles/tt0120737?lang=es-ES&country=ES'
+curl -fsS -o /dev/null -D - -H "Origin: http://100.85.92.106:5173" 'https://ohanamovies-api.ohanamovies-api.workers.dev/titles/tt0120737?lang=es-ES&country=ES'
+# Repeated the same OPTIONS/GET smoke for https://ohana.tv, https://www.ohana.tv, and https://ohana-tv.pages.dev.
+```
+
+All passed on 2026-07-22. Alex confirmed the Tailscale endpoint can load details, and issue #17 was closed with this evidence.
 
 ## Dependencies unlocked
 
