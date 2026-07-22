@@ -1,7 +1,7 @@
 # Sprint 019 — Movie-detail overview, loading, and external links
 
 ## Status
-ready
+complete — implemented and verified 2026-07-22
 
 ## Outcome
 
@@ -84,6 +84,25 @@ git diff --check
 ```
 
 ## Handoff
+
+Completed 2026-07-22 by Greg.
+
+- Reordered detail content so overview appears before suitability/parent-guide content, where-to-watch appears before collection/seasons, and cast follows collection/seasons.
+- Added overview read-more/read-less disclosure with a mobile clamp and static synopsis fallback preserved when API detail fails.
+- Added non-jarring hero/backdrop skeleton feedback while API detail or hero image loading is pending; portrait poster layout is unchanged.
+- Restored TMDB alongside IMDb/FilmAffinity with the TMDB logo, using `extra.json` `tmdbUrl` when present and a TMDB title/year search fallback otherwise because the deployed API does not expose a TMDB id/url.
+- Added `npm run qa:sprint19` source QA.
+
+Verification:
+
+```bash
+npm run qa:sprint19
+npm run qa:modal
+npm run build
+git diff --check
+```
+
+All passed on 2026-07-22.
 
 Do not close issue #15 after this sprint; it remains open until Sprints 020 and 021 complete their parts.
 

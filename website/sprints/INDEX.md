@@ -5,8 +5,8 @@ Focused active sprint files live here. Completed or superseded sprint history li
 ## Status
 
 - Current planning status: issue-driven website roadmap refreshed from open working-fork issues #7 and #13–#17.
-- Current implementation phase: Sprints 10–18 are implemented; Sprints 10–17 are archived.
-- Next executable sprint: Sprint 019 — Movie-detail overview, loading, and links.
+- Current implementation phase: Sprints 10–19 are implemented; Sprints 10–17 are archived.
+- Next executable sprint: Sprint 020 — Parent-guide tags and density.
 - Latest planning update: 2026-07-22.
 
 ## Roadmap
@@ -14,8 +14,8 @@ Focused active sprint files live here. Completed or superseded sprint history li
 | Sprint | Outcome | Status | Depends on |
 | --- | --- | --- | --- |
 | 018 | Prevent repeated titles across the first visible positions of Discover rows and document the row-deduplication model. | `complete` — implemented and verified 2026-07-22; addresses working-fork issue #7. | Current Discover row generation remains static/fetch based |
-| 019 | Reorder movie-detail content around overview-first reading, add read-more disclosure, improve API hero loading feedback, and restore the TMDB external link affordance. | `ready` — addresses the layout/link/loading parts of issue #15. | Sprint 017 imagery hierarchy complete |
-| 020 | Restore parent-guide category tags and make the guide score/link rows compact, legible, and link-like. | `ready` — addresses issue #16 and the parent-guide link/row parts of issue #15. | Sprint 019 preferred first so parent guide lands in the new detail order |
+| 019 | Reorder movie-detail content around overview-first reading, add read-more disclosure, improve API hero loading feedback, and restore the TMDB external link affordance. | `complete` — implemented and verified 2026-07-22; addresses the layout/link/loading parts of issue #15. | Sprint 017 imagery hierarchy complete |
+| 020 | Restore parent-guide category tags and make the guide score/link rows compact, legible, and link-like. | `ready` — addresses issue #16 and the parent-guide link/row parts of issue #15. | Sprint 019 complete |
 | 021 | Add cast profile photos and enlarge collection movie posters without making the detail modal noisy on mobile. | `ready` — addresses issue #14 and the collection-poster part of issue #15. | Sprint 019 complete; API already exposes cast `profile` images |
 | 022 | Unblock local/Tailscale and production website API CORS verification by updating API-origin handling and documenting the smoke check. | `ready` — addresses cross-project issue #17. | API Worker deploy path from API Sprint 009; coordinate with API planner if another API sprint is active |
 | 017 | Split movie-detail imagery into a horizontal TMDB/API hero image plus a proper portrait poster treatment. | `complete` — implemented and verified 2026-07-22; issue #13 remains open in GitHub and needs implementation-workflow closure/comment evidence. | Sprint 11 API detail foundation complete |

@@ -19,15 +19,29 @@
         </button>
 
         <div class="modal-visuals">
-          <div class="modal-hero" :class="{ 'modal-hero--fallback': !selectedHeroImage }">
+          <div
+            class="modal-hero"
+            :class="{
+              'modal-hero--fallback': !selectedHeroImage,
+              'modal-hero--loading': apiHeroLoading,
+            }"
+          >
             <img
               v-if="selectedHeroImage"
               :src="selectedHeroImage.url"
               :alt="`${movie.t} backdrop`"
               loading="eager"
+              @load="heroImageLoaded = true"
               @error="hideBrokenHeroImage"
             />
             <div v-else class="modal-hero-fallback" :style="{ background: movie._mockColor || '#16161f' }" aria-hidden="true"></div>
+            <div
+              v-if="apiHeroLoading"
+              class="modal-hero-skeleton"
+              role="status"
+              aria-live="polite"
+              aria-label="Loading backdrop image"
+            ></div>
             <!-- Mobile: button overlaps the hero/backdrop, not the portrait poster -->
             <button class="modal-close modal-close--mobile" @click="emit('close')" aria-label="Close movie details">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -59,14 +73,15 @@
             </a>
 
             <a
-              v-if="extraDetails?.tmdbUrl"
-              :href="extraDetails.tmdbUrl"
+              v-if="tmdbExternalUrl"
+              :href="tmdbExternalUrl"
               target="_blank"
               rel="noopener"
-              class="ext-site-link"
+              class="ext-site-link ext-site-link--tmdb"
               title="View on TMDB"
+              aria-label="View on TMDB"
             >
-              <img src="https://upload.wikimedia.org/wikipedia/commons/8/89/Tmdb.new.logo.svg" alt="TMDB" class="imdb-logo" />
+              <img src="https://upload.wikimedia.org/wikipedia/commons/8/89/Tmdb.new.logo.svg" alt="TMDB" class="imdb-logo imdb-logo--tmdb" />
             </a>
 
             <a v-if="movie.ts || movie.t"
@@ -86,6 +101,30 @@
             <UiBadge v-for="g in genreLabels" :key="g">{{ g }}</UiBadge>
           </div>
 
+          <section v-if="synopsis || genreLabels.length" class="modal-overview" aria-labelledby="modal-overview-label">
+            <p id="modal-overview-label" class="modal-section-label">Overview</p>
+            <p
+              :id="overviewTextId"
+              class="overview-text"
+              :class="{ 'overview-text--clamped': overviewCanToggle && !overviewExpanded }"
+            >
+              <span v-if="synopsis">{{ synopsis }}</span>
+              <span v-if="genreLabels.length" class="synopsis-genres">{{ genreLabels.map(g => '#' + g.toLowerCase().replace(/\s+/g, '')).join(' ') }}</span>
+            </p>
+            <button
+              v-if="overviewCanToggle"
+              type="button"
+              class="overview-toggle"
+              :aria-expanded="overviewExpanded ? 'true' : 'false'"
+              :aria-controls="overviewTextId"
+              @click="overviewExpanded = !overviewExpanded"
+            >
+              {{ overviewExpanded ? 'Read less' : 'Read more' }}
+            </button>
+          </section>
+
+          <div v-if="apiDetailLoading" class="api-detail-status">Loading Ohana detail…</div>
+          <div v-else-if="apiDetailError" class="api-detail-status api-detail-status--error">{{ apiDetailError }}</div>
           <div v-if="profileCompatibilityGlance.length" class="profile-glance" aria-label="Suitability across profiles">
             <button
               v-for="profile in profileCompatibilityGlance"
@@ -201,110 +240,6 @@
             <p class="compatibility-empty-copy">Suitability scores are not available for this title. Use the parental-guide links if you need more confidence.</p>
           </section>
 
-          <!-- Synopsis -->
-          <div class="modal-synopsis" v-if="synopsis || genreLabels.length">
-            <p class="synopsis-text">
-              <span v-if="synopsis">{{ synopsis }}</span>
-              <span v-if="genreLabels.length" class="synopsis-genres">{{ genreLabels.map(g => '#' + g.toLowerCase().replace(/\s+/g, '')).join(' ') }}</span>
-            </p>
-          </div>
-
-          <div v-if="apiDetailLoading" class="api-detail-status">Loading Ohana detail…</div>
-          <div v-else-if="apiDetailError" class="api-detail-status api-detail-status--error">{{ apiDetailError }}</div>
-
-          <section v-if="apiCastPreview.length" class="api-detail-section" aria-labelledby="api-cast-label">
-            <p id="api-cast-label" class="modal-section-label">Cast</p>
-            <div class="api-cast-list">
-              <div v-for="person in apiCastPreview" :key="person.id" class="api-cast-person">
-                <strong>{{ person.name }}</strong>
-                <span v-if="person.roles.length">{{ person.roles.join(', ') }}</span>
-              </div>
-            </div>
-          </section>
-
-          <section v-if="apiCollectionItems.length" class="api-detail-section" aria-labelledby="api-collection-label">
-            <p id="api-collection-label" class="modal-section-label">{{ apiDetail.collection.name }}</p>
-            <div class="api-collection-list">
-              <a
-                v-for="item in apiCollectionItems"
-                :key="item.id"
-                class="api-collection-item"
-                :href="item.imdbId ? `https://www.imdb.com/title/${item.imdbId}/` : undefined"
-                :target="item.imdbId ? '_blank' : undefined"
-                :rel="item.imdbId ? 'noopener' : undefined"
-              >
-                <img v-if="item.posterUrl" :src="item.posterUrl" :alt="`${item.title} poster`" loading="lazy" />
-                <span v-else class="api-collection-poster-fallback" aria-hidden="true"></span>
-                <span class="api-collection-copy">
-                  <strong>{{ item.title }}</strong>
-                  <small v-if="item.year">{{ item.year }}</small>
-                </span>
-              </a>
-            </div>
-          </section>
-
-          <section v-if="apiSeasonSummary" class="api-detail-section api-season-section" aria-labelledby="api-seasons-label">
-            <div class="api-season-head">
-              <div>
-                <p id="api-seasons-label" class="modal-section-label">Seasons</p>
-                <p class="api-season-summary">{{ apiSeasonSummary }}</p>
-              </div>
-              <button
-                v-if="hasHiddenApiSeasons"
-                type="button"
-                class="api-season-toggle"
-                @click="showAllApiSeasons = !showAllApiSeasons"
-              >
-                {{ showAllApiSeasons ? 'Show fewer' : `Show all ${apiSeasons.length}` }}
-              </button>
-            </div>
-            <div v-if="visibleApiSeasons.length" class="api-season-list">
-              <article
-                v-for="season in visibleApiSeasons"
-                :key="season.id"
-                class="api-season-card"
-                :class="{ 'api-season-card--specials': season.isSpecials }"
-              >
-                <img v-if="season.posterUrl" :src="season.posterUrl" :alt="`${season.title} poster`" loading="lazy" />
-                <span v-else class="api-season-poster-fallback" aria-hidden="true"></span>
-                <div class="api-season-copy">
-                  <div class="api-season-title-row">
-                    <strong>{{ seasonDisplayTitle(season) }}</strong>
-                    <small v-if="season.year || season.airDate">{{ season.year || season.airDate }}</small>
-                  </div>
-                  <p class="api-season-meta">{{ seasonMeta(season) }}</p>
-                  <p v-if="season.overview" class="api-season-overview">{{ season.overview }}</p>
-                </div>
-              </article>
-            </div>
-          </section>
-
-          <!-- User actions (watched + lists) -->
-          <div v-if="userStore.isLoggedIn" class="modal-user-actions">
-            <div class="user-actions-row">
-              <UiChip
-                size="sm"
-                tone="safe"
-                :active="userStore.isWatched(movie.id)"
-                @click="userStore.toggleWatched(movie.id)"
-              >
-                {{ userStore.isWatched(movie.id) ? "✓ Watched" : "Mark watched" }}
-              </UiChip>
-
-              <UiChip
-                v-for="list in userStore.lists"
-                :key="list.token"
-                size="sm"
-                tone="safe"
-                :active="userStore.isInList(list.token, movie.id)"
-                :label="list.name"
-                @click="userStore.toggleMovieInList(list.token, movie.id)"
-              />
-
-              <span v-if="!userStore.lists.length" class="no-lists-hint">No lists yet — create one in Settings</span>
-            </div>
-          </div>
-
           <!-- Community review excerpts from IMDb, when fetched. Score/evidence rows live in the main maturity section above. -->
           <details class="modal-maturity" v-if="matReviewsLoading || matReviewsError || matReviewCategories.length">
             <summary class="mat-header">
@@ -387,6 +322,103 @@
               </div>
             </div>
           </div>
+
+          <section v-if="apiCollectionItems.length" class="api-detail-section" aria-labelledby="api-collection-label">
+            <p id="api-collection-label" class="modal-section-label">{{ apiDetail.collection.name }}</p>
+            <div class="api-collection-list">
+              <a
+                v-for="item in apiCollectionItems"
+                :key="item.id"
+                class="api-collection-item"
+                :href="item.imdbId ? `https://www.imdb.com/title/${item.imdbId}/` : undefined"
+                :target="item.imdbId ? '_blank' : undefined"
+                :rel="item.imdbId ? 'noopener' : undefined"
+              >
+                <img v-if="item.posterUrl" :src="item.posterUrl" :alt="`${item.title} poster`" loading="lazy" />
+                <span v-else class="api-collection-poster-fallback" aria-hidden="true"></span>
+                <span class="api-collection-copy">
+                  <strong>{{ item.title }}</strong>
+                  <small v-if="item.year">{{ item.year }}</small>
+                </span>
+              </a>
+            </div>
+          </section>
+
+          <section v-if="apiSeasonSummary" class="api-detail-section api-season-section" aria-labelledby="api-seasons-label">
+            <div class="api-season-head">
+              <div>
+                <p id="api-seasons-label" class="modal-section-label">Seasons</p>
+                <p class="api-season-summary">{{ apiSeasonSummary }}</p>
+              </div>
+              <button
+                v-if="hasHiddenApiSeasons"
+                type="button"
+                class="api-season-toggle"
+                @click="showAllApiSeasons = !showAllApiSeasons"
+              >
+                {{ showAllApiSeasons ? 'Show fewer' : `Show all ${apiSeasons.length}` }}
+              </button>
+            </div>
+            <div v-if="visibleApiSeasons.length" class="api-season-list">
+              <article
+                v-for="season in visibleApiSeasons"
+                :key="season.id"
+                class="api-season-card"
+                :class="{ 'api-season-card--specials': season.isSpecials }"
+              >
+                <img v-if="season.posterUrl" :src="season.posterUrl" :alt="`${season.title} poster`" loading="lazy" />
+                <span v-else class="api-season-poster-fallback" aria-hidden="true"></span>
+                <div class="api-season-copy">
+                  <div class="api-season-title-row">
+                    <strong>{{ seasonDisplayTitle(season) }}</strong>
+                    <small v-if="season.year || season.airDate">{{ season.year || season.airDate }}</small>
+                  </div>
+                  <p class="api-season-meta">{{ seasonMeta(season) }}</p>
+                  <p v-if="season.overview" class="api-season-overview">{{ season.overview }}</p>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section v-if="apiCastPreview.length" class="api-detail-section" aria-labelledby="api-cast-label">
+            <p id="api-cast-label" class="modal-section-label">Cast</p>
+            <div class="api-cast-list">
+              <div v-for="person in apiCastPreview" :key="person.id" class="api-cast-person">
+                <strong>{{ person.name }}</strong>
+                <span v-if="person.roles.length">{{ person.roles.join(', ') }}</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- User actions (watched + lists) -->
+          <div v-if="userStore.isLoggedIn" class="modal-user-actions">
+            <div class="user-actions-row">
+              <UiChip
+                size="sm"
+                tone="safe"
+                :active="userStore.isWatched(movie.id)"
+                @click="userStore.toggleWatched(movie.id)"
+              >
+                {{ userStore.isWatched(movie.id) ? "✓ Watched" : "Mark watched" }}
+              </UiChip>
+
+              <UiChip
+                v-for="list in userStore.lists"
+                :key="list.token"
+                size="sm"
+                tone="safe"
+                :active="userStore.isInList(list.token, movie.id)"
+                :label="list.name"
+                @click="userStore.toggleMovieInList(list.token, movie.id)"
+              />
+
+              <span v-if="!userStore.lists.length" class="no-lists-hint">No lists yet — create one in Settings</span>
+            </div>
+          </div>
+
+
+
+
         </div>
         </div>
       </div>
@@ -421,6 +453,7 @@ let bodyLocked = false;
 let apiLoadToken = 0;
 
 const titleId = computed(() => props.movie?.id ? `movie-dialog-title-${props.movie.id}` : "movie-dialog-title");
+const overviewTextId = computed(() => props.movie?.id ? `movie-overview-${props.movie.id}` : "movie-overview");
 const selectedDetailProfile = computed(() => profileById(movieStore.maturityProfiles, selectedDetailProfileId.value));
 const selectedDetailProfileName = computed(() => profileLabel(movieStore.maturityProfiles, selectedDetailProfileId.value));
 const selectedMaturityValues = computed(() => selectedDetailProfile.value?.values ?? movieStore.maxMaturityCat);
@@ -557,6 +590,8 @@ const apiConfig = getOhanaApiConfig();
 const showAllApiSeasons = ref(false);
 const heroImageSeed = ref(0);
 const brokenHeroImageUrls = ref(new Set());
+const heroImageLoaded = ref(false);
+const overviewExpanded = ref(false);
 
 const posterImageSrc = computed(() => apiDetail.value?.posterImage?.url || props.movie?.p?.replace('w342', 'w500') || null);
 const heroImageCandidates = computed(() => {
@@ -567,6 +602,15 @@ const selectedHeroImage = computed(() => {
   if (!heroImageCandidates.value.length) return null;
   const index = Math.floor(heroImageSeed.value * heroImageCandidates.value.length) % heroImageCandidates.value.length;
   return heroImageCandidates.value[index];
+});
+const apiHeroLoading = computed(() => apiDetailLoading.value || (Boolean(selectedHeroImage.value) && !heroImageLoaded.value));
+const overviewCanToggle = computed(() => (synopsis.value || "").length > 240);
+const tmdbExternalUrl = computed(() => {
+  if (extraDetails.value?.tmdbUrl) return extraDetails.value.tmdbUrl;
+  const title = apiDetail.value?.title || props.movie?.ts || props.movie?.t;
+  if (!title) return null;
+  const query = [title, props.movie?.y].filter(Boolean).join(" ");
+  return `https://www.themoviedb.org/search?query=${encodeURIComponent(query)}`;
 });
 
 const apiCastPreview = computed(() => apiDetail.value?.cast?.slice(0, 6) || []);
@@ -725,6 +769,8 @@ watch(() => props.movie, (movie) => {
     selectedDetailProfileId.value = movieStore.activeMaturityProfileId;
     heroImageSeed.value = Math.random();
     brokenHeroImageUrls.value = new Set();
+    heroImageLoaded.value = false;
+    overviewExpanded.value = false;
     if (!bodyLocked) {
       previouslyFocused.value = document.activeElement;
       lockBodyScroll();
@@ -744,6 +790,8 @@ watch(() => props.movie, (movie) => {
     apiDetailLoading.value = false;
     apiDetailError.value = null;
     brokenHeroImageUrls.value = new Set();
+    heroImageLoaded.value = false;
+    overviewExpanded.value = false;
     if (bodyLocked) {
       unlockBodyScroll();
       bodyLocked = false;
@@ -890,6 +938,28 @@ onUnmounted(() => {
     radial-gradient(circle at 24% 20%, rgba(255,255,255,0.13), transparent 32%),
     linear-gradient(135deg, rgba(45,212,191,0.16), rgba(245,200,66,0.08));
 }
+.modal-hero-skeleton {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.11), rgba(255,255,255,0.02));
+  background-size: 220% 100%;
+  animation: heroShimmer 1.35s ease-in-out infinite;
+}
+.modal-hero-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: auto 14px 14px;
+  height: 10px;
+  max-width: 44%;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.12);
+}
+@keyframes heroShimmer {
+  0% { background-position: 120% 0; }
+  100% { background-position: -120% 0; }
+}
 .modal-poster {
   width: 140px;
   aspect-ratio: 2 / 3;
@@ -947,21 +1017,43 @@ onUnmounted(() => {
   border-color: transparent;/**/
 }
 
-/* ── Synopsis ── */
-.modal-synopsis { margin-bottom: 18px; }
-.synopsis-loading { font-size: 13px; color: var(--muted); font-style: italic; }
-.synopsis-text {
+/* ── Overview ── */
+.modal-overview { margin-bottom: 18px; }
+.overview-text {
   font-size: 14px;
   color: rgba(255,255,255,0.78);
   line-height: 1.6;
-  margin: 0;
+  margin: 7px 0 0;
+}
+.overview-text--clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.overview-toggle {
+  margin-top: 7px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--teal);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.overview-toggle:focus-visible {
+  outline: 2px solid rgba(45,212,191,0.58);
+  outline-offset: 3px;
+  border-radius: 4px;
 }
 .synopsis-genres {
   display: inline;
   margin-left: 6px;
   font-size: 12px;
   color: var(--muted);
-  /*opacity: 0.6;*/
   letter-spacing: 0.01em;
 }
 
@@ -1616,6 +1708,7 @@ onUnmounted(() => {
   }
   .modal-close--mobile svg { width: 18px; height: 18px; }
   .api-cast-list { grid-template-columns: 1fr; }
+  .overview-text--clamped { -webkit-line-clamp: 3; }
   .api-collection-item { flex-basis: 104px; }
   .api-season-head { flex-direction: column; gap: 8px; }
   .api-season-toggle { align-self: flex-start; }
