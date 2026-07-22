@@ -10,6 +10,7 @@
     "qa:sprint9": "node scripts/qa-sprint9-trust.mjs",
     "qa:sprint10": "node scripts/qa-sprint10-availability-context.mjs",
     "qa:sprint11": "node scripts/qa-sprint11-api-detail-foundation.mjs",
+    "qa:sprint12": "node scripts/qa-sprint12-api-tv-seasons.mjs",
     "qa:mobile-touch": "node scripts/qa-mobile-touch.mjs",
     "qa:dev-routes": "node scripts/qa-dev-routes.mjs",
     "qa:phone-touch": "node scripts/qa-phone-touch.mjs",

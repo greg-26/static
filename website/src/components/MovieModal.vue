@@ -231,6 +231,42 @@
             </div>
           </section>
 
+          <section v-if="apiSeasonSummary" class="api-detail-section api-season-section" aria-labelledby="api-seasons-label">
+            <div class="api-season-head">
+              <div>
+                <p id="api-seasons-label" class="modal-section-label">Seasons</p>
+                <p class="api-season-summary">{{ apiSeasonSummary }}</p>
+              </div>
+              <button
+                v-if="hasHiddenApiSeasons"
+                type="button"
+                class="api-season-toggle"
+                @click="showAllApiSeasons = !showAllApiSeasons"
+              >
+                {{ showAllApiSeasons ? 'Show fewer' : `Show all ${apiSeasons.length}` }}
+              </button>
+            </div>
+            <div v-if="visibleApiSeasons.length" class="api-season-list">
+              <article
+                v-for="season in visibleApiSeasons"
+                :key="season.id"
+                class="api-season-card"
+                :class="{ 'api-season-card--specials': season.isSpecials }"
+              >
+                <img v-if="season.posterUrl" :src="season.posterUrl" :alt="`${season.title} poster`" loading="lazy" />
+                <span v-else class="api-season-poster-fallback" aria-hidden="true"></span>
+                <div class="api-season-copy">
+                  <div class="api-season-title-row">
+                    <strong>{{ seasonDisplayTitle(season) }}</strong>
+                    <small v-if="season.year || season.airDate">{{ season.year || season.airDate }}</small>
+                  </div>
+                  <p class="api-season-meta">{{ seasonMeta(season) }}</p>
+                  <p v-if="season.overview" class="api-season-overview">{{ season.overview }}</p>
+                </div>
+              </article>
+            </div>
+          </section>
+
           <!-- User actions (watched + lists) -->
           <div v-if="userStore.isLoggedIn" class="modal-user-actions">
             <div class="user-actions-row">
@@ -510,14 +546,46 @@ const apiDetail = ref(null);
 const apiDetailLoading = ref(false);
 const apiDetailError = ref(null);
 const apiConfig = getOhanaApiConfig();
+const showAllApiSeasons = ref(false);
 
 const apiCastPreview = computed(() => apiDetail.value?.cast?.slice(0, 6) || []);
 const apiCollectionItems = computed(() => apiDetail.value?.collection?.items || []);
+const apiSeasons = computed(() => apiDetail.value?.seasons || []);
+const regularApiSeasons = computed(() => apiSeasons.value.filter(season => !season.isSpecials));
+const apiSeasonSummary = computed(() => {
+  const count = apiDetail.value?.seasonCount;
+  if (!count && !apiSeasons.value.length) return null;
+  const seasonLabel = count === 1 ? "1 season" : `${count || apiSeasons.value.length} seasons`;
+  const listState = apiSeasons.value.length
+    ? `${apiSeasons.value.length} listed by Ohana API${count && apiSeasons.value.length < count ? " so far" : ""}`
+    : "season list unavailable";
+  return `${seasonLabel}; ${listState}.`;
+});
+const visibleApiSeasons = computed(() => {
+  if (!apiSeasons.value.length) return [];
+  if (showAllApiSeasons.value || apiSeasons.value.length <= 4) return apiSeasons.value;
+  const firstRegular = regularApiSeasons.value.slice(0, 4);
+  return firstRegular.length ? firstRegular : apiSeasons.value.slice(0, 4);
+});
+const hasHiddenApiSeasons = computed(() => apiSeasons.value.length > visibleApiSeasons.value.length || (showAllApiSeasons.value && apiSeasons.value.length > 4));
+
+function seasonDisplayTitle(season) {
+  if (season.isSpecials) return "Specials";
+  return season.title || (season.seasonNumber ? `Season ${season.seasonNumber}` : "Season");
+}
+
+function seasonMeta(season) {
+  const parts = [];
+  if (season.episodeCount) parts.push(`${season.episodeCount} episode${season.episodeCount === 1 ? "" : "s"}`);
+  if (season.isSpecials) parts.push("bonus material");
+  return parts.join(" · ") || "Season details from Ohana API";
+}
 
 async function loadApiDetail(movie) {
   const token = ++apiLoadToken;
   apiDetail.value = null;
   apiDetailError.value = null;
+  showAllApiSeasons.value = false;
   if (!movie?.id) return;
 
   apiDetailLoading.value = true;
@@ -968,6 +1036,83 @@ onUnmounted(() => {
 }
 .api-collection-copy strong { font-size: 11px; }
 .api-collection-copy small { color: var(--muted); font-size: 10px; }
+
+.api-season-section { margin-top: 2px; }
+.api-season-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.api-season-summary {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+.api-season-toggle {
+  flex: 0 0 auto;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.045);
+  color: var(--white);
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+.api-season-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+.api-season-card {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 10px;
+  padding: 9px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.035);
+}
+.api-season-card--specials { opacity: 0.78; }
+.api-season-card img,
+.api-season-poster-fallback {
+  width: 44px;
+  aspect-ratio: 2 / 3;
+  border-radius: 7px;
+  object-fit: cover;
+  background: var(--surface3);
+}
+.api-season-copy { min-width: 0; }
+.api-season-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.api-season-title-row strong,
+.api-season-title-row small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.api-season-title-row strong { color: var(--white); font-size: 12px; }
+.api-season-title-row small { flex: 0 0 auto; color: var(--muted); font-size: 10px; }
+.api-season-meta,
+.api-season-overview {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+.api-season-overview {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: rgba(255,255,255,0.68);
+}
 
 .modal-section-label {
   font-size: 11px;
@@ -1489,6 +1634,8 @@ onUnmounted(() => {
   .modal-close--mobile svg { width: 18px; height: 18px; }
   .api-cast-list { grid-template-columns: 1fr; }
   .api-collection-item { flex-basis: 104px; }
+  .api-season-head { flex-direction: column; gap: 8px; }
+  .api-season-toggle { align-self: flex-start; }
   .compatibility-summary-head { flex-direction: column; }
   .compatibility-actions { justify-content: flex-start; }
   .compatibility-row { grid-template-columns: 1fr; gap: 6px; }

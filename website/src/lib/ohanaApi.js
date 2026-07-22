@@ -42,11 +42,34 @@ function normalizeCollectionItem(item) {
   };
 }
 
+function normalizeSeason(season) {
+  if (!season || typeof season !== "object") return null;
+  const seasonNumber = Number.isFinite(season.seasonNumber) ? season.seasonNumber : null;
+  const title = season.name || (seasonNumber === 0 ? "Specials" : seasonNumber ? `Season ${seasonNumber}` : "Season");
+  return {
+    id: season.id ? String(season.id) : `${seasonNumber ?? "unknown"}-${title}`,
+    seasonNumber,
+    title: String(title),
+    episodeCount: Number.isFinite(season.episodeCount) ? season.episodeCount : null,
+    airDate: season.airDate || null,
+    year: season.year || null,
+    overview: season.overview || null,
+    posterUrl: bestImageUrl(season.poster, ["thumbnail", "small", "medium", "original"]),
+    isSpecials: seasonNumber === 0,
+  };
+}
+
 function normalizeTitleDetail(data) {
   if (!data || typeof data !== "object") return null;
   const cast = Array.isArray(data.cast) ? data.cast.map(normalizeCastMember).filter(Boolean).slice(0, 8) : [];
   const collectionItems = Array.isArray(data.collection?.items)
     ? data.collection.items.map(normalizeCollectionItem).filter(Boolean).sort((a, b) => (a.order ?? 999) - (b.order ?? 999)).slice(0, 8)
+    : [];
+  const seasons = Array.isArray(data.seasons)
+    ? data.seasons.map(normalizeSeason).filter(Boolean).sort((a, b) => {
+      if (a.isSpecials !== b.isSpecials) return a.isSpecials ? 1 : -1;
+      return (a.seasonNumber ?? 999) - (b.seasonNumber ?? 999);
+    })
     : [];
 
   return {
@@ -56,6 +79,8 @@ function normalizeTitleDetail(data) {
     overview: data.overview || null,
     runtimeMinutes: data.runtime?.minutes || null,
     ratingAverage: data.rating?.average || null,
+    seasonCount: Number.isFinite(data.seasonCount) ? data.seasonCount : null,
+    seasons,
     cast,
     artwork: data.artwork || null,
     collection: data.collection ? {

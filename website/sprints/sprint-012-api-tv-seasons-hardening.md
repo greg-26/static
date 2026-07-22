@@ -1,7 +1,7 @@
 # Sprint 012 — API TV seasons and detail hardening
 
 ## Status
-ready/backlog — Sprint 011 API client/cache foundation is complete.
+complete — implemented and verified 2026-07-22; closes issue #6 after Sprint 011 foundation.
 
 ## Outcome
 
@@ -80,13 +80,13 @@ Issue [#6](https://github.com/greg-26/static/issues/6) explicitly includes seaso
 
 ## Acceptance criteria
 
-- [ ] TV series details show season count and useful season summaries when API data exists.
-- [ ] Season rows/cards remain compact and readable on mobile.
-- [ ] Long season lists use progressive disclosure or an equivalent low-noise pattern.
-- [ ] Specials are handled clearly when present.
-- [ ] Missing/partial season data does not produce broken or misleading UI.
-- [ ] Overview, cast, collection, and season details together satisfy issue #6's requested metadata enrichment.
-- [ ] API failure fallback from Sprint 011 still works.
+- [x] TV series details show season count and useful season summaries when API data exists.
+- [x] Season rows/cards remain compact and readable on mobile.
+- [x] Long season lists use progressive disclosure or an equivalent low-noise pattern.
+- [x] Specials are handled clearly when present.
+- [x] Missing/partial season data does not produce broken or misleading UI.
+- [x] Overview, cast, collection, and season details together satisfy issue #6's requested metadata enrichment.
+- [x] API failure fallback from Sprint 011 still works.
 
 ## Required tests
 
@@ -103,7 +103,24 @@ npm run build
 
 ## Handoff
 
-Report sample TV titles checked, season rendering behavior, verification commands, issue #6 closure/comment status, and any remaining API metadata follow-up that is not part of the original issue.
+Implemented 2026-07-22:
+
+- API detail normalization now includes `seasonCount` and compact normalized `seasons[]` fields: season/specials number, title, episode count, air date/year, overview, poster URL, and specials flag.
+- Movie details render a compact Seasons section for TV API data, with count/list summary, first regular seasons first, Specials de-emphasized after regular seasons, poster fallback, episode metadata, two-line overview, and **Show all / Show fewer** disclosure for long lists.
+- API loading/error fallback from Sprint 011 remains unchanged: static detail still renders if the Ohana API is slow or unavailable.
+- Sample API smoke used `tt0944947` / Game of Thrones: production API returned 8 seasons plus Specials with posters, overviews, and episode counts.
+
+Verification passed:
+
+```bash
+cd website
+npm run qa:sprint12
+npm run qa:sprint11
+npm run build
+git diff --check
+```
+
+Issue #6 was commented and closed after Sprint 011 + Sprint 012 together satisfied the requested API overview/cast/collection/seasons metadata enrichment.
 
 ## Dependencies unlocked
 
