@@ -4,7 +4,7 @@ Focused sprint files live here so agents read only the slice they are working on
 
 ## Status
 
-- Current planning status: issue-driven website roadmap refreshed; active working-fork issues are #6, #7, #11, and #12 after closing #8, #9, and #10.
+- Current planning status: issue-driven website roadmap refreshed; active working-fork issues are #6, #7, #11, #12, and #13 after closing #8, #9, and #10.
 - Current implementation phase: Sprint 14 is implemented and verified; Sprint 13 and Sprint 10 are complete and Sprint 9 has been removed from the active planner and archived as historical evidence.
 - Next executable sprint: Sprint 11 — API detail foundation for issue #6, unless Alex prioritizes non-API issue #7 before the next implementation loop.
 - Latest planning update: 2026-07-22.
@@ -20,6 +20,7 @@ Focused sprint files live here so agents read only the slice they are working on
 | 14 | Remove low-value subtitles from Discover filter chip dropdown options so the menus feel less wide/fat. | `complete` — implemented and verified 2026-07-22; addresses and closes working-fork issue #10. | Sprint 13 complete |
 | 15 | Move custom-provider add/manage ownership to Settings and separate custom providers from normal availability in movie details. | `proposed` — addresses issue #11 and prepares the provider detail surface for grouped API availability. | Sprint 10 complete; recommended before Sprint 16 |
 | 16 | Break movie-detail provider availability into TMDB-style stream/rent/buy groups with provider icons and graceful fallback. | `proposed` — addresses issue #12 after API enrichment and provider ownership cleanup. | Sprints 11, 12, and 15 complete; UX icon sizing/radius guidance |
+| 17 | Split movie-detail imagery into a horizontal TMDB/API hero image plus a proper portrait poster treatment. | `proposed` — addresses issue #13 as a distinct movie-detail image hierarchy/API-image slice. | Sprint 11 API detail foundation complete; image/backdrop contract verified |
 
 ## Sprint files
 
@@ -30,6 +31,7 @@ Focused sprint files live here so agents read only the slice they are working on
 - Sprint 14: [`sprint-014-discover-chip-dropdown-density.md`](sprint-014-discover-chip-dropdown-density.md)
 - Sprint 15: [`sprint-015-provider-settings-and-custom-sources.md`](sprint-015-provider-settings-and-custom-sources.md)
 - Sprint 16: [`sprint-016-provider-availability-breakdown.md`](sprint-016-provider-availability-breakdown.md)
+- Sprint 17: [`sprint-017-movie-detail-imagery-hierarchy.md`](sprint-017-movie-detail-imagery-hierarchy.md)
 
 ## Decisions and assumptions
 
@@ -43,6 +45,7 @@ Focused sprint files live here so agents read only the slice they are working on
 - Sprint 14 was completed separately from Sprint 13 because Discover chip dropdown density is a different surface from Search recents/autocomplete.
 - Sprint 15 moves custom-provider configuration to Settings before Sprint 16 adds richer provider availability grouping, so movie details do not mix configuration controls with availability display.
 - Sprint 16 must not fake Stream/Rent/Buy buckets from the legacy provider bitmask; it depends on API/TMDB-style grouped provider data or must report a contract blocker.
+- Sprint 17 should not be folded into provider grouping: issue #13 is about movie-detail image hierarchy and should use API/TMDB backdrop/still images when available while preserving poster aspect ratio.
 - Issue #7 (Discover movie duplication) is open and non-API, but is not part of the Search/recents or chip-density sprints; plan it as a separate Discover deduplication sprint if Alex prioritizes it next.
 
 ## Open questions
@@ -52,6 +55,7 @@ Focused sprint files live here so agents read only the slice they are working on
 - Search recents autocomplete semantics: prefer an input-attached, focus-gated suggestion list over permanent chips; keep mobile keyboard behavior from prior Search polish intact.
 - Provider grouping contract: confirm the Ohana API exposes TMDB-style provider buckets and logo paths before Sprint 16 implementation. Recommended default: block Sprint 16 rather than inventing bucket semantics from bitmasks.
 - Provider icon styling: Sprint 16 needs UX guidance for icon size and border radius. Recommended default: spawn the UX designer before coding that sprint.
+- Movie-detail image contract: confirm the Ohana API exposes backdrop/still/image candidates for Sprint 17. Recommended default: split the layout safely, but block backdrop/randomization instead of fabricating image URLs if no contract exists.
 
 ## Completion criteria
 
@@ -63,6 +67,7 @@ The current website issue tranche is complete when:
 - Sprint 11 and Sprint 12 API enrichment are implemented and verified, and issue #6 is commented and closed by the implementation workflow when fully satisfied.
 - Sprint 15 provider settings/custom-source ownership is implemented and verified, and issue #11 is commented and closed by the implementation workflow when fully satisfied.
 - Sprint 16 provider availability grouping/icons is implemented and verified, and issue #12 is commented and closed by the implementation workflow when fully satisfied or left open with an API contract blocker.
+- Sprint 17 movie-detail imagery hierarchy is implemented and verified, and issue #13 is commented and closed by the implementation workflow when fully satisfied or left open with an API image-contract blocker.
 - The dev server remains reviewable for Alex over Tailscale after implementation slices.
 
 ## Maintenance rules
