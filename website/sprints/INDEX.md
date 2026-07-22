@@ -5,8 +5,8 @@ Focused active sprint files live here. Completed or superseded sprint history li
 ## Status
 
 - Current planning status: issue-driven website roadmap refreshed from open working-fork issues #7 and #13–#17.
-- Current implementation phase: Sprints 10–20 are implemented; Sprints 10–17 are archived.
-- Next executable sprint: Sprint 021 — Cast profile photos and collection poster sizing.
+- Current implementation phase: Sprints 10–21 are implemented; Sprints 10–17 are archived.
+- Next executable sprint: Sprint 022 — API CORS website origins.
 - Latest planning update: 2026-07-22.
 
 ## Roadmap
@@ -16,7 +16,7 @@ Focused active sprint files live here. Completed or superseded sprint history li
 | 018 | Prevent repeated titles across the first visible positions of Discover rows and document the row-deduplication model. | `complete` — implemented and verified 2026-07-22; addresses working-fork issue #7. | Current Discover row generation remains static/fetch based |
 | 019 | Reorder movie-detail content around overview-first reading, add read-more disclosure, improve API hero loading feedback, and restore the TMDB external link affordance. | `complete` — implemented and verified 2026-07-22; addresses the layout/link/loading parts of issue #15. | Sprint 017 imagery hierarchy complete |
 | 020 | Restore parent-guide category tags and make the guide score/link rows compact, legible, and link-like. | `complete` — implemented and verified 2026-07-22; addresses issue #16 and the parent-guide link/row parts of issue #15. | Sprint 019 complete |
-| 021 | Add cast profile photos and enlarge collection movie posters without making the detail modal noisy on mobile. | `ready` — addresses issue #14 and the collection-poster part of issue #15. | Sprint 019 complete; API already exposes cast `profile` images |
+| 021 | Add cast profile photos and enlarge collection movie posters without making the detail modal noisy on mobile. | `complete` — implemented and verified 2026-07-22; addresses issue #14 and completes the collection-poster part of issue #15. | Sprint 019 complete; API already exposes cast `profile` images |
 | 022 | Unblock local/Tailscale and production website API CORS verification by updating API-origin handling and documenting the smoke check. | `ready` — addresses cross-project issue #17. | API Worker deploy path from API Sprint 009; coordinate with API planner if another API sprint is active |
 | 017 | Split movie-detail imagery into a horizontal TMDB/API hero image plus a proper portrait poster treatment. | `complete` — implemented and verified 2026-07-22; issue #13 remains open in GitHub and needs implementation-workflow closure/comment evidence. | Sprint 11 API detail foundation complete |
 
@@ -35,7 +35,7 @@ Focused active sprint files live here. Completed or superseded sprint history li
 - Upstream/original issues are not touched by automation unless Alex explicitly asks.
 - Completed Sprints 10–17 were moved to `sprints/archive/` on 2026-07-22 without rewriting their history or completion evidence.
 - Issue #13 is already covered by completed Sprint 017. Do not create a duplicate sprint; the next implementation agent should comment/close with evidence if the current code still satisfies the issue.
-- Issue #15 is intentionally split across Sprints 019–021 because it mixes detail ordering, loading state, external links, parent-guide presentation, collection sizing, and cast/media polish.
+- Issue #15 was intentionally split across Sprints 019–021 because it mixes detail ordering, loading state, external links, parent-guide presentation, collection sizing, and cast/media polish.
 - Issue #14 does not currently require a new API issue: the production Ohana API response includes cast `profile` images and `website/src/lib/ohanaApi.js` already normalizes `profileUrl`; the UI simply does not render it yet.
 - Issue #17 is API-owned but website-relevant because it blocks local/Tailscale website review against the deployed API. Keep it as a small cross-project unblocker instead of mixing CORS changes into UI sprints.
 

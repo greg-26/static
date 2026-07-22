@@ -21,7 +21,8 @@
     "qa:sprint17": "node scripts/qa-sprint17-imagery.mjs",
     "qa:sprint18": "node scripts/qa-sprint18-discover-dedupe.mjs",
     "qa:sprint19": "node scripts/qa-sprint19-modal-overview-loading-links.mjs",
-    "qa:sprint20": "node scripts/qa-sprint20-parent-guide-density.mjs"
+    "qa:sprint20": "node scripts/qa-sprint20-parent-guide-density.mjs",
+    "qa:sprint21": "node scripts/qa-sprint21-cast-collection-media.mjs"
   },
   "dependencies": {
     "fuse.js": "^7.0.0",

@@ -1,7 +1,7 @@
 # Sprint 021 — Cast and collection media polish
 
 ## Status
-ready
+complete — implemented and verified 2026-07-22
 
 ## Outcome
 
@@ -83,7 +83,26 @@ git diff --check
 
 ## Handoff
 
-After Sprint 021, issue #14 should be closed if cast photos render. Issue #15 should be eligible for closure if Sprints 019 and 020 are also complete.
+Completed 2026-07-22 by Greg.
+
+- Verified the production API sample for `tt0120737` still returns cast `profile` images.
+- Rendered cast profile photos with lazy loading, explicit dimensions, mobile-safe truncation, and initials fallback when a profile image is missing or fails to load.
+- Enlarged collection posters from tiny thumbnails to 96px portrait cards with horizontal scrolling preserved and broken-poster fallback.
+- Added `npm run qa:sprint21` targeted source QA.
+
+Verification:
+
+```bash
+curl -fsSL 'https://ohanamovies-api.ohanamovies-api.workers.dev/titles/tt0120737?lang=es-ES&country=ES' | node -e "..." # cast=10, withProfiles=10
+npm run qa:sprint21
+npm run qa:modal
+npm run build
+git diff --check
+```
+
+All passed on 2026-07-22.
+
+Issue #14 should be closed with this sprint evidence. Issue #15 is eligible for closure because Sprints 019, 020, and 021 now cover its website-side acceptance criteria.
 
 ## Dependencies unlocked
 

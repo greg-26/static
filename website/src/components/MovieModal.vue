@@ -334,7 +334,15 @@
                 :target="item.imdbId ? '_blank' : undefined"
                 :rel="item.imdbId ? 'noopener' : undefined"
               >
-                <img v-if="item.posterUrl" :src="item.posterUrl" :alt="`${item.title} poster`" loading="lazy" />
+                <img
+                  v-if="item.posterUrl && !brokenCollectionPosterUrls.has(item.posterUrl)"
+                  :src="item.posterUrl"
+                  :alt="`${item.title} poster`"
+                  width="96"
+                  height="144"
+                  loading="lazy"
+                  @error="hideBrokenCollectionPoster"
+                />
                 <span v-else class="api-collection-poster-fallback" aria-hidden="true"></span>
                 <span class="api-collection-copy">
                   <strong>{{ item.title }}</strong>
@@ -384,8 +392,22 @@
             <p id="api-cast-label" class="modal-section-label">Cast</p>
             <div class="api-cast-list">
               <div v-for="person in apiCastPreview" :key="person.id" class="api-cast-person">
-                <strong>{{ person.name }}</strong>
-                <span v-if="person.roles.length">{{ person.roles.join(', ') }}</span>
+                <span class="api-cast-avatar" aria-hidden="true">
+                  <img
+                    v-if="person.profileUrl && !brokenCastProfileUrls.has(person.profileUrl)"
+                    :src="person.profileUrl"
+                    :alt="`${person.name} profile photo`"
+                    width="44"
+                    height="60"
+                    loading="lazy"
+                    @error="hideBrokenCastProfile"
+                  />
+                  <span v-else>{{ castInitials(person.name) }}</span>
+                </span>
+                <span class="api-cast-copy">
+                  <strong>{{ person.name }}</strong>
+                  <span v-if="person.roles.length">{{ person.roles.join(', ') }}</span>
+                </span>
               </div>
             </div>
           </section>
@@ -593,6 +615,8 @@ const apiConfig = getOhanaApiConfig();
 const showAllApiSeasons = ref(false);
 const heroImageSeed = ref(0);
 const brokenHeroImageUrls = ref(new Set());
+const brokenCastProfileUrls = ref(new Set());
+const brokenCollectionPosterUrls = ref(new Set());
 const heroImageLoaded = ref(false);
 const overviewExpanded = ref(false);
 
@@ -658,6 +682,27 @@ function hideBrokenHeroImage(event) {
   const url = event.currentTarget?.currentSrc || event.currentTarget?.src;
   if (!url) return;
   brokenHeroImageUrls.value = new Set([...brokenHeroImageUrls.value, url]);
+}
+
+function hideBrokenCastProfile(event) {
+  const url = event.currentTarget?.currentSrc || event.currentTarget?.src;
+  if (!url) return;
+  brokenCastProfileUrls.value = new Set([...brokenCastProfileUrls.value, url]);
+}
+
+function hideBrokenCollectionPoster(event) {
+  const url = event.currentTarget?.currentSrc || event.currentTarget?.src;
+  if (!url) return;
+  brokenCollectionPosterUrls.value = new Set([...brokenCollectionPosterUrls.value, url]);
+}
+
+function castInitials(name) {
+  return String(name || "?")
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(part => part[0]?.toUpperCase())
+    .join("") || "?";
 }
 
 async function loadApiDetail(movie) {
@@ -774,6 +819,8 @@ watch(() => props.movie, (movie) => {
     brokenHeroImageUrls.value = new Set();
     heroImageLoaded.value = false;
     overviewExpanded.value = false;
+    brokenCastProfileUrls.value = new Set();
+    brokenCollectionPosterUrls.value = new Set();
     if (!bodyLocked) {
       previouslyFocused.value = document.activeElement;
       lockBodyScroll();
@@ -793,6 +840,8 @@ watch(() => props.movie, (movie) => {
     apiDetailLoading.value = false;
     apiDetailError.value = null;
     brokenHeroImageUrls.value = new Set();
+    brokenCastProfileUrls.value = new Set();
+    brokenCollectionPosterUrls.value = new Set();
     heroImageLoaded.value = false;
     overviewExpanded.value = false;
     if (bodyLocked) {
@@ -1070,52 +1119,79 @@ onUnmounted(() => {
 .api-cast-list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 7px;
+  gap: 8px;
   margin-top: 9px;
 }
 .api-cast-person {
   min-width: 0;
-  padding: 9px 10px;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  padding: 7px 8px;
   border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 10px;
+  border-radius: 12px;
   background: rgba(255,255,255,0.035);
 }
-.api-cast-person strong,
-.api-cast-person span {
+.api-cast-avatar,
+.api-cast-avatar img {
   display: block;
+  width: 44px;
+  height: 60px;
+  border-radius: 9px;
+}
+.api-cast-avatar {
+  overflow: hidden;
+  background: linear-gradient(145deg, rgba(45,212,191,0.18), rgba(255,255,255,0.055));
+  color: rgba(255,255,255,0.78);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  line-height: 60px;
+  text-align: center;
+}
+.api-cast-avatar img { object-fit: cover; }
+.api-cast-copy,
+.api-cast-copy strong,
+.api-cast-copy span {
+  display: block;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.api-cast-person strong { color: var(--white); font-size: 12px; }
-.api-cast-person span { margin-top: 3px; color: var(--muted); font-size: 11px; }
+.api-cast-copy strong { color: var(--white); font-size: 12px; }
+.api-cast-copy span { margin-top: 3px; color: var(--muted); font-size: 11px; }
 .api-collection-list {
   display: flex;
-  gap: 8px;
+  gap: 12px;
   margin-top: 9px;
   overflow-x: auto;
   scrollbar-width: none;
   overscroll-behavior-inline: contain;
+  scroll-snap-type: x proximity;
 }
 .api-collection-list::-webkit-scrollbar { display: none; }
 .api-collection-item {
-  flex: 0 0 118px;
+  flex: 0 0 104px;
   color: var(--white);
   text-decoration: none;
+  scroll-snap-align: start;
 }
 .api-collection-item img,
 .api-collection-poster-fallback {
   display: block;
-  width: 64px;
+  width: 96px;
   aspect-ratio: 2 / 3;
-  border-radius: 8px;
+  border-radius: 10px;
   object-fit: cover;
   background: var(--surface3);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.22);
 }
 .api-collection-copy {
   display: grid;
   gap: 2px;
-  margin-top: 6px;
+  margin-top: 7px;
 }
 .api-collection-copy strong,
 .api-collection-copy small {
@@ -1123,7 +1199,7 @@ onUnmounted(() => {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.api-collection-copy strong { font-size: 11px; }
+.api-collection-copy strong { font-size: 12px; }
 .api-collection-copy small { color: var(--muted); font-size: 10px; }
 
 .api-season-section { margin-top: 2px; }
@@ -1728,7 +1804,7 @@ onUnmounted(() => {
   .modal-close--mobile svg { width: 18px; height: 18px; }
   .api-cast-list { grid-template-columns: 1fr; }
   .overview-text--clamped { -webkit-line-clamp: 3; }
-  .api-collection-item { flex-basis: 104px; }
+  .api-collection-item { flex-basis: 100px; }
   .api-season-head { flex-direction: column; gap: 8px; }
   .api-season-toggle { align-self: flex-start; }
   .compatibility-summary-head { flex-direction: column; }
