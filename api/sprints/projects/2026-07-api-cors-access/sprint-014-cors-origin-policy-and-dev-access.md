@@ -2,7 +2,7 @@
 
 ## Status
 
-ready
+complete
 
 ## Outcome
 
@@ -119,6 +119,15 @@ git diff --check
 ```
 
 ## Handoff
+
+### 2026-07-22 implementation handoff
+
+- Result: complete; deployment/browser evidence remains pending before issue #17 closure.
+- CORS logic now echoes an allowed request `Origin`, returns `*` only when no allowlist is configured, and omits `Access-Control-Allow-Origin` for disallowed origins when an allowlist exists.
+- `wrangler.toml` allowlists `https://ohana-tv.pages.dev`, `https://ohana.tv`, `https://www.ohana.tv`, and `http://100.85.92.106:5173` for development and production; local also keeps `http://localhost:5173`.
+- README documents exact-origin allowlist maintenance and the LAN/Vite origin scheme normalization.
+- Tests cover allowed GET, preflight, API error, disallowed origin, public wildcard, and comma/whitespace origin parsing.
+- Verification passed: `npm run typecheck`, `npm test`, `npm run wrangler:dry-run`, and `git diff --check`.
 
 The SDE agent must report:
 

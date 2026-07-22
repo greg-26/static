@@ -9,8 +9,8 @@ TITLE_CACHE_TTL_SECONDS = "604800"
 ALLOW_CACHE_OVERRIDES = "true"
 TMDB_BASE_URL = "https://api.themoviedb.org/3"
 TMDB_TIMEOUT_MS = "5000"
-# Comma-separated browser origins allowed to read this public API.
-CORS_ALLOWED_ORIGINS = "http://localhost:5173"
+# Comma-separated exact browser origins allowed to read this public API.
+CORS_ALLOWED_ORIGINS = "http://localhost:5173,https://ohana-tv.pages.dev,https://ohana.tv,https://www.ohana.tv,http://100.85.92.106:5173"
 
 [[kv_namespaces]]
 binding = "TITLE_CACHE"
@@ -26,7 +26,7 @@ TITLE_CACHE_TTL_SECONDS = "604800"
 ALLOW_CACHE_OVERRIDES = "true"
 TMDB_BASE_URL = "https://api.themoviedb.org/3"
 TMDB_TIMEOUT_MS = "5000"
-CORS_ALLOWED_ORIGINS = "https://ohana-tv.pages.dev,https://ohana.tv,https://www.ohana.tv"
+CORS_ALLOWED_ORIGINS = "https://ohana-tv.pages.dev,https://ohana.tv,https://www.ohana.tv,http://100.85.92.106:5173"
 
 [[env.development.kv_namespaces]]
 binding = "TITLE_CACHE"
@@ -42,7 +42,7 @@ TITLE_CACHE_TTL_SECONDS = "604800"
 ALLOW_CACHE_OVERRIDES = "false"
 TMDB_BASE_URL = "https://api.themoviedb.org/3"
 TMDB_TIMEOUT_MS = "5000"
-CORS_ALLOWED_ORIGINS = "https://ohana-tv.pages.dev,https://ohana.tv,https://www.ohana.tv"
+CORS_ALLOWED_ORIGINS = "https://ohana-tv.pages.dev,https://ohana.tv,https://www.ohana.tv,http://100.85.92.106:5173"
 
 [[env.production.kv_namespaces]]
 binding = "TITLE_CACHE"

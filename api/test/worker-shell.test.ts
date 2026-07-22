@@ -24,6 +24,7 @@ function tmdbFetch(responses: Response[]): typeof fetch {
 }
 
 const env = { TMDB_API_KEY: "test-key", TMDB_BASE_URL: "https://tmdb.test/3" };
+const corsOrigins = "https://ohana-tv.pages.dev, https://ohana.tv, https://www.ohana.tv, http://100.85.92.106:5173";
 
 const cachedTitle: TitleResponse = {
   imdbId: "tt0133093",
@@ -301,11 +302,68 @@ describe("worker routing and errors", () => {
     });
   });
 
-  it("returns CORS preflight headers for browser API calls", async () => {
+  it.each([
+    "https://ohana-tv.pages.dev",
+    "https://ohana.tv",
+    "https://www.ohana.tv",
+    "http://100.85.92.106:5173",
+  ])("echoes configured CORS origin %s on successful GET responses", async (origin) => {
+    const writer = kvCache();
+    await writeCachedTitle(writer, "tt0133093", cachedTitle, 60, {}, Date.now());
+    const stored = vi.mocked(writer.put).mock.calls[0]?.[1] as string;
+    const cache = kvCache(stored);
+    const fetcher = vi.fn() as unknown as typeof fetch;
+    vi.stubGlobal("fetch", fetcher);
+
+    const response = await worker.fetch(new Request("https://api.example.test/titles/tt0133093", {
+      headers: { origin },
+    }), { ...env, TITLE_CACHE: cache, CORS_ALLOWED_ORIGINS: corsOrigins });
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("access-control-allow-origin")).toBe(origin);
+    expect(response.headers.get("vary")).toContain("Origin");
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+
+  it("echoes configured CORS origin on API error responses", async () => {
+    const fetcher = vi.fn() as unknown as typeof fetch;
+    vi.stubGlobal("fetch", fetcher);
+
+    const response = await worker.fetch(new Request("https://api.example.test/titles/not-an-imdb-id", {
+      headers: { origin: "https://ohana.tv" },
+    }), { ...env, CORS_ALLOWED_ORIGINS: corsOrigins });
+
+    expect(response.status).toBe(400);
+    expect(response.headers.get("access-control-allow-origin")).toBe("https://ohana.tv");
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+
+  it("omits allow-origin for disallowed origins when an allowlist is configured", async () => {
+    const response = await worker.fetch(new Request("https://api.example.test/titles/tt0133093", {
+      method: "OPTIONS",
+      headers: { origin: "https://evil.example" },
+    }), { ...env, CORS_ALLOWED_ORIGINS: corsOrigins });
+
+    expect(response.status).toBe(204);
+    expect(response.headers.get("access-control-allow-origin")).toBeNull();
+    expect(response.headers.get("access-control-allow-methods")).toBe("GET, OPTIONS");
+  });
+
+  it("uses public wildcard CORS behavior when no allowlist is configured", async () => {
+    const response = await worker.fetch(new Request("https://api.example.test/titles/tt0133093", {
+      method: "OPTIONS",
+      headers: { origin: "https://anywhere.example" },
+    }), env);
+
+    expect(response.status).toBe(204);
+    expect(response.headers.get("access-control-allow-origin")).toBe("*");
+  });
+
+  it("returns CORS preflight headers for configured browser API calls", async () => {
     const response = await worker.fetch(new Request("https://api.example.test/titles/tt0133093", {
       method: "OPTIONS",
       headers: { origin: "https://ohana.tv" },
-    }), { ...env, CORS_ALLOWED_ORIGINS: "https://ohana.tv" });
+    }), { ...env, CORS_ALLOWED_ORIGINS: corsOrigins });
 
     expect(response.status).toBe(204);
     expect(response.headers.get("access-control-allow-origin")).toBe("https://ohana.tv");

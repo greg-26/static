@@ -196,7 +196,16 @@ Configuration is in `wrangler.toml`:
 - `ENVIRONMENT` — `local`, `development`, or `production`.
 - `ALLOW_CACHE_OVERRIDES` — enables `cache=refresh|bypass`; keep disabled in production unless intentionally operating the cache.
 - `TMDB_BASE_URL` / `TMDB_TIMEOUT_MS` — TMDB integration settings.
-- `CORS_ALLOWED_ORIGINS` — optional comma-separated browser origins. Matching origins are echoed in CORS responses; when omitted, public read-only API responses use `Access-Control-Allow-Origin: *`.
+- `CORS_ALLOWED_ORIGINS` — optional comma-separated exact browser origins (`scheme://host[:port]`). Matching origins are echoed in CORS responses; when omitted, public read-only API responses use `Access-Control-Allow-Origin: *`. When an allowlist is configured, disallowed origins receive no `Access-Control-Allow-Origin` header.
+
+Current browser allowlist entries maintained in `wrangler.toml`:
+
+- `https://ohana-tv.pages.dev`
+- `https://ohana.tv`
+- `https://www.ohana.tv`
+- `http://100.85.92.106:5173`
+
+CORS origins are exact strings, so `100.85.92.106:5173` must be configured with its browser scheme as `http://100.85.92.106:5173`. Add new website/dev origins explicitly rather than relying on partial host matches; CORS is browser access control for this public read-only API, not authentication.
 
 Development and production use real Cloudflare KV namespace IDs for `TITLE_CACHE`. The top-level local namespace ID remains a dry-run/local placeholder.
 

@@ -13,20 +13,26 @@ function routeTitleRequest(pathname: string): string | undefined {
   return match?.[1];
 }
 
-function allowedCorsOrigin(request: Request, env: ApiEnv): string {
-  const requestOrigin = request.headers.get("origin");
-  const configuredOrigins = (env.CORS_ALLOWED_ORIGINS || "")
+function configuredCorsOrigins(env: ApiEnv): string[] {
+  return (env.CORS_ALLOWED_ORIGINS || "")
     .split(",")
     .map((origin) => origin.trim())
     .filter(Boolean);
+}
 
+function allowedCorsOrigin(request: Request, env: ApiEnv): string | undefined {
+  const requestOrigin = request.headers.get("origin");
+  const configuredOrigins = configuredCorsOrigins(env);
+
+  if (configuredOrigins.length === 0) return "*";
   if (requestOrigin && configuredOrigins.includes(requestOrigin)) return requestOrigin;
-  return configuredOrigins[0] || "*";
+  return undefined;
 }
 
 function withCors(response: Response, request: Request, env: ApiEnv): Response {
   const headers = new Headers(response.headers);
-  headers.set("access-control-allow-origin", allowedCorsOrigin(request, env));
+  const allowOrigin = allowedCorsOrigin(request, env);
+  if (allowOrigin) headers.set("access-control-allow-origin", allowOrigin);
   headers.set("access-control-allow-methods", "GET, OPTIONS");
   headers.set("access-control-allow-headers", "accept, content-type");
   headers.append("vary", "Origin");
