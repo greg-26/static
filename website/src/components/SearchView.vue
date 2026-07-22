@@ -1,35 +1,49 @@
 <template>
   <section class="search-view">
-    <div class="search-hero">
+    <div
+      class="search-hero"
+      @focusin="openRecentSearchSuggestions"
+      @focusout="handleSearchFocusOut"
+      @keydown.escape="dismissRecentSearchSuggestions"
+    >
       <SearchBox
         ref="searchBox"
         v-model="localSearch"
         placeholder="Search movies, shows, Spanish titles…"
         aria-label="Search movies and TV shows"
+        aria-controls="recent-search-suggestions"
+        :aria-expanded="showRecentSearchSuggestions ? 'true' : 'false'"
+        aria-autocomplete="list"
         @commit="commitSearch"
         @clear="clearSearch"
+        @escape="dismissRecentSearchSuggestions"
       />
+      <div
+        v-if="showRecentSearchSuggestions"
+        id="recent-search-suggestions"
+        class="recent-suggestions"
+        role="listbox"
+        aria-label="Recent searches"
+      >
+        <div class="recent-suggestions-header">
+          <span>Recent searches</span>
+          <button type="button" class="recent-suggestions-clear" @click="clearRecentSearchesList">Clear</button>
+        </div>
+        <button
+          v-for="query in recentSearches"
+          :key="query"
+          type="button"
+          class="recent-suggestion"
+          role="option"
+          @click="runRecentSearch(query)"
+        >
+          <span class="recent-suggestion-icon" aria-hidden="true">↺</span>
+          <span>{{ query }}</span>
+        </button>
+      </div>
     </div>
 
     <div v-if="!queryActive" class="search-empty">
-      <section v-if="recentSearches.length" class="recent-section">
-        <SectionHeader title="Recent searches" compact level="h3">
-          <template #actions>
-            <button type="button" @click="clearRecentSearchesList">Clear</button>
-          </template>
-        </SectionHeader>
-        <div class="recent-chips">
-          <UiChip
-            v-for="query in recentSearches"
-            :key="query"
-            size="sm"
-            tone="safe"
-            :label="query"
-            @click="runRecentSearch(query)"
-          />
-        </div>
-      </section>
-
       <section v-if="recentViewedMovies.length" class="recent-section">
         <SectionHeader title="Recently viewed" compact level="h3" />
         <div class="recent-viewed-list">
@@ -104,7 +118,6 @@ import { addRecentSearch, clearRecentSearches, getRecentSearches, getRecentViewe
 import SearchBox from "@/components/SearchBox.vue";
 import SearchResultCard from "@/components/SearchResultCard.vue";
 import SectionHeader from "@/components/SectionHeader.vue";
-import UiChip from "@/components/UiChip.vue";
 
 const emit = defineEmits(["selectMovie"]);
 
@@ -114,9 +127,12 @@ const store = useMovieStore();
 const searchBox = ref(null);
 const localSearch = ref(routeQueryText() || store.searchQuery);
 const activityTick = ref(0);
+const searchFocusWithin = ref(false);
+const recentSearchSuggestionsDismissed = ref(false);
 let debounceTimer = null;
 
 watch(localSearch, val => {
+  recentSearchSuggestionsDismissed.value = false;
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(() => {
     store.searchQuery = val;
@@ -132,6 +148,12 @@ watch(() => route.query.q, () => {
 }, { immediate: true });
 
 const queryActive = computed(() => store.searchQuery.trim().length >= 2);
+const showRecentSearchSuggestions = computed(() => searchFocusWithin.value
+  && !recentSearchSuggestionsDismissed.value
+  && recentSearches.value.length > 0
+  && !queryActive.value
+  && localSearch.value.trim().length < 2
+);
 const recentSearches = computed(() => {
   activityTick.value;
   return getRecentSearches();
@@ -232,6 +254,7 @@ function clearSearch() {
   clearTimeout(debounceTimer);
   localSearch.value = "";
   store.searchQuery = "";
+  recentSearchSuggestionsDismissed.value = false;
   syncSearchQueryToRoute("");
   if (shouldFocusSearchBox()) searchBox.value?.focus({ preventScroll: true });
 }
@@ -241,6 +264,7 @@ function commitSearch() {
   store.searchQuery = localSearch.value;
   syncSearchQueryToRoute(store.searchQuery);
   if (store.searchQuery.trim().length >= 2) addRecentSearch(store.searchQuery);
+  recentSearchSuggestionsDismissed.value = true;
   activityTick.value++;
 }
 
@@ -254,8 +278,25 @@ function runRecentSearch(query) {
   store.searchQuery = query;
   syncSearchQueryToRoute(query);
   addRecentSearch(query);
+  recentSearchSuggestionsDismissed.value = true;
   activityTick.value++;
   if (shouldFocusSearchBox()) searchBox.value?.focus({ preventScroll: true });
+}
+
+function openRecentSearchSuggestions() {
+  searchFocusWithin.value = true;
+}
+
+function handleSearchFocusOut(event) {
+  if (event.currentTarget.contains(event.relatedTarget)) return;
+  searchFocusWithin.value = false;
+  recentSearchSuggestionsDismissed.value = true;
+}
+
+function dismissRecentSearchSuggestions(event) {
+  if (!showRecentSearchSuggestions.value) return;
+  event?.preventDefault?.();
+  recentSearchSuggestionsDismissed.value = true;
 }
 
 function clearRecentSearchesList() {
@@ -281,13 +322,34 @@ onUnmounted(() => window.removeEventListener("ohana:recent-activity", refreshRec
 
 <style scoped>
 .search-view { padding: 18px 48px 64px; max-width: 1060px; margin: 0 auto; width: 100%; }
-.search-hero { display: grid; gap: 10px; }
+.search-hero { position: relative; display: grid; gap: 10px; }
+.recent-suggestions {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+  border: 1px solid rgba(45,212,191,0.22);
+  border-radius: 15px;
+  background: rgba(10,10,18,0.98);
+  box-shadow: 0 18px 44px rgba(0,0,0,0.42);
+}
+.recent-suggestions-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 2px 4px 6px; color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.recent-suggestions-clear { border: 1px solid rgba(255,255,255,0.12); border-radius: 999px; background: rgba(255,255,255,0.05); color: rgba(240,238,232,0.72); font: inherit; font-size: 12px; min-height: 28px; padding: 0 10px; cursor: pointer; text-transform: none; letter-spacing: 0; }
+.recent-suggestions-clear:hover,
+.recent-suggestions-clear:focus-visible { border-color: rgba(45,212,191,0.42); color: var(--teal); outline: none; }
+.recent-suggestion { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 42px; padding: 9px 10px; border: 0; border-radius: 11px; background: transparent; color: var(--white); font: inherit; text-align: left; cursor: pointer; }
+.recent-suggestion:hover,
+.recent-suggestion:focus-visible { background: rgba(45,212,191,0.12); outline: none; }
+.recent-suggestion-icon { color: var(--muted); font-size: 14px; }
 .search-empty { margin-top: 16px; display: grid; gap: 18px; }
 .recent-section { padding: 16px 0; color: var(--muted); }
 .recent-section { border-top: 1px solid rgba(255,255,255,0.08); }
 .recent-section h3 { color: var(--white); font-size: 16px; }
 .recent-section button:not(.ui-chip) { border: 1px solid rgba(255,255,255,0.12); border-radius: 999px; background: rgba(255,255,255,0.05); color: rgba(240,238,232,0.72); font: inherit; font-size: 12px; min-height: 32px; padding: 0 12px; cursor: pointer; }
-.recent-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .recent-section button:not(.ui-chip):hover { border-color: rgba(45,212,191,0.42); color: var(--teal); }
 .recent-viewed-list { display: grid; gap: 10px; }
 .results-wrap { margin-top: 16px; }
@@ -300,13 +362,5 @@ onUnmounted(() => window.removeEventListener("ohana:recent-activity", refreshRec
 .results-list { display: grid; gap: 10px; }
 @media (max-width: 640px) {
   .search-view { padding: 10px 14px 48px; }
-  .recent-chips {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: none;
-    overscroll-behavior-inline: contain;
-    -webkit-overflow-scrolling: touch;
-  }
-  .recent-chips::-webkit-scrollbar { display: none; }
 }
 </style>

@@ -10,9 +10,15 @@
       type="search"
       :placeholder="placeholder"
       :aria-label="ariaLabel"
+      :aria-controls="ariaControls || undefined"
+      :aria-expanded="ariaExpanded"
+      :aria-autocomplete="ariaAutocomplete || undefined"
       spellcheck="false"
       @input="emit('update:modelValue', $event.target.value)"
+      @focus="emit('focus', $event)"
+      @blur="emit('blur', $event)"
       @keydown.enter="emit('commit')"
+      @keydown.escape="emit('escape', $event)"
     />
     <button v-if="modelValue" type="button" aria-label="Clear search" @click="emit('clear')">×</button>
   </div>
@@ -23,12 +29,15 @@ import { ref } from "vue";
 
 const inputEl = ref(null);
 
-const emit = defineEmits(["update:modelValue", "commit", "clear"]);
+const emit = defineEmits(["update:modelValue", "commit", "clear", "focus", "blur", "escape"]);
 
 defineProps({
   modelValue: { type: String, default: "" },
   placeholder: { type: String, default: "Search…" },
   ariaLabel: { type: String, default: "Search" },
+  ariaControls: { type: String, default: "" },
+  ariaExpanded: { type: String, default: undefined },
+  ariaAutocomplete: { type: String, default: "" },
 });
 
 function focus(options) {

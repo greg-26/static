@@ -86,13 +86,14 @@ const listLabel = computed(() => {
 
 <style scoped>
 .search-card {
+  --search-card-radius: 12px;
   width: 100%;
   display: grid;
   grid-template-columns: 86px minmax(0, 1fr);
   gap: 14px;
   padding: 12px;
   border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 16px;
+  border-radius: var(--search-card-radius);
   background: rgba(15,15,26,0.78);
   color: inherit;
   font: inherit;
@@ -111,7 +112,7 @@ const listLabel = computed(() => {
 .poster {
   width: 86px;
   aspect-ratio: 2 / 3;
-  border-radius: 10px;
+  border-radius: var(--search-card-radius);
   overflow: hidden;
   background: var(--surface3);
   display: grid;

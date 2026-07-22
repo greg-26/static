@@ -1,7 +1,7 @@
 # Sprint 013 — Search recents autocomplete polish
 
 ## Status
-ready
+complete — implemented and verified 2026-07-22
 
 ## Outcome
 
@@ -80,15 +80,15 @@ Alex added two latest non-API working-fork issues for the Search/recents surface
 
 ## Acceptance criteria
 
-- [ ] Recent searches are not shown as a permanent chip section on the Search landing page.
-- [ ] Recent searches appear as input-attached suggestions only when the search field is focused and recent searches exist.
-- [ ] Selecting a recent search commits the query, syncs `/search?q=...`, refreshes recents, and shows results.
-- [ ] Blur/Escape closes suggestions without accidentally committing a query.
-- [ ] Keyboard and screen-reader affordances are preserved for the suggestions.
-- [ ] Touch/mobile focus behavior remains intentional and does not reopen the keyboard unexpectedly after suggestion selection.
-- [ ] Recent movie/search result row corners visually align with the poster corners.
-- [ ] Existing query deep links, result selection, no-results state, and recent movie history still work.
-- [ ] Issues #8 and #9 have implementation evidence comments only after the sprint is complete.
+- [x] Recent searches are not shown as a permanent chip section on the Search landing page.
+- [x] Recent searches appear as input-attached suggestions only when the search field is focused and recent searches exist.
+- [x] Selecting a recent search commits the query, syncs `/search?q=...`, refreshes recents, and shows results.
+- [x] Blur/Escape closes suggestions without accidentally committing a query.
+- [x] Keyboard and screen-reader affordances are preserved for the suggestions.
+- [x] Touch/mobile focus behavior remains intentional and does not reopen the keyboard unexpectedly after suggestion selection.
+- [x] Recent movie/search result row corners visually align with the poster corners.
+- [x] Existing query deep links, result selection, no-results state, and recent movie history still work.
+- [x] Issues #8 and #9 have implementation evidence comments and are closed after verification.
 
 ## Required tests
 
@@ -103,9 +103,18 @@ cd website
 npm run build
 ```
 
+## Verification evidence
+
+- Implemented 2026-07-22 in `SearchView.vue`, `SearchBox.vue`, and `SearchResultCard.vue`.
+- Added `npm run qa:sprint13` (`scripts/qa-sprint13-search-recents.mjs`) for source-level checks covering focus-gated suggestions, selection commit, Escape/blur dismissal, ARIA hooks, and shared radius styling.
+- Verification passed 2026-07-22:
+  - `npm run qa:sprint13`
+  - `npm run build`
+- Issue handling: working-fork issues #8 and #9 were commented and closed after the verified commit was pushed.
+
 ## Handoff
 
-Report the final suggestion interaction model, radius value/shared styling used, files changed, verification commands, and whether issues #8/#9 were closed or left open with blockers.
+Final model: recent-search suggestions are an input-attached listbox that opens while focus is inside the search field/suggestion surface, stays hidden for active committed queries, closes on blur or Escape without committing, and commits `/search?q=...` only when a suggestion or Enter search is selected. Search/recent result rows and posters now share `--search-card-radius: 12px`.
 
 ## Dependencies unlocked
 

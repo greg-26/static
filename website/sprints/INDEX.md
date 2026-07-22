@@ -5,8 +5,8 @@ Focused sprint files live here so agents read only the slice they are working on
 ## Status
 
 - Current planning status: issue-driven website roadmap refreshed for open working-fork issues (#6, #7, #8, #9, #10, #11, #12), with Alex's post-Sprint-013 additions mapped into focused follow-up sprints.
-- Current implementation phase: Sprint 10 is implemented and verified; Sprint 9 has been removed from the active planner and archived as historical evidence.
-- Next executable sprint: Sprint 13 — Search recents autocomplete polish for issues #8 and #9, followed by Sprint 14 for issue #10.
+- Current implementation phase: Sprint 13 is implemented and verified; Sprint 10 is complete and Sprint 9 has been removed from the active planner and archived as historical evidence.
+- Next executable sprint: Sprint 14 — Discover chip dropdown density for issue #10, followed by Sprint 11/12 API detail work unless Alex prioritizes issue #7.
 - Latest planning update: 2026-07-22.
 
 ## Roadmap
@@ -16,7 +16,7 @@ Focused sprint files live here so agents read only the slice they are working on
 | 10 | Make Where-to-watch country/source context explicit with Spain read-only provider settings and JustWatch/TMDB attribution. | `complete` — implemented and verified 2026-07-22; addresses working-fork issues #1 and #2. | Alex escalation from 2026-07-21 planning run |
 | 11 | Integrate the Ohana API into movie details for overview, cast, and collection context. | `ready/backlog` — addresses the movie-detail API foundation for issue #6, but is temporarily behind Alex's latest non-API polish requests. | Sprint 10 complete |
 | 12 | Finish API-enriched detail surfaces for TV seasons and API-state hardening. | `proposed` — completes issue #6 after Sprint 11 foundation. | Sprint 11 complete |
-| 13 | Convert Search recent-search chips into focus-gated autocomplete suggestions and align recent/result row radii. | `ready` — addresses latest non-API Search/recents issues #8 and #9. | Sprint 10 complete; independent of API Sprints 11/12 |
+| 13 | Convert Search recent-search chips into focus-gated autocomplete suggestions and align recent/result row radii. | `complete` — implemented and verified 2026-07-22; addresses working-fork issues #8 and #9. | Sprint 10 complete; independent of API Sprints 11/12 |
 | 14 | Remove low-value subtitles from Discover filter chip dropdown options so the menus feel less wide/fat. | `ready` — addresses issue #10 as a small Discover control polish slice after Sprint 13. | Sprint 13 complete |
 | 15 | Move custom-provider add/manage ownership to Settings and separate custom providers from normal availability in movie details. | `proposed` — addresses issue #11 and prepares the provider detail surface for grouped API availability. | Sprint 10 complete; recommended before Sprint 16 |
 | 16 | Break movie-detail provider availability into TMDB-style stream/rent/buy groups with provider icons and graceful fallback. | `proposed` — addresses issue #12 after API enrichment and provider ownership cleanup. | Sprints 11, 12, and 15 complete; UX icon sizing/radius guidance |
@@ -39,7 +39,7 @@ Focused sprint files live here so agents read only the slice they are working on
 - Sprint 10 assumes Spain-only provider availability until scraper/data inspection proves multi-country support.
 - Sprint 11 assumes the deployed Ohana API title endpoint can be consumed read-only by the static website with graceful fallback to existing catalog fields.
 - Sprint 12 keeps TV season rendering separate from the first API integration slice so the movie-detail page remains reviewable after Sprint 11.
-- Sprint 13 intentionally jumps ahead of API implementation because Alex's latest two non-API issues are small, user-visible Search/recents fixes with shared code paths.
+- Sprint 13 intentionally jumped ahead of API implementation because Alex's latest two non-API issues were small, user-visible Search/recents fixes with shared code paths; it is complete as of 2026-07-22.
 - Sprint 14 is separate from Sprint 13 because Discover chip dropdown density is a different surface from Search recents/autocomplete.
 - Sprint 15 moves custom-provider configuration to Settings before Sprint 16 adds richer provider availability grouping, so movie details do not mix configuration controls with availability display.
 - Sprint 16 must not fake Stream/Rent/Buy buckets from the legacy provider bitmask; it depends on API/TMDB-style grouped provider data or must report a contract blocker.
@@ -58,7 +58,7 @@ Focused sprint files live here so agents read only the slice they are working on
 The current website issue tranche is complete when:
 
 - Sprint 10 country/source context is implemented, verified, and issues #1 and #2 are commented and closed by the implementation workflow when fully satisfied.
-- Sprint 13 Search/recents polish is implemented and verified, and issues #8 and #9 are commented and closed by the implementation workflow when fully satisfied.
+- Sprint 13 Search/recents polish is implemented and verified, and issues #8 and #9 were commented and closed by the implementation workflow.
 - Sprint 14 Discover chip dropdown density is implemented and verified, and issue #10 is commented and closed by the implementation workflow when fully satisfied.
 - Sprint 11 and Sprint 12 API enrichment are implemented and verified, and issue #6 is commented and closed by the implementation workflow when fully satisfied.
 - Sprint 15 provider settings/custom-source ownership is implemented and verified, and issue #11 is commented and closed by the implementation workflow when fully satisfied.
