@@ -1,11 +1,11 @@
 # Sprint 014 — Discover chip dropdown density
 
 ## Status
-ready
+complete — implemented and verified 2026-07-22; working-fork issue #10 closed after verification.
 
 ## Outcome
 
-Discover filter chip dropdowns feel tighter and easier to scan by removing low-value subtitle text from the menu options.
+Discover filter chip dropdowns feel tighter and easier to scan by removing low-value subtitle/helper text from the menu headings and maturity profile options.
 
 ## Why now
 
@@ -65,12 +65,12 @@ Alex added working-fork issue [#10](https://github.com/greg-26/static/issues/10)
 
 ## Acceptance criteria
 
-- [ ] Discover filter dropdown options no longer show subtitle/helper text that makes menus wide.
-- [ ] Option labels remain clear, single-line, and scannable.
-- [ ] Current filter selection and persistence behavior is unchanged.
-- [ ] Keyboard/touch open, select, and dismiss behavior is not regressed.
-- [ ] No unrelated Search, Settings, or movie-detail surfaces change.
-- [ ] Issue #10 has implementation evidence comments only after the sprint is complete.
+- [x] Discover filter dropdown options no longer show subtitle/helper text that makes menus wide.
+- [x] Option labels remain clear, single-line, and scannable.
+- [x] Current filter selection and persistence behavior is unchanged.
+- [x] Keyboard/touch open, select, and dismiss behavior is not regressed.
+- [x] No unrelated Search, Settings, or movie-detail surfaces change.
+- [x] Issue #10 has implementation evidence comments only after the sprint is complete.
 
 ## Required tests
 
@@ -82,8 +82,19 @@ Alex added working-fork issue [#10](https://github.com/greg-26/static/issues/10)
 
 ```bash
 cd website
+npm run qa:sprint14
+npm run qa:mobile-touch
 npm run build
+git diff --check
 ```
+
+## Implementation evidence
+
+- Removed low-value helper/subtitle text from Discover filter dropdown headings for Availability, Maturity profile, and Genre.
+- Removed maturity profile option subtitles (`profile.description`) so each dropdown option is one compact, single-line label.
+- Tightened `.menu-option--profile` back to the base compact option height/width while preserving ellipsis protection.
+- Added `scripts/qa-sprint14-discover-chip-density.mjs` and `npm run qa:sprint14` to lock the subtitle removal and preserved option labels.
+- Verified 2026-07-22 with `npm run qa:sprint14`, `npm run qa:mobile-touch`, `npm run build`, and `git diff --check`.
 
 ## Handoff
 

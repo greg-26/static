@@ -12,7 +12,8 @@
     "qa:mobile-touch": "node scripts/qa-mobile-touch.mjs",
     "qa:dev-routes": "node scripts/qa-dev-routes.mjs",
     "qa:phone-touch": "node scripts/qa-phone-touch.mjs",
-    "qa:sprint13": "node scripts/qa-sprint13-search-recents.mjs"
+    "qa:sprint13": "node scripts/qa-sprint13-search-recents.mjs",
+    "qa:sprint14": "node scripts/qa-sprint14-discover-chip-density.mjs"
   },
   "dependencies": {
     "fuse.js": "^7.0.0",

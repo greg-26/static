@@ -43,7 +43,6 @@
             </template>
             <div class="filter-heading">
               <p class="filter-label">Availability</p>
-              <span>Configure services in Settings</span>
             </div>
             <div class="menu-options menu-options--single">
               <button
@@ -97,7 +96,6 @@
             </template>
             <div class="filter-heading">
               <p class="filter-label">Maturity profile</p>
-              <span>Active viewing context</span>
             </div>
             <div class="menu-options menu-options--single">
               <button
@@ -111,7 +109,6 @@
                 @click="selectMaturityProfile(profile)"
               >
                 <span>{{ profile.label }}</span>
-                <small>{{ profile.description }}</small>
               </button>
               <button class="menu-option menu-option--settings" type="button" @click="openMaturitySettings">
                 Edit limits in Settings
@@ -150,7 +147,6 @@
             </template>
             <div class="filter-heading">
               <p class="filter-label">Genre</p>
-              <span>{{ selectedGenreSummary }}</span>
             </div>
             <div class="menu-options menu-options--grid">
               <button
@@ -255,12 +251,6 @@ const genreChipLabel = computed(() => {
   if (count === 0) return "Genre";
   if (count === 1) return [...store.selectedGenres][0];
   return `${count} genres`;
-});
-
-const selectedGenreSummary = computed(() => {
-  const count = store.selectedGenres.size;
-  if (count === 0) return "Any genre";
-  return `${count} selected`;
 });
 
 const availabilityChipLabel = computed(() => {
@@ -399,8 +389,7 @@ const hasFilters = computed(() =>
 .clear-btn { margin-left: auto; }
 .clear-btn--icon { display: inline-flex; align-items: center; justify-content: center; width: 38px; padding: 0; font-size: 20px; line-height: 1; }
 
-.filter-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; color: var(--muted); font-size: 12px; }
-.filter-heading span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.filter-heading { display: flex; align-items: baseline; color: var(--muted); font-size: 12px; }
 .filter-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: rgba(255,255,255,0.68); }
 .menu-options { display: grid; align-content: start; gap: 8px; width: max-content; max-width: calc(100vw - 56px); max-height: min(210px, 31vh); overflow: auto; padding-right: 2px; overscroll-behavior: contain; }
 .menu-options--grid { grid-template-columns: repeat(2, minmax(max-content, 1fr)); }
@@ -411,13 +400,9 @@ const hasFilters = computed(() =>
 .menu-option:disabled, .menu-option:disabled:hover { opacity: 0.45; cursor: not-allowed; border-color: rgba(255,255,255,0.16); color: rgba(255,255,255,0.78); background: rgba(30,30,42,0.86); }
 .menu-note { max-width: 180px; margin: 0; color: rgba(255,255,255,0.48); font-size: 11px; line-height: 1.35; }
 .menu-option--provider.active { background: rgba(45,212,191,0.15); border-color: var(--teal); color: var(--teal); }
-.menu-option--profile { flex-direction: column; align-items: flex-start; gap: 4px; min-height: 56px; max-width: 220px; padding-block: 10px; }
-.menu-option--profile span,
-.menu-option--profile small { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.menu-option--profile span { line-height: 1.15; }
-.menu-option--profile small { color: rgba(255,255,255,0.52); font-size: 11px; line-height: 1.25; }
+.menu-option--profile { min-height: 40px; max-width: 180px; }
+.menu-option--profile span { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.15; }
 .menu-option--profile.active { background: rgba(45,212,191,0.15); border-color: var(--teal); color: var(--teal); }
-.menu-option--profile.active small { color: rgba(45,212,191,0.76); }
 .menu-option--settings { color: var(--teal); }
 
 .rating-slider-wrap { width: min(300px, calc(100vw - 72px)); display: grid; grid-template-columns: minmax(150px, 1fr) auto; align-items: center; gap: 12px; padding: 4px 1px; }
