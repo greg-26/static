@@ -47,4 +47,4 @@ This sprint set is complete when all mapped issues have implementation evidence 
 
 ## Implementation log
 
-- 2026-07-28: Sprint 028 completed. Search recently-viewed cards no longer inherit the broad pill-button border/radius styling; `npm run build`, `git diff --check`, and Vite `/search` reachability passed. Issue #31 pending evidence comment/closure from implementation workflow.
+- 2026-07-28: Sprint 028 completed. Search recently-viewed cards no longer inherit the broad pill-button border/radius styling; `npm run build`, `git diff --check`, and Vite `/search` reachability passed. Issue #31 was commented with evidence and closed.
