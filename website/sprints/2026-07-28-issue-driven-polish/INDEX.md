@@ -3,16 +3,16 @@
 ## Status
 
 - Current planning status: ready issue-driven tranche for working-fork website issues #18–#24.
-- Current implementation phase: implementation has not started for this tranche.
-- Next executable sprint: Sprint 023 — movie-detail top actions and poster affordance.
+- Current implementation phase: Sprint 023 complete; Sprint 024 is the next ready implementation slice.
+- Next executable sprint: Sprint 024 — movie-detail media surfaces.
 - Latest planning revision date: 2026-07-28.
 
 ## Roadmap
 
 | Sprint | Outcome | Status | Depends on |
 | --- | --- | --- | --- |
-| 023 | Movie-detail list actions are reachable immediately, and the poster can be inspected larger on mobile. | `ready` | Existing modal/list persistence |
-| 024 | Movie-detail media surfaces feel native to Ohana: blended backdrop, internal collection/season links, compact one-row cast. | `ready` | Sprint 023 layout changes complete |
+| 023 | Movie-detail list actions are reachable immediately, and the poster can be inspected larger on mobile. | `complete` | Existing modal/list persistence |
+| 024 | Movie-detail media surfaces feel native to Ohana: blended backdrop, internal collection/season links, compact one-row cast. | `ready` | Sprint 023 complete |
 | 025 | Discover avoids load drift and chip menus behave as a single coordinated menu system. | `ready` | Existing Discover list/menu components |
 | 026 | Lists menu shows compact poster previews for each list. | `ready` | Sprint 025 menu coordination complete |
 | 027 | Search recents lose the ugly rounded container and blend with the poster/results surface. | `ready` | Current recent-activity storage |

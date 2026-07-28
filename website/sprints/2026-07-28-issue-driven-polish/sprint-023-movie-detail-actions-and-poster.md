@@ -1,7 +1,7 @@
 # Sprint 023 — Movie-detail actions and poster inspection
 
 ## Status
-ready
+complete
 
 ## Outcome
 
@@ -62,12 +62,12 @@ Start by moving existing behavior, not rebuilding it. The poster overlay should 
 
 ## Acceptance criteria
 
-- [ ] Movie details expose add/remove/list actions without scrolling on mobile-width detail view.
-- [ ] Existing list add/remove behavior and persistence still work; no KV/profile merge rewrite.
-- [ ] Tapping/clicking the poster opens a larger poster view using the best available poster image.
-- [ ] The larger poster view is dismissible by visible close control, backdrop/escape where applicable, and keyboard focus does not get stranded.
-- [ ] The default detail layout remains compact; the poster is not permanently enlarged.
-- [ ] Watchlist controls and maturity/profile chips are visually distinguishable enough not to feel like the same control group.
+- [x] Movie details expose add/remove/list actions without scrolling on mobile-width detail view.
+- [x] Existing list add/remove behavior and persistence still work; no KV/profile merge rewrite.
+- [x] Tapping/clicking the poster opens a larger poster view using the best available poster image.
+- [x] The larger poster view is dismissible by visible close control, backdrop/escape where applicable, and keyboard focus does not get stranded.
+- [x] The default detail layout remains compact; the poster is not permanently enlarged.
+- [x] Watchlist controls and maturity/profile chips are visually distinguishable enough not to feel like the same control group.
 
 ## Required tests
 
@@ -85,6 +85,20 @@ git diff --check
 ## Handoff
 
 Implementation agent: take this sprint first. Comment on issues #19 and #20 only after implementation evidence exists; do not close from planning.
+
+## Implementation evidence
+
+- Completed 2026-07-28 by Greg in commit 1e28682.
+- `MovieModal.vue` now renders watched/list chips directly under the movie title before maturity/profile sections, preserving existing `userStore.toggleWatched`, `userStore.toggleMovieInList`, and `userStore.isInList` behavior.
+- Poster image is now a keyboard-focusable button that opens a temporary full-screen poster dialog using `posterImageSrc` (`apiDetail.posterImage.url` with static poster fallback), with visible close, backdrop close, Escape close, tab trap, and focus return to the poster button.
+- Added `scripts/qa-sprint23-detail-actions-poster.mjs` and `npm run qa:sprint23` for source/DOM checks covering action order, existing list wiring, compact default poster, and poster overlay selectors.
+
+## Verification
+
+- `npm run qa:sprint23` — passed.
+- `npm run build` — passed.
+- `git diff --check` — passed.
+- Mobile-width interaction still needs Alex/phone review on the running Vite server; source/DOM and build gates passed.
 
 ## Dependencies unlocked
 

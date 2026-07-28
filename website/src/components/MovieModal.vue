@@ -49,9 +49,19 @@
               </svg>
             </button>
           </div>
-          <div class="modal-poster">
-            <img v-if="posterImageSrc" :src="posterImageSrc" :alt="`${movie.t} poster`" loading="eager" />
-            <div v-else class="modal-poster-placeholder" :style="{ background: movie._mockColor || '#16161f' }">
+          <button
+            v-if="posterImageSrc"
+            ref="posterButtonRef"
+            type="button"
+            class="modal-poster modal-poster--button"
+            :aria-label="`View ${movie.t} poster larger`"
+            @click="openPosterViewer"
+          >
+            <img :src="posterImageSrc" :alt="`${movie.t} poster`" loading="eager" />
+            <span class="modal-poster-affordance" aria-hidden="true">Expand</span>
+          </button>
+          <div v-else class="modal-poster">
+            <div class="modal-poster-placeholder" :style="{ background: movie._mockColor || '#16161f' }">
               <span>{{ movie.t }}</span>
             </div>
           </div>
@@ -96,6 +106,32 @@
             <UiBadge v-if="movie.s" tone="success">TV Season</UiBadge>
           </div>
           <h2 :id="titleId" class="modal-title">{{ movie.t }}</h2>
+
+          <!-- Primary user decision actions: save/watch state should be reachable before maturity detail. -->
+          <div v-if="userStore.isLoggedIn" class="modal-user-actions modal-user-actions--primary" aria-label="Movie list actions">
+            <div class="user-actions-row">
+              <UiChip
+                size="sm"
+                tone="safe"
+                :active="userStore.isWatched(movie.id)"
+                @click="userStore.toggleWatched(movie.id)"
+              >
+                {{ userStore.isWatched(movie.id) ? "✓ Watched" : "Mark watched" }}
+              </UiChip>
+
+              <UiChip
+                v-for="list in userStore.lists"
+                :key="list.token"
+                size="sm"
+                tone="safe"
+                :active="userStore.isInList(list.token, movie.id)"
+                :label="list.name"
+                @click="userStore.toggleMovieInList(list.token, movie.id)"
+              />
+
+              <span v-if="!userStore.lists.length" class="no-lists-hint">No lists yet — create one in Settings</span>
+            </div>
+          </div>
 
           <div class="modal-genres">
             <UiBadge v-for="g in genreLabels" :key="g">{{ g }}</UiBadge>
@@ -412,37 +448,29 @@
             </div>
           </section>
 
-          <!-- User actions (watched + lists) -->
-          <div v-if="userStore.isLoggedIn" class="modal-user-actions">
-            <div class="user-actions-row">
-              <UiChip
-                size="sm"
-                tone="safe"
-                :active="userStore.isWatched(movie.id)"
-                @click="userStore.toggleWatched(movie.id)"
-              >
-                {{ userStore.isWatched(movie.id) ? "✓ Watched" : "Mark watched" }}
-              </UiChip>
+        </div>
+        </div>
 
-              <UiChip
-                v-for="list in userStore.lists"
-                :key="list.token"
-                size="sm"
-                tone="safe"
-                :active="userStore.isInList(list.token, movie.id)"
-                :label="list.name"
-                @click="userStore.toggleMovieInList(list.token, movie.id)"
-              />
-
-              <span v-if="!userStore.lists.length" class="no-lists-hint">No lists yet — create one in Settings</span>
-            </div>
+        <Transition name="poster-viewer-fade">
+          <div
+            v-if="posterViewerOpen && posterImageSrc"
+            ref="posterViewerRef"
+            class="poster-viewer"
+            role="dialog"
+            aria-modal="true"
+            :aria-label="`${movie.t} poster`"
+            tabindex="-1"
+            @click.self="closePosterViewer"
+            @keydown="handlePosterViewerKeydown"
+          >
+            <button ref="posterViewerCloseRef" type="button" class="poster-viewer-close" @click="closePosterViewer" aria-label="Close poster view">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <img :src="posterImageSrc" :alt="`${movie.t} poster`" />
           </div>
-
-
-
-
-        </div>
-        </div>
+        </Transition>
       </div>
     </Transition>
   </Teleport>
@@ -468,7 +496,11 @@ const props = defineProps({ movie: { type: Object, default: null } });
 const emit = defineEmits(["close"]);
 
 const dialogRef = ref(null);
+const posterButtonRef = ref(null);
+const posterViewerRef = ref(null);
+const posterViewerCloseRef = ref(null);
 const previouslyFocused = ref(null);
+const posterViewerOpen = ref(false);
 const selectedDetailProfileId = ref(movieStore.activeMaturityProfileId);
 const availabilityContextCopy = AVAILABILITY_CONTEXT_COPY;
 // Parent-guide tags live in the optional static enrichment file. Local builds may
@@ -548,12 +580,33 @@ function focusDialog() {
 }
 
 function handleDialogKeydown(event) {
+  if (posterViewerOpen.value) return;
   if (event.key === "Escape") {
     event.preventDefault();
     emit("close");
     return;
   }
   trapTabKey(event, dialogRef.value);
+}
+
+function openPosterViewer() {
+  if (!posterImageSrc.value) return;
+  posterViewerOpen.value = true;
+  nextTick(() => posterViewerCloseRef.value?.focus({ preventScroll: true }));
+}
+
+function closePosterViewer() {
+  posterViewerOpen.value = false;
+  nextTick(() => posterButtonRef.value?.focus({ preventScroll: true }));
+}
+
+function handlePosterViewerKeydown(event) {
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closePosterViewer();
+    return;
+  }
+  trapTabKey(event, posterViewerRef.value);
 }
 
 function restoreFocus() {
@@ -819,6 +872,7 @@ watch(() => props.movie, (movie) => {
     brokenHeroImageUrls.value = new Set();
     heroImageLoaded.value = false;
     overviewExpanded.value = false;
+    posterViewerOpen.value = false;
     brokenCastProfileUrls.value = new Set();
     brokenCollectionPosterUrls.value = new Set();
     if (!bodyLocked) {
@@ -844,6 +898,7 @@ watch(() => props.movie, (movie) => {
     brokenCollectionPosterUrls.value = new Set();
     heroImageLoaded.value = false;
     overviewExpanded.value = false;
+    posterViewerOpen.value = false;
     if (bodyLocked) {
       unlockBodyScroll();
       bodyLocked = false;
@@ -1022,7 +1077,43 @@ onUnmounted(() => {
   background: var(--surface3);
   box-shadow: 0 12px 28px rgba(0,0,0,0.32);
 }
+.modal-poster--button {
+  border: 0;
+  padding: 0;
+  color: var(--white);
+  cursor: zoom-in;
+  text-align: inherit;
+}
 .modal-poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.modal-poster--button:focus-visible {
+  outline: 3px solid rgba(45,212,191,0.78);
+  outline-offset: 3px;
+}
+.modal-poster-affordance {
+  position: absolute;
+  right: 7px;
+  bottom: 7px;
+  max-width: calc(100% - 14px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-radius: 999px;
+  background: rgba(8,8,16,0.76);
+  border: 1px solid rgba(255,255,255,0.16);
+  color: rgba(255,255,255,0.88);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  padding: 4px 7px;
+  opacity: 0;
+  transform: translateY(3px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.modal-poster--button:hover .modal-poster-affordance,
+.modal-poster--button:focus-visible .modal-poster-affordance {
+  opacity: 1;
+  transform: translateY(0);
+}
 .modal-poster-placeholder {
   width: 100%; height: 100%;
   display: flex; align-items: flex-end; padding: 10px;
@@ -1762,6 +1853,69 @@ onUnmounted(() => {
   color: var(--muted);
   font-style: italic;
 }
+.modal-user-actions--primary {
+  margin: -4px 0 16px;
+}
+.modal-user-actions--primary .user-actions-row {
+  padding-bottom: 2px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: none;
+}
+.modal-user-actions--primary .user-actions-row::-webkit-scrollbar { display: none; }
+
+/* ── Poster viewer ── */
+.poster-viewer-fade-enter-active,
+.poster-viewer-fade-leave-active {
+  transition: opacity 0.18s ease;
+}
+.poster-viewer-fade-enter-from,
+.poster-viewer-fade-leave-to { opacity: 0; }
+.poster-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(54px + env(safe-area-inset-top, 0px)) 18px calc(24px + env(safe-area-inset-bottom, 0px));
+  background: rgba(0,0,0,0.88);
+  backdrop-filter: blur(8px);
+  cursor: zoom-out;
+  outline: none;
+}
+.poster-viewer img {
+  display: block;
+  width: auto;
+  max-width: min(92vw, 520px);
+  max-height: calc(100dvh - 96px);
+  object-fit: contain;
+  border-radius: 14px;
+  box-shadow: 0 22px 70px rgba(0,0,0,0.62);
+  cursor: default;
+}
+.poster-viewer-close {
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  right: 14px;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.16);
+  background: rgba(8,8,16,0.78);
+  color: var(--white);
+  cursor: pointer;
+}
+.poster-viewer-close svg { width: 22px; height: 22px; }
+.poster-viewer-close:focus-visible {
+  outline: 3px solid rgba(45,212,191,0.72);
+  outline-offset: 3px;
+}
 
 /* ── Mobile ── */
 @media (max-width: 560px) {
@@ -1788,6 +1942,12 @@ onUnmounted(() => {
     margin-left: 12px;
     border-radius: 12px;
     border: 2px solid rgba(8,8,16,0.88);
+  }
+  .modal-poster-affordance {
+    opacity: 1;
+    transform: none;
+    font-size: 9px;
+    padding: 3px 6px;
   }
   .modal-close--desktop { display: none; }
   .modal-close--mobile  {
