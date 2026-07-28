@@ -83,7 +83,7 @@ export class TmdbClient {
 
   private async fetchMovie(movieId: number, context: TmdbRequestContext): Promise<TmdbTitleLookupResult> {
     const details = await this.request<TmdbMovieDetailsResponse>(`/movie/${movieId}`, compactQuery({
-      append_to_response: "credits,images,watch/providers,external_ids",
+      append_to_response: "credits,images,watch/providers,external_ids,release_dates",
       language: context.language,
       watch_region: context.country,
     }));
@@ -117,7 +117,7 @@ export class TmdbClient {
 
   private async fetchSeries(seriesId: number, context: TmdbRequestContext): Promise<TmdbTitleLookupResult> {
     const details = await this.request<TmdbSeriesDetailsResponse>(`/tv/${seriesId}`, compactQuery({
-      append_to_response: "aggregate_credits,images,watch/providers,external_ids",
+      append_to_response: "aggregate_credits,images,watch/providers,external_ids,content_ratings",
       language: context.language,
       watch_region: context.country,
     }));

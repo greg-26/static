@@ -53,6 +53,12 @@ const movieFixture: TmdbMovieForMapping = {
       },
     },
   },
+  release_dates: {
+    results: [
+      { iso_3166_1: "ES", release_dates: [{ certification: "12", type: 3 }] },
+      { iso_3166_1: "US", release_dates: [{ certification: "", type: 1 }, { certification: "R", type: 3 }] },
+    ],
+  },
 };
 
 const seriesFixture: TmdbSeriesForMapping = {
@@ -95,6 +101,7 @@ const seriesFixture: TmdbSeriesForMapping = {
     backdrops: [{ file_path: "/got-backdrop-alt.jpg", width: 1920, height: 1080, iso_639_1: null }],
   },
   watch: { results: { GB: { flatrate: [{ provider_id: 29, provider_name: "Sky", logo_path: "/sky.jpg" }] } } },
+  content_ratings: { results: [{ iso_3166_1: "US", rating: "TV-MA" }, { iso_3166_1: "GB", rating: "18" }] },
 };
 
 describe("TMDB title mappers", () => {
@@ -130,7 +137,14 @@ describe("TMDB title mappers", () => {
         rent: [{ id: "2", name: "Apple TV" }],
         buy: [{ id: "10", name: "Amazon Video", logo: null }],
       },
+      contentRating: { rating: "R", region: "US", source: "tmdb:movie-release-dates", fallback: false },
     });
+  });
+
+  it("uses the requested country for movie content ratings when available", () => {
+    const title = mapTmdbMovieToTitle(movieFixture, { providerRegion: "es" });
+
+    expect(title.contentRating).toEqual({ rating: "12", region: "ES", source: "tmdb:movie-release-dates", fallback: false });
   });
 
   it("maps semantic artwork URLs, dimensions, collection artwork, provider logos, and image limits", () => {
@@ -206,6 +220,7 @@ describe("TMDB title mappers", () => {
         { id: "3626", seasonNumber: 2, name: "Season 2", episodeCount: 10, airDate: "2012-04-01", year: 2012, overview: "The War of the Five Kings.", poster: null },
       ],
       streamingProviders: { region: "GB", stream: [{ id: "29", name: "Sky" }], rent: [], buy: [] },
+      contentRating: { rating: "18", region: "GB", source: "tmdb:tv-content-ratings", fallback: false },
     });
     expect(title.seasons?.[1]?.poster?.sizes.medium).toBe("https://image.tmdb.org/t/p/w342/got-s1.jpg");
   });
@@ -234,6 +249,20 @@ describe("TMDB title mappers", () => {
       ],
       collection: null,
     });
+  });
+
+  it("falls back to US then first available content rating when the requested country has no rating", () => {
+    const movie = mapTmdbMovieToTitle({
+      external_ids: { imdb_id: "tt0000001" },
+      release_dates: { results: [{ iso_3166_1: "FR", release_dates: [{ certification: "Tous publics", type: 3 }] }] },
+    }, { providerRegion: "ES" });
+    const series = mapTmdbSeriesToTitle({
+      external_ids: { imdb_id: "tt0000002" },
+      content_ratings: { results: [{ iso_3166_1: "ES", rating: "" }, { iso_3166_1: "US", rating: "TV-14" }] },
+    }, { providerRegion: "DE" });
+
+    expect(movie.contentRating).toEqual({ rating: "Tous publics", region: "FR", source: "tmdb:movie-release-dates", fallback: true });
+    expect(series.contentRating).toEqual({ rating: "TV-14", region: "US", source: "tmdb:tv-content-ratings", fallback: true });
   });
 
   it("does not crash when optional TMDB fields are missing or null", () => {
@@ -266,6 +295,7 @@ describe("TMDB title mappers", () => {
       artwork: { poster: null, backdrop: null, posters: [], backdrops: [] },
       collection: null,
       streamingProviders: null,
+      contentRating: null,
     });
     expect(title).not.toHaveProperty("seasons");
     expect(title).not.toHaveProperty("seasonCount");

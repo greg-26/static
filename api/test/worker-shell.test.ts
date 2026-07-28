@@ -41,6 +41,7 @@ const cachedTitle: TitleResponse = {
   artwork: { poster: null, backdrop: null, posters: [], backdrops: [] },
   collection: null,
   streamingProviders: null,
+  contentRating: null,
 };
 
 function kvCache(raw: string | null = null): TitleCacheBinding {
@@ -239,7 +240,7 @@ describe("worker routing and errors", () => {
     expect(response.status).toBe(200);
     expect(await readJson(response)).toEqual(cachedTitle);
     expect(fetcher).not.toHaveBeenCalled();
-    expect(cache.get).toHaveBeenCalledWith("title:tt0133093:v3");
+    expect(cache.get).toHaveBeenCalledWith("title:tt0133093:v4");
   });
 
   it("uses localized cache keys for localized worker requests", async () => {
@@ -255,7 +256,7 @@ describe("worker routing and errors", () => {
     expect(response.status).toBe(200);
     expect(await readJson(response)).toEqual(cachedTitle);
     expect(fetcher).not.toHaveBeenCalled();
-    expect(cache.get).toHaveBeenCalledWith("title:tt0133093:v3:lang=es-ES:country=ES");
+    expect(cache.get).toHaveBeenCalledWith("title:tt0133093:v4:lang=es-ES:country=ES");
   });
 
   it("rejects cache override modes in production by default", async () => {

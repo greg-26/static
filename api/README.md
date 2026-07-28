@@ -44,14 +44,14 @@ curl "https://api.ohana.example/titles/tt0088247?lang=es&country=ES"
 Query parameters:
 
 - `lang` — optional TMDB metadata language. Accepted forms are conservative two-letter language tags with an optional two-letter region, e.g. `es` or `es-ES`. Language is normalized to lowercase language plus uppercase region.
-- `country` — optional watch-provider country/region. Accepted form is ISO 3166-1 alpha-2, e.g. `ES`; values are normalized to uppercase. When provided, `streamingProviders.region` uses this country and only that country is selected from TMDB provider results.
+- `country` — optional watch-provider and content-rating country/region. Accepted form is ISO 3166-1 alpha-2, e.g. `ES`; values are normalized to uppercase. When provided, `streamingProviders.region` uses this country and only that country is selected from TMDB provider results. `contentRating` prefers this country, then falls back as documented below.
 - `cache` — optional operator cache mode: `refresh` or `bypass`.
 
 Defaults:
 
 - Without `lang`, TMDB default-language metadata is requested.
 - Without `country`, provider mapping preserves the existing default region behavior (`US`).
-- Cache keys use schema version `v3` and vary by normalized `lang` and `country`, so localized responses do not share cached bodies with default requests.
+- Cache keys use schema version `v4` and vary by normalized `lang` and `country`, so localized responses do not share cached bodies with default requests.
 
 Cache operator modes are available outside production by default:
 
@@ -124,7 +124,13 @@ curl "https://api.ohana.example/titles/tt0133093?cache=bypass"
       }
     ]
   },
-  "streamingProviders": null
+  "streamingProviders": null,
+  "contentRating": {
+    "rating": "R",
+    "region": "US",
+    "source": "tmdb:movie-release-dates",
+    "fallback": false
+  }
 }
 ```
 
@@ -140,6 +146,16 @@ Series always return `collection: null`; seasons are a separate series concern. 
 - `seasons` — normalized season summaries in season-number order. Each summary has stable string `id`, `seasonNumber`, `name`, `episodeCount`, `airDate`, `year`, `overview`, and `poster`.
 
 TMDB specials are preserved when TMDB returns them and can be identified by `seasonNumber: 0`. Missing optional season fields are returned as `null` or empty strings according to the field type. Movie responses omit `seasonCount` and `seasons`.
+
+All title responses include `contentRating`:
+
+- Movies use TMDB `release_dates` certifications and return `source: "tmdb:movie-release-dates"`.
+- Series use TMDB `content_ratings` and return `source: "tmdb:tv-content-ratings"`.
+- `rating` is the normalized display certification/rating string from TMDB, e.g. `R`, `PG-13`, `TV-MA`, or a regional value such as `12`.
+- `region` is the ISO 3166-1 alpha-2 country whose rating was selected.
+- `fallback` is `false` when the selected `region` exactly matches the requested `country`, or the default `US` region when no `country` is provided. It is `true` when the API had to fall back because the requested/default region had no usable TMDB rating.
+- Fallback order is: requested `country` when present, otherwise `US`; then `US` if different from the requested country; then the first TMDB region with a non-empty rating. If no usable rating exists, `contentRating` is `null`.
+- For movie release-date certifications, theatrical releases are preferred when several TMDB release types have certifications for the same region.
 
 
 ## Errors

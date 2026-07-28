@@ -64,6 +64,29 @@ export interface TmdbWatchProviders {
   results?: Record<string, TmdbProviderRegion | undefined> | null;
 }
 
+export interface TmdbMovieReleaseDate {
+  certification?: string | null;
+  type?: number | null;
+}
+
+export interface TmdbMovieReleaseDatesRegion {
+  iso_3166_1?: string | null;
+  release_dates?: TmdbMovieReleaseDate[] | null;
+}
+
+export interface TmdbMovieReleaseDates {
+  results?: TmdbMovieReleaseDatesRegion[] | null;
+}
+
+export interface TmdbSeriesContentRatingRegion {
+  iso_3166_1?: string | null;
+  rating?: string | null;
+}
+
+export interface TmdbSeriesContentRatings {
+  results?: TmdbSeriesContentRatingRegion[] | null;
+}
+
 export interface TmdbMovieForMapping {
   id?: number;
   external_ids?: { imdb_id?: string | null } | null;
@@ -81,6 +104,7 @@ export interface TmdbMovieForMapping {
   credits?: { cast?: TmdbMovieCastCredit[] | null; crew?: TmdbCrewCredit[] | null } | null;
   images?: { posters?: TmdbImage[] | null; backdrops?: TmdbImage[] | null } | null;
   watch?: TmdbWatchProviders | null;
+  release_dates?: TmdbMovieReleaseDates | null;
 }
 
 export interface TmdbSeriesForMapping {
@@ -102,6 +126,7 @@ export interface TmdbSeriesForMapping {
   aggregate_credits?: { cast?: TmdbSeriesCastCredit[] | null; crew?: TmdbCrewCredit[] | null } | null;
   images?: { posters?: TmdbImage[] | null; backdrops?: TmdbImage[] | null } | null;
   watch?: TmdbWatchProviders | null;
+  content_ratings?: TmdbSeriesContentRatings | null;
 }
 
 export interface TmdbSeason {

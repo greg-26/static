@@ -67,6 +67,13 @@ export interface StreamingProviders {
   buy: StreamingProvider[];
 }
 
+export interface ContentRating {
+  rating: string;
+  region: string;
+  source: "tmdb:movie-release-dates" | "tmdb:tv-content-ratings";
+  fallback: boolean;
+}
+
 export interface TitleResponse {
   imdbId: string;
   type: TitleType;
@@ -97,4 +104,5 @@ export interface TitleResponse {
   seasonCount?: number | null;
   seasons?: SeasonSummary[];
   streamingProviders: StreamingProviders | null;
+  contentRating: ContentRating | null;
 }

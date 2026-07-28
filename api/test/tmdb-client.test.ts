@@ -28,6 +28,7 @@ describe("TMDB client", () => {
         credits: { cast: [], crew: [] },
         images: { posters: [], backdrops: [] },
         "watch/providers": { results: { US: { flatrate: [] } } },
+        release_dates: { results: [{ iso_3166_1: "US", release_dates: [{ certification: "R", type: 3 }] }] },
         belongs_to_collection: { id: 2344, name: "Matrix", poster_path: null, backdrop_path: null },
       }),
       jsonResponse({
@@ -54,6 +55,7 @@ describe("TMDB client", () => {
         title: "The Matrix",
         external_ids: { imdb_id: "tt0133093" },
         watch: { results: { US: { flatrate: [] } } },
+        release_dates: { results: [{ iso_3166_1: "US" }] },
         belongs_to_collection: {
           id: 2344,
           name: "The Matrix Collection",
@@ -67,7 +69,7 @@ describe("TMDB client", () => {
     });
     expect(fetcher).toHaveBeenCalledTimes(5);
     expect(new URL(String(vi.mocked(fetcher).mock.calls[0]?.[0])).pathname).toBe("/3/find/tt0133093");
-    expect(new URL(String(vi.mocked(fetcher).mock.calls[1]?.[0])).searchParams.get("append_to_response")).toBe("credits,images,watch/providers,external_ids");
+    expect(new URL(String(vi.mocked(fetcher).mock.calls[1]?.[0])).searchParams.get("append_to_response")).toBe("credits,images,watch/providers,external_ids,release_dates");
   });
 
   it("resolves an IMDb ID to series raw detail data", async () => {
@@ -82,6 +84,7 @@ describe("TMDB client", () => {
         aggregate_credits: { cast: [], crew: [] },
         images: { posters: [], backdrops: [] },
         "watch/providers": { results: { GB: { flatrate: [] } } },
+        content_ratings: { results: [{ iso_3166_1: "GB", rating: "18" }] },
       }),
     ]);
 
@@ -96,10 +99,11 @@ describe("TMDB client", () => {
         number_of_seasons: 8,
         seasons: [{ id: 3625, season_number: 1, name: "Season 1" }],
         watch: { results: { GB: { flatrate: [] } } },
+        content_ratings: { results: [{ iso_3166_1: "GB", rating: "18" }] },
       },
     });
     expect(fetcher).toHaveBeenCalledTimes(2);
-    expect(new URL(String(vi.mocked(fetcher).mock.calls[1]?.[0])).searchParams.get("append_to_response")).toBe("aggregate_credits,images,watch/providers,external_ids");
+    expect(new URL(String(vi.mocked(fetcher).mock.calls[1]?.[0])).searchParams.get("append_to_response")).toBe("aggregate_credits,images,watch/providers,external_ids,content_ratings");
     expect(vi.mocked(fetcher).mock.calls[0]?.[1]?.headers).toEqual({ authorization: "Bearer test-token" });
   });
 

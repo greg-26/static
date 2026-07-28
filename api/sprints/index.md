@@ -2,13 +2,13 @@
 
 ## Status
 
-- Current planning status: new API CORS access project created for open GitHub issue [#17](https://github.com/greg-26/static/issues/17), titled `API - cors?`.
-- Current implementation phase: initial API implementation is complete and archived; the 2026-07 feature wave for localization, collection details, and season details is complete; CORS access work is complete pending deployment/browser confirmation for issue closure.
-- Current project: [2026-07 API CORS Access](projects/2026-07-api-cors-access/INDEX.md).
-- Previous completed project: [2026-07 API Feature Wave](projects/2026-07-api-feature-wave/INDEX.md).
+- Current planning status: API content-ratings project created for open GitHub issue [#38](https://github.com/greg-26/static/issues/38), titled `API - content ratings`.
+- Current implementation phase: initial API implementation is complete and archived; the 2026-07 feature wave for localization, collection details, and season details is complete; CORS access work is complete pending deployment/browser confirmation for issue closure; content ratings are implemented pending deployment confirmation.
+- Current project: [2026-07 API Content Ratings](projects/2026-07-api-content-ratings/INDEX.md).
+- Previous completed project: [2026-07 API CORS Access](projects/2026-07-api-cors-access/INDEX.md).
 - Archived/previous project: [2026-07 Initial API Implementation](archive/2026-07-initial-api-implementation/index.md).
 - Next executable sprint: none — no proposed API sprint is currently unblocked.
-- Latest planning revision date: 2026-07-22.
+- Latest planning revision date: 2026-07-28.
 
 ## Projects
 
@@ -17,6 +17,7 @@
 | 2026-07 Initial API Implementation | Worker foundation through deployment automation, Sprints 001-009. | archived / complete | [`archive/2026-07-initial-api-implementation/`](archive/2026-07-initial-api-implementation/) |
 | 2026-07 API Feature Wave | GitHub issues #3 localization, #4 collection details, and #5 season details, Sprints 010-013. | complete | [`projects/2026-07-api-feature-wave/`](projects/2026-07-api-feature-wave/) |
 | 2026-07 API CORS Access | GitHub issue #17 CORS access from Ohana and Alex's local browser origins, Sprint 014. | complete pending deployment evidence | [`projects/2026-07-api-cors-access/`](projects/2026-07-api-cors-access/) |
+| 2026-07 API Content Ratings | GitHub issue #38 content ratings contract for movies and series, Sprint 015. | complete pending deployment evidence | [`projects/2026-07-api-content-ratings/`](projects/2026-07-api-content-ratings/) |
 
 ## Current roadmap
 
@@ -27,12 +28,14 @@
 | [012](projects/2026-07-api-feature-wave/sprint-012-series-season-summaries.md) | Series responses include season count and normalized season summaries with stable IDs/key details for CX season lists. | complete | 010 |
 | [013](projects/2026-07-api-feature-wave/sprint-013-feature-wave-closure.md) | README/specs, tests, deployed behavior, and issue handoff evidence are checked across the feature wave. | complete | 010, 011, 012 |
 | [014](projects/2026-07-api-cors-access/sprint-014-cors-origin-policy-and-dev-access.md) | Ohana deployed domains and Alex's LAN/Vite dev origin receive correct matching CORS headers, with allowlist behavior tested and documented. | complete | 013 |
+| [015](projects/2026-07-api-content-ratings/sprint-015-content-ratings-contract.md) | Title responses expose normalized TMDB movie/series content ratings with documented region/fallback semantics. | complete | 014 |
 
 ## Open API issue mapping
 
 | Issue | Coverage | Status |
 |---|---|---|
 | [#17 API - cors?](https://github.com/greg-26/static/issues/17) | Covered by Sprint 014. | implemented; pending deployment/browser evidence before closure |
+| [#38 API - content ratings](https://github.com/greg-26/static/issues/38) | Covered by Sprint 015. | implemented; pending deployment evidence before closure |
 
 ## Non-API issue notes
 

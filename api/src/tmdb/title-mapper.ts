@@ -1,4 +1,4 @@
-import type { CollectionItemSummary, CollectionSummary, ImageAsset, PersonCredit, SeasonSummary, StreamingProvider, StreamingProviders, TitleResponse } from "../models/title";
+import type { CollectionItemSummary, CollectionSummary, ContentRating, ImageAsset, PersonCredit, SeasonSummary, StreamingProvider, StreamingProviders, TitleResponse } from "../models/title";
 import type {
   TmdbCreatedBy,
   TmdbCrewCredit,
@@ -6,11 +6,16 @@ import type {
   TmdbImage,
   TmdbMovieCastCredit,
   TmdbMovieForMapping,
+  TmdbMovieReleaseDate,
+  TmdbMovieReleaseDates,
+  TmdbMovieReleaseDatesRegion,
   TmdbProvider,
   TmdbCollectionPart,
   TmdbSeason,
   TmdbSeriesCastCredit,
   TmdbSeriesCastRole,
+  TmdbSeriesContentRatingRegion,
+  TmdbSeriesContentRatings,
   TmdbSeriesForMapping,
   TmdbWatchProviders,
 } from "./types";
@@ -42,6 +47,7 @@ export function mapTmdbMovieToTitle(movie: TmdbMovieForMapping, options: MapperO
     artwork: mapArtwork(movie.poster_path, movie.backdrop_path, movie.images),
     collection: mapCollection(movie.belongs_to_collection),
     streamingProviders: mapStreamingProviders(movie.watch, options.providerRegion),
+    contentRating: mapMovieContentRating(movie.release_dates, options.providerRegion),
   };
 }
 
@@ -67,7 +73,69 @@ export function mapTmdbSeriesToTitle(series: TmdbSeriesForMapping, options: Mapp
     seasonCount: series.number_of_seasons ?? (series.seasons ? seasons.length : null),
     seasons,
     streamingProviders: mapStreamingProviders(series.watch, options.providerRegion),
+    contentRating: mapSeriesContentRating(series.content_ratings, options.providerRegion),
   };
+}
+
+function mapMovieContentRating(releaseDates: TmdbMovieReleaseDates | null | undefined, preferredRegion = "US"): ContentRating | null {
+  const selected = selectRegion(releaseDates?.results, preferredRegion, movieCertificationForRegion);
+  if (!selected) return null;
+
+  return {
+    rating: selected.rating,
+    region: selected.region,
+    source: "tmdb:movie-release-dates",
+    fallback: selected.fallback,
+  };
+}
+
+function mapSeriesContentRating(contentRatings: TmdbSeriesContentRatings | null | undefined, preferredRegion = "US"): ContentRating | null {
+  const selected = selectRegion(contentRatings?.results, preferredRegion, (region) => cleanRating(region.rating));
+  if (!selected) return null;
+
+  return {
+    rating: selected.rating,
+    region: selected.region,
+    source: "tmdb:tv-content-ratings",
+    fallback: selected.fallback,
+  };
+}
+
+function selectRegion<T extends { iso_3166_1?: string | null }>(
+  regions: T[] | null | undefined,
+  preferredRegion: string,
+  ratingForRegion: (region: T) => string | null,
+): { rating: string; region: string; fallback: boolean } | null {
+  const normalizedPreferred = preferredRegion.toUpperCase();
+  const candidates = (regions ?? [])
+    .map((region, index) => ({ region, index, code: region.iso_3166_1?.toUpperCase() ?? null, rating: ratingForRegion(region) }))
+    .filter((candidate): candidate is { region: T; index: number; code: string; rating: string } => Boolean(candidate.code && candidate.rating));
+
+  const exact = candidates.find((candidate) => candidate.code === normalizedPreferred);
+  if (exact) return { rating: exact.rating, region: exact.code, fallback: false };
+
+  const us = candidates.find((candidate) => candidate.code === "US");
+  if (us) return { rating: us.rating, region: us.code, fallback: true };
+
+  const first = candidates[0];
+  return first ? { rating: first.rating, region: first.code, fallback: true } : null;
+}
+
+function movieCertificationForRegion(region: TmdbMovieReleaseDatesRegion): string | null {
+  return [...(region.release_dates ?? [])]
+    .filter((releaseDate): releaseDate is TmdbMovieReleaseDate & { certification: string } => cleanRating(releaseDate.certification) !== null)
+    .sort((a, b) => movieReleaseTypeRank(a.type) - movieReleaseTypeRank(b.type))[0]?.certification.trim() ?? null;
+}
+
+function movieReleaseTypeRank(type: number | null | undefined): number {
+  const preferredOrder = [3, 2, 1, 4, 5, 6];
+  const index = preferredOrder.indexOf(type ?? 0);
+  return index === -1 ? preferredOrder.length : index;
+}
+
+function cleanRating(value: string | null | undefined): string | null {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : null;
 }
 
 function mapSeasons(seasons: TmdbSeason[] | null | undefined): SeasonSummary[] {
