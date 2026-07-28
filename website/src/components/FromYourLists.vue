@@ -29,7 +29,20 @@
               role="menuitemradio"
               :aria-checked="selectedList === 'all'"
               @click="selectList('all')"
-            >All lists</button>
+            >
+              <span class="list-menu-label">All lists</span>
+              <span class="list-menu-previews" aria-hidden="true">
+                <span
+                  v-for="movie in allListPreview"
+                  :key="movie.id"
+                  class="list-menu-preview"
+                  :title="movie.t"
+                >
+                  <img v-if="movie.p" :src="movie.p" :alt="movie.t" loading="lazy" />
+                  <span v-else class="list-menu-preview-fallback">{{ movieInitial(movie) }}</span>
+                </span>
+              </span>
+            </button>
             <button
               v-for="optionRow in rows"
               :key="optionRow.id"
@@ -39,7 +52,20 @@
               role="menuitemradio"
               :aria-checked="selectedList === optionRow.id"
               @click="selectList(optionRow.id)"
-            >{{ cleanLabel(optionRow.label) }}</button>
+            >
+              <span class="list-menu-label">{{ cleanLabel(optionRow.label) }}</span>
+              <span class="list-menu-previews" aria-hidden="true">
+                <span
+                  v-for="movie in previewMovies(optionRow)"
+                  :key="movie.id"
+                  class="list-menu-preview"
+                  :title="movie.t"
+                >
+                  <img v-if="movie.p" :src="movie.p" :alt="movie.t" loading="lazy" />
+                  <span v-else class="list-menu-preview-fallback">{{ movieInitial(movie) }}</span>
+                </span>
+              </span>
+            </button>
           </div>
         </FilterMenu>
       </template>
@@ -66,6 +92,7 @@ const props = defineProps({
 const emit = defineEmits(["selectMovie", "manage", "set-active-menu"]);
 
 const PREVIEW_LIMIT = 24;
+const MENU_PREVIEW_LIMIT = 3;
 const selectedList = ref("all");
 const listMenuOpen = ref(false);
 const LIST_MENU_ID = "from-lists:chooser";
@@ -84,6 +111,20 @@ const selectedListLabel = computed(() => {
   return row ? cleanLabel(row.label) : "All lists";
 });
 
+const allListPreview = computed(() => {
+  const seen = new Set();
+  const movies = [];
+  for (const row of props.rows) {
+    for (const movie of previewMovies(row, MENU_PREVIEW_LIMIT)) {
+      if (seen.has(movie.id)) continue;
+      seen.add(movie.id);
+      movies.push(movie);
+      if (movies.length >= MENU_PREVIEW_LIMIT) return movies;
+    }
+  }
+  return movies;
+});
+
 function toggleListMenu() {
   listMenuOpen.value = !listMenuOpen.value;
   emit("set-active-menu", listMenuOpen.value ? LIST_MENU_ID : null);
@@ -98,6 +139,14 @@ function closeListMenu() {
 function selectList(id) {
   selectedList.value = id;
   closeListMenu();
+}
+
+function previewMovies(row, limit = MENU_PREVIEW_LIMIT) {
+  return (row.movies ?? []).slice(0, limit);
+}
+
+function movieInitial(movie) {
+  return (movie.t ?? "?").trim().charAt(0).toUpperCase() || "?";
 }
 
 const visibleRows = computed(() => {
@@ -154,7 +203,7 @@ function cleanLabel(label) { return label.replace(/^My list ·\s*/, ""); }
   background: rgba(255,255,255,0.07);
   color: var(--white);
 }
-.list-menu-options { display: grid; gap: 8px; min-width: 142px; max-width: min(240px, calc(100vw - 56px)); }
+.list-menu-options { display: grid; gap: 8px; min-width: 190px; max-width: min(286px, calc(100vw - 56px)); }
 .list-menu-option {
   min-height: 36px;
   border: 1px solid rgba(255,255,255,0.14);
@@ -165,12 +214,14 @@ function cleanLabel(label) { return label.replace(/^My list ·\s*/, ""); }
   font-size: 12px;
   line-height: 1.2;
   text-align: left;
-  white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
   cursor: pointer;
-  padding: 8px 10px;
+  padding: 6px 8px 6px 10px;
   transition: border-color 0.15s, color 0.15s, background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 .list-menu-option:hover,
 .list-menu-option:focus-visible {
@@ -182,6 +233,45 @@ function cleanLabel(label) { return label.replace(/^My list ·\s*/, ""); }
   border-color: rgba(45,212,191,0.42);
   background: rgba(45,212,191,0.12);
   color: var(--teal);
+}
+.list-menu-label {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.list-menu-previews {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 58px;
+  height: 28px;
+}
+.list-menu-preview {
+  width: 18px;
+  height: 27px;
+  flex: 0 0 18px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.08);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.1), 0 3px 8px rgba(0,0,0,0.28);
+}
+.list-menu-preview + .list-menu-preview { margin-left: -5px; }
+.list-menu-preview img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+.list-menu-preview-fallback {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: rgba(255,255,255,0.48);
+  font-size: 10px;
+  font-weight: 700;
 }
 .list-tools :deep(.ui-chip) { flex: 0 0 auto; }
 @media (max-width: 640px) {

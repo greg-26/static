@@ -1,7 +1,7 @@
 # Sprint 026 — List menu previews
 
 ## Status
-ready
+complete
 
 ## Outcome
 
@@ -59,11 +59,11 @@ Use existing poster data already loaded in the movies store. If a list item cann
 
 ## Acceptance criteria
 
-- [ ] Each populated list option shows up to a few compact poster previews when posters are available.
-- [ ] Preview thumbnails do not wrap, overflow awkwardly, or make chip/menu labels two-line on mobile.
-- [ ] Lists with missing posters remain selectable and visually stable.
-- [ ] Selecting/opening lists works as before.
-- [ ] No new primary Lists navigation tab is added.
+- [x] Each populated list option shows up to a few compact poster previews when posters are available.
+- [x] Preview thumbnails do not wrap, overflow awkwardly, or make chip/menu labels two-line on mobile.
+- [x] Lists with missing posters remain selectable and visually stable.
+- [x] Selecting/opening lists works as before.
+- [x] No new primary Lists navigation tab is added.
 
 ## Required tests
 
@@ -79,7 +79,13 @@ git diff --check
 
 ## Handoff
 
-Implementation agent: comment on issue #23 with evidence after implementation. Note if local data lacks enough list contents to manually verify poster variety.
+Completed 2026-07-28 by Greg.
+
+- Added capped three-poster preview stacks to the Discover lists chooser, including the synthetic `All lists` option.
+- Kept list labels one-line/truncated and reserved preview width so sparse/missing-poster lists stay stable and selectable.
+- Did not add a primary Lists tab or change list route/share/manage semantics.
+- Verification: `npm run build` passed; `git diff --check` passed; Vite/Tailscale URL `http://100.85.92.106:5173/` returned HTTP 200.
+- Manual/source smoke: implementation uses existing loaded row movie data only; local user-specific list contents may vary, so real-device visual review is still recommended for poster variety.
 
 ## Dependencies unlocked
 
