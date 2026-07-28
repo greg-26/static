@@ -1,7 +1,7 @@
 # Sprint 029 — Movie-Detail List Actions and Scroll Polish
 
 ## Status
-in-progress
+complete
 
 ## Outcome
 
@@ -58,10 +58,10 @@ Issues #27 and #28 are adjacent in the movie-detail primary decision area. Fixin
 
 ## Acceptance criteria
 
-- [ ] Movie-detail list chips have a smaller persistent-control radius without affecting unrelated temporary filters.
-- [ ] The list-chip row ends with a Manage lists action that reaches Settings → Lists.
-- [ ] Clicking a collection/season/related title changes the modal content and returns the modal scroll to the top/hero area.
-- [ ] Watched/list membership toggles continue to persist correctly.
+- [x] Movie-detail list chips have a smaller persistent-control radius without affecting unrelated temporary filters.
+- [x] The list-chip row ends with a Manage lists action that reaches Settings → Lists.
+- [x] Clicking a collection/season/related title changes the modal content and returns the modal scroll to the top/hero area.
+- [x] Watched/list membership toggles continue to persist correctly.
 
 ## Required tests
 
@@ -78,7 +78,13 @@ git diff --check
 
 ## Handoff
 
-Comment on issues #27 and #28 with changed files, verification, and any mobile caveat. Close only when both requested behaviors are verified.
+Sprint 029 completed on 2026-07-28.
+
+- Changed `src/components/MovieModal.vue` only: list membership chips get scoped smaller persistent-control radius, the chip row now ends with a `Manage lists` route action to `/settings/lists`, and movie changes reset the modal scroll container before refocusing the dialog.
+- Preserved existing watched/list toggle calls and profile/list persistence semantics.
+- Verification passed: `npm run build`, `git diff --check`, and Vite reachable at `http://100.85.92.106:5173/`.
+- Caveat: mobile-width behavior was source/build/reachability checked in this cron environment; real-device visual review is still welcome.
+- Issues #27 and #28 were commented with evidence and closed after the verified commit was pushed.
 
 ## Dependencies unlocked
 

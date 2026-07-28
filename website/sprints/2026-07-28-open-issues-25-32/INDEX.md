@@ -3,8 +3,8 @@
 ## Status
 
 - Current planning status: ready issue-driven tranche for working-fork website issues #25–#32.
-- Current implementation phase: Sprint 028 is complete; Sprints 029–032 are sequenced behind it.
-- Next executable sprint: [`Sprint 029 — Movie-detail list actions and scroll`](sprint-029-movie-detail-list-actions-and-scroll.md).
+- Current implementation phase: Sprints 028–029 are complete; Sprints 030–032 are sequenced behind them.
+- Next executable sprint: [`Sprint 030 — Movie-detail media rails`](sprint-030-movie-detail-media-rails.md).
 - Latest planning revision date: 2026-07-28.
 
 ## Roadmap
@@ -12,7 +12,7 @@
 | Sprint | Outcome | Status | Depends on |
 | --- | --- | --- | --- |
 | 028 | Search recents border/radius artifact fixed. | `complete` | Sprint 027 complete |
-| 029 | Movie-detail list chips and related-title navigation polished. | `ready` | Current modal/list behavior |
+| 029 | Movie-detail list chips and related-title navigation polished. | `complete` | Current modal/list behavior |
 | 030 | Movie-detail cast, collection, and season rails polished. | `ready` | Sprint 024 complete |
 | 031 | Settings → Lists actions become compact and top-accessible. | `ready` | Current list persistence |
 | 032 | Mobile first-paint responsive drift fixed or precisely blocked. | `ready` | Current app shell/CSS behavior |
@@ -48,3 +48,4 @@ This sprint set is complete when all mapped issues have implementation evidence 
 ## Implementation log
 
 - 2026-07-28: Sprint 028 completed. Search recently-viewed cards no longer inherit the broad pill-button border/radius styling; `npm run build`, `git diff --check`, and Vite `/search` reachability passed. Issue #31 was commented with evidence and closed.
+- 2026-07-28: Sprint 029 completed. Movie-detail list membership chips now use scoped smaller persistent-control radius, include a Manage lists route action to `/settings/lists`, and internal movie changes reset the modal scroll container to the top; `npm run build`, `git diff --check`, and Vite reachability passed. Issues #27 and #28 were commented with evidence and closed.

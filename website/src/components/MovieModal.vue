@@ -122,6 +122,7 @@
               <UiChip
                 v-for="list in userStore.lists"
                 :key="list.token"
+                class="modal-list-chip"
                 size="sm"
                 tone="safe"
                 :active="userStore.isInList(list.token, movie.id)"
@@ -129,7 +130,15 @@
                 @click="userStore.toggleMovieInList(list.token, movie.id)"
               />
 
-              <span v-if="!userStore.lists.length" class="no-lists-hint">No lists yet — create one in Settings</span>
+              <span v-if="!userStore.lists.length" class="no-lists-hint">No lists yet</span>
+              <UiChip
+                class="modal-list-chip modal-list-chip--manage"
+                size="sm"
+                tone="neutral"
+                to="/settings/lists"
+              >
+                Manage lists
+              </UiChip>
             </div>
           </div>
 
@@ -630,6 +639,10 @@ function restoreFocus() {
   previouslyFocused.value = null;
 }
 
+function resetModalScroll() {
+  dialogRef.value?.scrollTo({ top: 0, left: 0, behavior: "auto" });
+}
+
 // ─── Extra Data Lookup Management ───────────────────────────────────────────
 // Holds the parsed key-value dictionary from extra.json
 const extraTable = ref({}); 
@@ -931,7 +944,10 @@ watch(() => props.movie, (movie) => {
     loadExtraJsonData()
     loadApiDetail(movie);
     //loadReviews(movie.id);
-    nextTick(focusDialog);
+    nextTick(() => {
+      resetModalScroll();
+      focusDialog();
+    });
   } else {
     //synopsis.value = null;
     matReviews.value = null;
@@ -1955,6 +1971,16 @@ onUnmounted(() => {
   scrollbar-width: none;
 }
 .modal-user-actions--primary .user-actions-row::-webkit-scrollbar { display: none; }
+.modal-user-actions--primary .modal-list-chip {
+  flex: 0 0 auto;
+  border-radius: 7px;
+}
+.modal-list-chip--manage {
+  margin-left: 2px;
+}
+.modal-list-chip--manage :deep(.ui-chip__label) {
+  color: var(--teal);
+}
 
 /* ── Poster viewer ── */
 .poster-viewer-fade-enter-active,
