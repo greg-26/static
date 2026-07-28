@@ -66,13 +66,21 @@
                 </span>
               </span>
             </button>
+            <button
+              class="list-menu-option list-menu-option--manage"
+              type="button"
+              role="menuitem"
+              @click="manageLists"
+            >
+              <span class="list-menu-label">Manage lists</span>
+              <span class="list-menu-action-icon" aria-hidden="true">›</span>
+            </button>
           </div>
         </FilterMenu>
       </template>
       <template #actions="{ row: visibleRow }">
-        <div class="list-tools">
-          <UiChip v-if="visibleRow.seeAllTo" :to="visibleRow.seeAllTo" size="sm" tone="safe">See all</UiChip>
-          <UiChip size="sm" tone="safe" @click="$emit('manage')">Manage lists</UiChip>
+        <div v-if="visibleRow.seeAllTo" class="list-tools">
+          <UiChip :to="visibleRow.seeAllTo" size="sm" tone="safe">See all</UiChip>
         </div>
       </template>
     </MovieRow>
@@ -139,6 +147,11 @@ function closeListMenu() {
 function selectList(id) {
   selectedList.value = id;
   closeListMenu();
+}
+
+function manageLists() {
+  closeListMenu();
+  emit("manage");
 }
 
 function previewMovies(row, limit = MENU_PREVIEW_LIMIT) {
@@ -234,6 +247,18 @@ function cleanLabel(label) { return label.replace(/^My list ·\s*/, ""); }
   background: rgba(45,212,191,0.12);
   color: var(--teal);
 }
+.list-menu-option--manage {
+  margin-top: 2px;
+  border-color: rgba(255,255,255,0.1);
+  background: transparent;
+  color: rgba(240,238,232,0.68);
+}
+.list-menu-option--manage:hover,
+.list-menu-option--manage:focus-visible {
+  border-color: rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.06);
+  color: var(--white);
+}
 .list-menu-label {
   min-width: 0;
   white-space: nowrap;
@@ -258,6 +283,11 @@ function cleanLabel(label) { return label.replace(/^My list ·\s*/, ""); }
   box-shadow: 0 0 0 1px rgba(255,255,255,0.1), 0 3px 8px rgba(0,0,0,0.28);
 }
 .list-menu-preview + .list-menu-preview { margin-left: -5px; }
+.list-menu-action-icon {
+  color: rgba(255,255,255,0.4);
+  font-size: 16px;
+  line-height: 1;
+}
 .list-menu-preview img {
   width: 100%;
   height: 100%;

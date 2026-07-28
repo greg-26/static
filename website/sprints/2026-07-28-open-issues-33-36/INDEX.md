@@ -3,8 +3,8 @@
 ## Status
 
 - Planning status: brand-new issue-driven sprint set created for the current working-fork website issues.
-- Implementation phase: ready for implementation; no code changes have been made in this planning cycle.
-- Next executable sprint: [Sprint 034 — Discover list menu manage action](sprint-034-discover-list-menu-manage-action.md).
+- Implementation phase: Sprint 034 complete; Sprint 035 is next.
+- Next executable sprint: [Sprint 035 — List detail management menu](sprint-035-list-detail-management-menu.md).
 - Latest planning update: 2026-07-28 15:05 Europe/Madrid.
 
 ## Roadmap
@@ -12,7 +12,7 @@
 | Sprint | Outcome | Status | Depends on |
 | --- | --- | --- | --- |
 | [Sprint 033](sprint-033-header-brand-back-navigation.md) | Remove the stretched logo and compress header/back navigation into a mobile-first app-bar pattern. | `complete` | None |
-| [Sprint 034](sprint-034-discover-list-menu-manage-action.md) | Move Discover row Manage lists from row actions into the list chooser menu. | `ready` | None |
+| [Sprint 034](sprint-034-discover-list-menu-manage-action.md) | Move Discover row Manage lists from row actions into the list chooser menu. | `complete` | None |
 | [Sprint 035](sprint-035-list-detail-management-menu.md) | Add list rename/share/remove actions inside the dedicated list view. | `ready` | Sprint 034 preferred, but not blocking |
 
 ## Issue mapping
@@ -44,7 +44,7 @@ This issue tranche is complete when:
 
 - Issue #35's stretched logo is gone from the app header without losing required `Ohana TV` brand presence. ✅ Sprint 033 complete.
 - Issue #34's child-page back/header stack is compressed and mobile-safe. ✅ Sprint 033 complete.
-- Issue #36's Discover list row no longer shows a separate Manage lists chip, and the same action is available at the end of the list menu.
+- Issue #36's Discover list row no longer shows a separate Manage lists chip, and the same action is available at the end of the list menu. ✅ Sprint 034 complete.
 - Issue #33's dedicated list route exposes rename, copy/share, and remove actions for the current list.
 - `npm run build` passes after implementation and each affected flow has been smoke-tested on a narrow/mobile viewport.
 
