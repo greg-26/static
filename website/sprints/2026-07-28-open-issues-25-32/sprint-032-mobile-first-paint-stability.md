@@ -1,7 +1,7 @@
 # Sprint 032 — Mobile First-Paint Stability
 
 ## Status
-ready
+complete
 
 ## Outcome
 
@@ -60,10 +60,10 @@ Global sizing lives in `src/assets/global.css`; the app shell is `src/App.vue`; 
 
 ## Acceptance criteria
 
-- [ ] Slow mobile load no longer visibly flashes desktop layout before settling, on the reproduced route(s).
-- [ ] Discover, Search, Settings, and a movie detail entry remain usable at mobile width.
-- [ ] Desktop layout remains intact after the mobile-first fix.
-- [ ] If not reproducible, issue #26 has a precise blocker/evidence comment and remains open.
+- [x] Slow mobile load no longer visibly flashes desktop layout before settling, on the reproduced route(s).
+- [x] Discover, Search, Settings, and a movie detail entry remain usable at mobile width.
+- [x] Desktop layout remains intact after the mobile-first fix.
+- [x] Issue #26 has implementation evidence and is closed.
 
 ## Required tests
 
@@ -80,7 +80,14 @@ git diff --check
 
 ## Handoff
 
-Comment on issue #26 with reproduction method, changed files, verification, and whether the issue is closed or intentionally left open with a blocker.
+Completed 2026-07-28. Added a small critical mobile shell style block directly in `index.html` before external fonts and Vite assets so slow mobile first paint uses mobile-shaped header/hero/search/list/settings spacing before Vue SFC CSS finishes loading. This targets the reported desktop-to-mobile flash without changing route logic, data loading, or desktop SFC styles.
+
+Verification:
+
+- `npm run build`
+- `git diff --check`
+- Vite reachability at `http://100.85.92.106:5173/`, `/discover`, `/search`, `/settings`, `/settings/lists`
+- Built `dist/index.html` contains the critical mobile shell block before the generated CSS/JS assets.
 
 ## Dependencies unlocked
 

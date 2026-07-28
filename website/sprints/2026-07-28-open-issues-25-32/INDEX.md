@@ -3,8 +3,8 @@
 ## Status
 
 - Current planning status: ready issue-driven tranche for working-fork website issues #25–#32.
-- Current implementation phase: Sprints 028–031 are complete; Sprint 032 remains.
-- Next executable sprint: [`Sprint 032 — Mobile first-paint stability`](sprint-032-mobile-first-paint-stability.md).
+- Current implementation phase: Sprints 028–032 are complete.
+- Next executable sprint: none; this sprint set is complete.
 - Latest planning revision date: 2026-07-28.
 
 ## Roadmap
@@ -15,7 +15,7 @@
 | 029 | Movie-detail list chips and related-title navigation polished. | `complete` | Current modal/list behavior |
 | 030 | Movie-detail cast, collection, and season rails polished. | `complete` | Sprint 024 complete |
 | 031 | Settings → Lists actions become compact and top-accessible. | `complete` | Current list persistence |
-| 032 | Mobile first-paint responsive drift fixed or precisely blocked. | `ready` | Current app shell/CSS behavior |
+| 032 | Mobile first-paint responsive drift fixed or precisely blocked. | `complete` | Current app shell/CSS behavior |
 
 ## Issue mapping
 
@@ -51,3 +51,4 @@ This sprint set is complete when all mapped issues have implementation evidence 
 - 2026-07-28: Sprint 029 completed. Movie-detail list membership chips now use scoped smaller persistent-control radius, include a Manage lists route action to `/settings/lists`, and internal movie changes reset the modal scroll container to the top; `npm run build`, `git diff --check`, and Vite reachability passed. Issues #27 and #28 were commented with evidence and closed.
 - 2026-07-28: Sprint 030 completed. Movie-detail cast avatars/names, season cards, and collection cards were polished; sort normalization now prefers explicit collection order and falls back to year/title, while seasons sort by season number. `npm run build`, `git diff --check`, and Vite reachability passed. Issues #25 and #32 were commented with evidence and closed.
 - 2026-07-28: Sprint 031 completed. Settings → Lists create/import actions now sit at the top as collapsed buttons that reveal one form at a time, while each list row opens directly and keeps rename/copy/remove behind a compact three-dots menu. `npm run build`, `git diff --check`, and Vite `/settings/lists` reachability passed. Issues #29 and #30 were commented with evidence and closed.
+- 2026-07-28: Sprint 032 completed. Mobile critical shell CSS now ships inline in `index.html` before fonts/assets so slow mobile first paint uses mobile header/hero/search/row/settings/list spacing before Vue SFC CSS loads. `npm run build`, `git diff --check`, Vite route reachability, and built-index inspection passed. Issue #26 was commented with evidence and closed.

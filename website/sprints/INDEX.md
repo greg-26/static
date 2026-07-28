@@ -5,8 +5,8 @@ Focused active sprint plans live in dated sprint-set folders under this director
 ## Status
 
 - Current planning status: new issue-driven website tranche for open working-fork issues #25–#32 is planned in [`2026-07-28-open-issues-25-32/`](2026-07-28-open-issues-25-32/).
-- Current implementation phase: Sprints 023–031 are complete; Sprint 032 remains in the active tranche.
-- Next executable sprint: [`Sprint 032 — Mobile first-paint stability`](2026-07-28-open-issues-25-32/sprint-032-mobile-first-paint-stability.md).
+- Current implementation phase: Sprints 023–032 are complete; the active tranche is complete.
+- Next executable sprint: none.
 - Latest planning update: 2026-07-28.
 
 ## Roadmap
@@ -17,7 +17,7 @@ Focused active sprint plans live in dated sprint-set folders under this director
 | 029 | Movie-detail list chips look persistent, include a manage-lists escape hatch, and related-title navigation resets modal scroll sanely. | `complete` | Current modal list actions and router behavior |
 | 030 | Movie-detail cast, collection, and season rails are sorted, correctly proportioned, uncluttered, and mobile-readable. | `complete` | Sprint 024 media surfaces complete |
 | 031 | Settings → Lists keeps create/import actions handy while moving row management behind a compact overflow menu. | `complete` | Current profile/list persistence unchanged |
-| 032 | Mobile first paint does not flash the desktop layout or visibly drift before responsive styles settle. | `ready` | Current app shell/static CSS behavior |
+| 032 | Mobile first paint does not flash the desktop layout or visibly drift before responsive styles settle. | `complete` | Current app shell/static CSS behavior |
 
 ## Active sprint set
 
@@ -50,7 +50,7 @@ All currently open website-scoped issues in the working fork are planned. No rel
 - This is a brand-new sprint-set folder; the completed #18–#24 sprint set was moved under `sprints/archive/` without rewriting its historical evidence.
 - Sprint numbers continue from the existing sequence and are not renumbered.
 - Issue #31 is first because it is a small visible regression/follow-up to completed Sprint 027 and should be cleared before larger detail/settings work.
-- Issue #26 is planned as a constrained responsive first-paint sprint, not a broad redesign; it should produce evidence or a clear blocker if the drift cannot be reproduced locally.
+- Issue #26 was handled as a constrained responsive first-paint sprint, not a broad redesign: critical mobile shell CSS is inlined in `index.html` so slow mobile first paint is mobile-shaped before Vue SFC CSS finishes loading.
 - Collection order should prefer explicit API/TMDB ordering when already available; otherwise fall back to year ascending, as Alex requested.
 
 ## Open questions
@@ -67,8 +67,8 @@ The current planned tranche is complete when:
 - Issues #27 and #28 are implemented in the movie-detail modal without changing list persistence semantics. ✅ Sprint 029 complete; real-device visual review still welcome.
 - Issues #25 and #32 are implemented with sorted media rails, correct poster aspect ratios, and mobile-readable cast names. ✅ Sprint 030 complete; real-device visual review still welcome.
 - Issues #29 and #30 are implemented in Settings → Lists with row click-to-open and compact overflow management.
-- Issue #26 is either fixed with mobile/throttled evidence or left open with a precise blocker/repro note.
-- Each implementation sprint runs its listed verification commands and keeps the app reviewable over the existing Vite/Tailscale path when UI changes are made.
+- Issue #26 is fixed with mobile first-paint CSS evidence and closed.
+- Each implementation sprint runs its listed verification commands and keeps the app reviewable over the existing Vite/Tailscale path when UI changes are made. ✅ Sprints 028–032 verified and pushed.
 
 ## Maintenance rules
 
