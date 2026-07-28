@@ -4,53 +4,64 @@ Focused active sprint plans live in dated sprint-set folders under this director
 
 ## Status
 
-- Current planning status: brand-new issue-intake cycle is active in [`2026-07-28-no-open-website-issues/`](2026-07-28-no-open-website-issues/); the working fork currently has no open website-scoped issues.
-- Current implementation phase: no active implementation sprint; Sprints 023–032 are complete and archived by sprint set.
-- Next executable sprint: none — wait for the next website-scoped GitHub issue, PMT feedback item, or Alex request.
+- Current planning status: brand-new issue-driven cycle is active in [`2026-07-28-open-issues-33-36/`](2026-07-28-open-issues-33-36/); all current open website-scoped working-fork issues are mapped.
+- Current implementation phase: Sprint 033 complete; Sprint 034 is next.
+- Next executable sprint: [Sprint 034 — Discover list menu manage action](2026-07-28-open-issues-33-36/sprint-034-discover-list-menu-manage-action.md).
 - Latest planning update: 2026-07-28.
 
 ## Roadmap
 
 | Sprint | Outcome | Status | Depends on |
 | --- | --- | --- | --- |
-| _None_ | No open website-scoped issue is available to plan. | `blocked` | New website issue or PMT-approved feedback |
+| [Sprint 033](2026-07-28-open-issues-33-36/sprint-033-header-brand-back-navigation.md) | Remove the stretched logo and compress header/back navigation into a mobile-first app-bar pattern. | `complete` | None |
+| [Sprint 034](2026-07-28-open-issues-33-36/sprint-034-discover-list-menu-manage-action.md) | Move Discover row Manage lists from row actions into the list chooser menu. | `ready` | None |
+| [Sprint 035](2026-07-28-open-issues-33-36/sprint-035-list-detail-management-menu.md) | Add list rename/share/remove actions inside the dedicated list view. | `ready` | Sprint 034 preferred, but not blocking |
 
 ## Active sprint set
 
-- Sprint-set index: [`2026-07-28-no-open-website-issues/INDEX.md`](2026-07-28-no-open-website-issues/INDEX.md)
+- Sprint-set index: [`2026-07-28-open-issues-33-36/INDEX.md`](2026-07-28-open-issues-33-36/INDEX.md)
+- Superseded no-open-issues intake marker: [`archive/2026-07-28-no-open-website-issues/`](archive/2026-07-28-no-open-website-issues/)
 - Archived completed sprint set: [`archive/2026-07-28-open-issues-25-32/`](archive/2026-07-28-open-issues-25-32/)
 - Earlier archived sprint set: [`archive/2026-07-28-issue-driven-polish/`](archive/2026-07-28-issue-driven-polish/)
 
 ## Issue mapping
 
-`gh issue list --state open --json number,title,url,labels,body --limit 100` returned no open issues for `origin` / `greg-26/static` during this planning run.
+Open issue query for `origin` / `greg-26/static` found four website-scoped issues during this planning run.
 
 | Issue | Sprint coverage | Planning note |
 | --- | --- | --- |
-| _None_ | _None_ | No relevant open website issue exists, so there is nothing to map or intentionally leave unplanned. |
+| [#33 Website - Settings - lists](https://github.com/greg-26/static/issues/33) | [Sprint 035](2026-07-28-open-issues-33-36/sprint-035-list-detail-management-menu.md) | Add the same three-dot management affordance inside a specific list view. |
+| [#34 Website - settings - back buttons](https://github.com/greg-26/static/issues/34) | [Sprint 033](2026-07-28-open-issues-33-36/sprint-033-header-brand-back-navigation.md) | Compress settings/list child-page chrome and prefer compact chevron back navigation. |
+| [#35 Ohana logo isn't square - remove it for now](https://github.com/greg-26/static/issues/35) | [Sprint 033](2026-07-28-open-issues-33-36/sprint-033-header-brand-back-navigation.md) | Remove the stretched header logo while preserving visible `Ohana TV` brand text where required. |
+| [#36 Website - discover - list row - manage link](https://github.com/greg-26/static/issues/36) | [Sprint 034](2026-07-28-open-issues-33-36/sprint-034-discover-list-menu-manage-action.md) | Move Manage lists into the existing From-your-lists chooser menu. |
+
+No relevant open website issue remains unplanned.
 
 ## Decisions and assumptions
 
 - Working-fork issues (`origin`, currently `greg-26/static`) remain the active issue tracker for agent-driven website work.
-- The completed Sprint 028–032 issue-driven sprint set was moved under `sprints/archive/` without rewriting its historical evidence.
-- This is a brand-new active sprint-set folder, but it intentionally contains no sprint files because there are no open website-scoped issues to plan.
-- Do not create make-work. The next sprint should be driven by a new website issue, PMT-approved feedback item, or explicit Alex request.
-- Sprint numbers continue from the existing sequence when new work is planned; do not renumber completed sprints.
+- The prior no-open-issues sprint-set marker was moved under `sprints/archive/` when new issues #33–#36 appeared; it remains historical evidence, not active work.
+- Sprint numbers continue from the existing completed sequence; do not renumber completed sprints.
+- Keep this tranche UI-only and mobile-conscious. Do not change list/profile persistence or static hosting behavior.
+- Implement one sprint at a time unless Alex explicitly asks for batching.
 
 ## Open questions
 
-- None. The only blocker is lack of open website-scoped intake.
+- None. Recommended default for implementers: reuse existing `UiChip`, `FilterMenu`, Settings list menu behavior, and route metadata before adding new primitives.
 
 ## Completion criteria
 
-The current intake cycle is complete when:
+The current planned tranche is complete when:
 
-- A new website-scoped issue or PMT-approved feedback item is mapped to one or more small executable sprints, with issue comments linking issue → sprint(s); or
-- A later planner run confirms the working fork still has no open website-scoped issues and preserves the no-ready-sprint state.
+- Issues #33, #34, #35, and #36 each have implementation evidence and issue comments linking the final changes and verification.
+- Sprint 033 removes the stretched logo and compresses child-page back/header chrome.
+- Sprint 034 moves Discover list management into the list chooser menu.
+- Sprint 035 adds dedicated list-page rename/share/remove actions.
+- `npm run build` passes after implementation, and affected flows have a narrow/mobile smoke check recorded.
 
 ## Maintenance rules
 
-- One sprint = one file inside the active dated folder when executable work exists.
+- One sprint = one file inside the active dated folder.
 - Keep `VISION_EXECUTION.md` as a router; do not duplicate sprint status there.
 - Link reports from `docs/vision-execution/review-index.md` instead of copying report contents into sprint files.
 - Human feedback and new issues interrupt routine automation.

@@ -1,7 +1,5 @@
 <template>
-  <section class="settings-view">
-    <RouterLink v-if="activeSection" class="back-link" to="/settings">← Settings</RouterLink>
-
+  <section class="settings-view" :class="{ 'settings-view--child': activeSection }">
     <div v-if="!activeSection" class="settings-list" aria-label="Settings sections">
       <SettingsRow
         to="/settings/profile"
@@ -520,7 +518,7 @@ async function addCustomProvider() {
 
 <style scoped>
 .settings-view { padding: 36px 48px 64px; max-width: 1120px; margin: 0 auto; width: 100%; }
-.back-link { display: inline-flex; margin-bottom: 18px; color: var(--teal); text-decoration: none; font-size: 13px; }
+.settings-view--child { padding-top: 24px; }
 .section-label { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); font-weight: 800; }
 .settings-list { display: grid; }
 .section-panel { display: grid; gap: 20px; }
@@ -666,6 +664,7 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .danger:hover { border-color: rgba(248,113,113,0.45); color: #fca5a5; }
 @media (max-width: 720px) {
   .settings-view { padding: 20px 14px 48px; }
+  .settings-view--child { padding-top: 14px; }
   .settings-card--primary, .settings-card--wide { grid-column: auto; }
   .settings-form--inline { grid-template-columns: 1fr; }
   .list-row { grid-template-columns: minmax(0, 1fr) auto; gap: 10px 12px; padding: 14px; }

@@ -5,11 +5,14 @@
     @openSettings="openSettings"
   >
     <div class="app" :class="{ 'app--with-tabs': activeTab }">
-      <header v-if="activeTab && !store.loading" class="app-header" aria-label="Ohana TV">
-        <RouterLink class="app-brand" to="/discover" aria-label="Ohana TV home">
-          <img src="/logo.png" alt="" />
+      <header v-if="activeTab && !store.loading" class="app-header" :class="{ 'app-header--child': childChrome }" :aria-label="appHeaderLabel">
+        <RouterLink v-if="childChrome" class="app-back" :to="childBackTo" :aria-label="childBackLabel">
+          <span aria-hidden="true">‹</span>
+        </RouterLink>
+        <RouterLink v-else class="app-brand" to="/discover" aria-label="Ohana TV home">
           <span>Ohana TV</span>
         </RouterLink>
+        <p v-if="childChrome" class="app-header-title">{{ childTitle }}</p>
       </header>
 
       <component
@@ -73,6 +76,25 @@ const showConfig = ref(false);
 const pendingListToken = ref(null);
 
 const activeTab = computed(() => route.meta?.tab || null);
+const childChrome = computed(() => route.name === "settings-section" || route.name === "list");
+const settingsSectionTitles = {
+  profile: "Profile",
+  streaming: "Streaming services",
+  maturity: "Maturity profiles",
+  lists: "My Lists",
+};
+const childBackTo = computed(() => route.name === "settings-section" ? "/settings" : "/discover");
+const childBackLabel = computed(() => route.name === "settings-section" ? "Back to Settings" : "Back to Discover");
+const currentListTitle = computed(() => {
+  const id = Array.isArray(route.params.listId) ? route.params.listId[0] : route.params.listId;
+  return userStore.lists.find(list => list.token === id)?.name || "List";
+});
+const childTitle = computed(() => {
+  if (route.name === "settings-section") return settingsSectionTitles[route.params.section] || "Settings";
+  if (route.name === "list") return currentListTitle.value;
+  return "Ohana TV";
+});
+const appHeaderLabel = computed(() => childChrome.value ? `${childTitle.value} navigation` : "Ohana TV");
 
 const movieById = computed(() => {
   const map = new Map();
@@ -216,20 +238,50 @@ onMounted(async () => {
   -webkit-backdrop-filter: blur(16px) saturate(1.2);
 }
 
-.app-brand {
+.app-header--child {
+  min-height: 46px;
+  gap: 10px;
+}
+
+.app-brand,
+.app-back {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
   color: var(--white);
   text-decoration: none;
+}
+
+.app-brand {
   font-weight: 900;
   letter-spacing: 0.02em;
 }
 
-.app-brand img {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
+.app-back {
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  margin-left: -8px;
+  border-radius: 999px;
+  font-size: 34px;
+  line-height: 1;
+}
+
+.app-back:hover,
+.app-back:focus-visible {
+  background: rgba(255,255,255,0.08);
+  color: var(--teal);
+  outline: none;
+}
+
+.app-header-title {
+  min-width: 0;
+  margin: 0;
+  color: var(--white);
+  font-size: 15px;
+  font-weight: 750;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .movie-loading-backdrop {

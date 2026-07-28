@@ -1,7 +1,5 @@
 <template>
   <main class="list-page">
-    <UiChip to="/discover" class="back-chip" size="sm">← Discover</UiChip>
-
     <template v-if="store.loading || userStore.loading">
       <div class="list-header list-header--loading">
         <div class="title-skeleton"></div>
@@ -96,8 +94,6 @@ const movies = computed(() => {
   margin: 0 auto;
   padding: 24px 48px 64px;
 }
-
-.back-chip { margin-bottom: 22px; }
 
 .list-header { margin-bottom: 20px; }
 
