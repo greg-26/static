@@ -2,7 +2,7 @@
 
 ## Status
 
-ready
+complete
 
 ## Outcome
 
@@ -65,12 +65,12 @@ Issue #33 reports a real workflow gap: list management is available in the previ
 
 ## Acceptance criteria
 
-- [ ] A three-dot management menu appears on an existing dedicated list page.
-- [ ] The menu includes rename, copy/share link, and remove actions.
-- [ ] Rename updates the current list title without requiring navigation back to Settings.
-- [ ] Copy/share writes the list URL to the clipboard and shows brief local `Copied` feedback; fallback is available when clipboard write fails.
-- [ ] Remove detaches the list from the profile and routes the user to a safe page or clear empty/missing state.
-- [ ] The layout remains compact on mobile and does not push the poster grid unnecessarily far down.
+- [x] A three-dot management menu appears on an existing dedicated list page.
+- [x] The menu includes rename, copy/share link, and remove actions.
+- [x] Rename updates the current list title without requiring navigation back to Settings.
+- [x] Copy/share writes the list URL to the clipboard and shows brief local `Copied` feedback; fallback is available when clipboard write fails.
+- [x] Remove detaches the list from the profile and routes the user to `/settings/lists`.
+- [x] The layout remains compact on mobile and does not push the poster grid unnecessarily far down.
 
 ## Required tests
 
@@ -88,8 +88,15 @@ git diff --check
 
 ## Handoff
 
-After implementation, comment on issue #33 with changed files, verification result, and any manual validation caveat. Do not close until the workflow is verified.
+Sprint 035 complete on 2026-07-28.
+
+- Changed `src/views/ListView.vue` to add a compact logged-in three-dot management menu on the dedicated list route.
+- Reused existing list-store methods: `renameList`, `getShareUrl`, and `removeList`.
+- Copy/share uses `navigator.clipboard.writeText`, shows local `Copied` feedback, and falls back to a prompt when clipboard write fails.
+- Remove routes to `/settings/lists` after detaching the current list from the profile.
+- Verification: `npm run build` passed; `git diff --check` passed; Vite responded at `http://100.85.92.106:5173/`.
+- Manual caveat: no browser automation exists in this repo for profile/list mutation; acceptance was verified by code path and build/smoke checks.
 
 ## Dependencies unlocked
 
-- Completes the current list-management issue tranche when Sprint 033 and Sprint 034 are also done.
+- Completes the current list-management issue tranche because Sprint 033 and Sprint 034 were already complete.

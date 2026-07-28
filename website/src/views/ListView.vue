@@ -11,10 +11,27 @@
     </template>
 
     <template v-else-if="list">
-      <header class="list-header">
-        <p class="eyebrow">Saved list</p>
-        <h1>{{ list.name }}</h1>
-        <p class="summary">{{ movies.length }} available {{ movies.length === 1 ? "title" : "titles" }}</p>
+      <header class="list-header" @keydown.escape.stop="closeListMenu">
+        <div class="list-header__copy">
+          <p class="eyebrow">Saved list</p>
+          <h1>{{ list.name }}</h1>
+          <p class="summary">{{ movies.length }} available {{ movies.length === 1 ? "title" : "titles" }}</p>
+        </div>
+        <div v-if="userStore.isLoggedIn" class="list-header__actions" @click.stop @keydown.stop>
+          <button
+            type="button"
+            class="list-menu-button"
+            aria-haspopup="menu"
+            :aria-expanded="listMenuOpen"
+            :aria-label="`Manage ${list.name}`"
+            @click="toggleListMenu"
+          >⋯</button>
+          <div v-if="listMenuOpen" class="list-menu" role="menu">
+            <button type="button" role="menuitem" @click="renameListFromMenu">Rename</button>
+            <button type="button" role="menuitem" @click="copyListShareLink">{{ copied ? "Copied" : "Copy link" }}</button>
+            <button type="button" role="menuitem" class="danger" @click="removeListFromMenu">Remove</button>
+          </div>
+        </div>
       </header>
 
       <div v-if="movies.length" class="poster-grid" :aria-label="list.name">
@@ -45,8 +62,8 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
-import { useRoute } from "vue-router";
+import { computed, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { useMovieStore } from "@/stores/movies.js";
 import { useUserStore } from "@/stores/user.js";
 import MovieCard from "@/components/MovieCard.vue";
@@ -55,8 +72,11 @@ import UiChip from "@/components/UiChip.vue";
 defineEmits(["selectMovie"]);
 
 const route = useRoute();
+const router = useRouter();
 const store = useMovieStore();
 const userStore = useUserStore();
+const listMenuOpen = ref(false);
+const copied = ref(false);
 
 const movieById = computed(() => {
   const map = new Map();
@@ -84,6 +104,50 @@ const movies = computed(() => {
   if (!list.value) return [];
   return list.value.movies.map(id => movieById.value.get(id)).filter(Boolean);
 });
+
+watch(listId, () => {
+  closeListMenu();
+  copied.value = false;
+});
+
+function toggleListMenu() {
+  listMenuOpen.value = !listMenuOpen.value;
+}
+
+function closeListMenu() {
+  listMenuOpen.value = false;
+}
+
+async function renameListFromMenu() {
+  const currentList = list.value;
+  if (!currentList) return;
+  closeListMenu();
+  const nextName = window.prompt("Rename list", currentList.name)?.trim();
+  if (!nextName || nextName === currentList.name) return;
+  await userStore.renameList(currentList.token, nextName);
+}
+
+async function copyListShareLink() {
+  const currentList = list.value;
+  if (!currentList) return;
+  const url = userStore.getShareUrl(currentList.token);
+  try {
+    await navigator.clipboard.writeText(url);
+    copied.value = true;
+    setTimeout(() => { copied.value = false; }, 1000);
+  } catch (e) {
+    window.prompt("Copy share link", url);
+    console.warn("Could not copy list share link", e);
+  }
+}
+
+async function removeListFromMenu() {
+  const currentList = list.value;
+  if (!currentList) return;
+  closeListMenu();
+  await userStore.removeList(currentList.token);
+  router.push({ path: "/settings/lists" });
+}
 </script>
 
 <style scoped>
@@ -95,7 +159,76 @@ const movies = computed(() => {
   padding: 24px 48px 64px;
 }
 
-.list-header { margin-bottom: 20px; }
+.list-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.list-header__copy { min-width: 0; }
+.list-header__actions { position: relative; flex: 0 0 auto; }
+
+.list-menu-button,
+.list-menu button {
+  min-height: 38px;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.05);
+  color: var(--white);
+  font: inherit;
+  font-size: 13px;
+  padding: 0 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+
+.list-menu-button:hover,
+.list-menu-button:focus-visible,
+.list-menu button:hover,
+.list-menu button:focus-visible {
+  border-color: rgba(107,226,214,0.45);
+  color: var(--teal);
+  outline: none;
+}
+
+.list-menu-button {
+  width: 38px;
+  min-width: 38px;
+  justify-content: center;
+  padding: 0;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.list-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  display: grid;
+  gap: 6px;
+  min-width: 144px;
+  padding: 8px;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 14px;
+  background: rgba(15,15,26,0.98);
+  box-shadow: 0 18px 48px rgba(0,0,0,0.36);
+}
+
+.list-menu button {
+  width: 100%;
+  justify-content: flex-start;
+  border-color: transparent;
+  background: transparent;
+}
+
+.list-menu button:hover,
+.list-menu button:focus-visible { background: rgba(255,255,255,0.08); }
+.danger:hover { border-color: rgba(248,113,113,0.45); color: #fca5a5; }
 
 .eyebrow {
   margin-bottom: 6px;
@@ -177,6 +310,7 @@ h1 {
 
 @media (max-width: 640px) {
   .list-page { padding: 18px 16px 44px; }
+  .list-header { gap: 12px; margin-bottom: 16px; }
   .poster-grid {
     --grid-card-w: 132px;
     gap: 18px 10px;

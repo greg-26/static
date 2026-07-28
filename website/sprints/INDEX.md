@@ -5,8 +5,8 @@ Focused active sprint plans live in dated sprint-set folders under this director
 ## Status
 
 - Current planning status: brand-new issue-driven cycle is active in [`2026-07-28-open-issues-33-36/`](2026-07-28-open-issues-33-36/); all current open website-scoped working-fork issues are mapped.
-- Current implementation phase: Sprint 034 complete; Sprint 035 is next.
-- Next executable sprint: [Sprint 035 — List detail management menu](2026-07-28-open-issues-33-36/sprint-035-list-detail-management-menu.md).
+- Current implementation phase: Sprint 035 complete; open-issues #33–#36 tranche is complete.
+- Next executable sprint: None — no remaining planned implementation items in the active sprint set.
 - Latest planning update: 2026-07-28.
 
 ## Roadmap
@@ -15,7 +15,7 @@ Focused active sprint plans live in dated sprint-set folders under this director
 | --- | --- | --- | --- |
 | [Sprint 033](2026-07-28-open-issues-33-36/sprint-033-header-brand-back-navigation.md) | Remove the stretched logo and compress header/back navigation into a mobile-first app-bar pattern. | `complete` | None |
 | [Sprint 034](2026-07-28-open-issues-33-36/sprint-034-discover-list-menu-manage-action.md) | Move Discover row Manage lists from row actions into the list chooser menu. | `complete` | None |
-| [Sprint 035](2026-07-28-open-issues-33-36/sprint-035-list-detail-management-menu.md) | Add list rename/share/remove actions inside the dedicated list view. | `ready` | Sprint 034 preferred, but not blocking |
+| [Sprint 035](2026-07-28-open-issues-33-36/sprint-035-list-detail-management-menu.md) | Add list rename/share/remove actions inside the dedicated list view. | `complete` | Sprint 034 preferred, but not blocking |
 
 ## Active sprint set
 
@@ -56,8 +56,8 @@ The current planned tranche is complete when:
 - Issues #33, #34, #35, and #36 each have implementation evidence and issue comments linking the final changes and verification.
 - Sprint 033 removes the stretched logo and compresses child-page back/header chrome.
 - Sprint 034 moves Discover list management into the list chooser menu. ✅ Sprint 034 complete.
-- Sprint 035 adds dedicated list-page rename/share/remove actions.
-- `npm run build` passes after implementation, and affected flows have a narrow/mobile smoke check recorded.
+- Sprint 035 adds dedicated list-page rename/share/remove actions. ✅ Sprint 035 complete.
+- `npm run build` passes after implementation, and affected flows have a narrow/mobile smoke check recorded. ✅ Build and code-path smoke complete; no browser automation exists for profile/list mutation.
 
 ## Maintenance rules
 
