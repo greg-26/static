@@ -1,7 +1,7 @@
 # Sprint 027 — Search recents container polish
 
 ## Status
-ready
+complete
 
 ## Outcome
 
@@ -56,11 +56,11 @@ This should be a CSS/layout cleanup, not a component rewrite. Prefer deleting de
 
 ## Acceptance criteria
 
-- [ ] Recent-search suggestions no longer render inside a visibly ugly rounded container.
-- [ ] Recently viewed items blend with the Search page without adding nested-card noise.
-- [ ] Clear recent searches and selecting a recent query still work.
-- [ ] Recent viewed title taps still open details.
-- [ ] No change to recent-activity storage keys or ranking behavior.
+- [x] Recent-search suggestions no longer render inside a visibly ugly rounded container.
+- [x] Recently viewed items blend with the Search page without adding nested-card noise.
+- [x] Clear recent searches and selecting a recent query still work.
+- [x] Recent viewed title taps still open details.
+- [x] No change to recent-activity storage keys or ranking behavior.
 
 ## Required tests
 
@@ -76,7 +76,21 @@ git diff --check
 
 ## Handoff
 
-Implementation agent: comment on issue #24 with before/after evidence after implementation.
+Sprint 027 implementation complete on 2026-07-28.
+
+Changes:
+
+- Removed the rounded/bordered recent-search suggestions shell in `SearchView.vue`; the dropdown now uses only a thin block border and page-aligned list rows.
+- Made recently viewed cards render as transparent Search rows with square row edges and subtly rounded posters, avoiding nested-card noise while preserving the existing `SearchResultCard` click path.
+- Left `recentActivity.js`, search ranking, route query handling, clear behavior, and selection handlers unchanged.
+
+Verification:
+
+- `npm run build` — passed.
+- `git diff --check` — passed.
+- Source smoke: recent-search clear/select handlers and recently viewed `@select` path are unchanged.
+
+Issue #24 should be commented/closed with this evidence and the final commit hash.
 
 ## Dependencies unlocked
 

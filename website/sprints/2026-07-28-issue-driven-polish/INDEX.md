@@ -3,8 +3,8 @@
 ## Status
 
 - Current planning status: ready issue-driven tranche for working-fork website issues #18–#24.
-- Current implementation phase: Sprints 023–026 complete; Sprint 027 is the next ready implementation slice.
-- Next executable sprint: Sprint 027 — Search recents container polish.
+- Current implementation phase: Sprints 023–027 complete; no ready sprint remains in this tranche.
+- Next executable sprint: none — await the next planner tranche or new feedback/issues.
 - Latest planning revision date: 2026-07-28.
 
 ## Roadmap
@@ -15,7 +15,7 @@
 | 024 | Movie-detail media surfaces feel native to Ohana: blended backdrop, internal collection/season links, compact one-row cast. | `complete` | Sprint 023 complete |
 | 025 | Discover avoids load drift and chip menus behave as a single coordinated menu system. | `complete` | Existing Discover list/menu components |
 | 026 | Lists menu shows compact poster previews for each list. | `complete` | Sprint 025 complete |
-| 027 | Search recents lose the ugly rounded container and blend with the poster/results surface. | `ready` | Current recent-activity storage |
+| 027 | Search recents lose the ugly rounded container and blend with the poster/results surface. | `complete` | Current recent-activity storage |
 
 ## Issue mapping
 

@@ -331,9 +331,8 @@ onUnmounted(() => window.removeEventListener("ohana:recent-activity", refreshRec
   right: 0;
   display: grid;
   gap: 4px;
-  padding: 10px;
-  border: 1px solid rgba(45,212,191,0.22);
-  border-radius: 15px;
+  padding: 8px 0;
+  border-block: 1px solid rgba(45,212,191,0.18);
   background: rgba(10,10,18,0.98);
   box-shadow: 0 18px 44px rgba(0,0,0,0.42);
 }
@@ -341,7 +340,7 @@ onUnmounted(() => window.removeEventListener("ohana:recent-activity", refreshRec
 .recent-suggestions-clear { border: 1px solid rgba(255,255,255,0.12); border-radius: 999px; background: rgba(255,255,255,0.05); color: rgba(240,238,232,0.72); font: inherit; font-size: 12px; min-height: 28px; padding: 0 10px; cursor: pointer; text-transform: none; letter-spacing: 0; }
 .recent-suggestions-clear:hover,
 .recent-suggestions-clear:focus-visible { border-color: rgba(45,212,191,0.42); color: var(--teal); outline: none; }
-.recent-suggestion { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 42px; padding: 9px 10px; border: 0; border-radius: 11px; background: transparent; color: var(--white); font: inherit; text-align: left; cursor: pointer; }
+.recent-suggestion { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 42px; padding: 9px 14px; border: 0; border-radius: 0; background: transparent; color: var(--white); font: inherit; text-align: left; cursor: pointer; }
 .recent-suggestion:hover,
 .recent-suggestion:focus-visible { background: rgba(45,212,191,0.12); outline: none; }
 .recent-suggestion-icon { color: var(--muted); font-size: 14px; }
@@ -351,7 +350,20 @@ onUnmounted(() => window.removeEventListener("ohana:recent-activity", refreshRec
 .recent-section h3 { color: var(--white); font-size: 16px; }
 .recent-section button:not(.ui-chip) { border: 1px solid rgba(255,255,255,0.12); border-radius: 999px; background: rgba(255,255,255,0.05); color: rgba(240,238,232,0.72); font: inherit; font-size: 12px; min-height: 32px; padding: 0 12px; cursor: pointer; }
 .recent-section button:not(.ui-chip):hover { border-color: rgba(45,212,191,0.42); color: var(--teal); }
-.recent-viewed-list { display: grid; gap: 10px; }
+.recent-viewed-list { display: grid; gap: 6px; }
+.recent-viewed-list :deep(.search-card) {
+  padding: 10px 0;
+  border-color: transparent;
+  border-radius: 0;
+  background: transparent;
+}
+.recent-viewed-list :deep(.search-card:hover),
+.recent-viewed-list :deep(.search-card:focus-visible) {
+  border-color: transparent;
+  background: rgba(255,255,255,0.045);
+  box-shadow: inset 3px 0 0 rgba(45,212,191,0.42);
+}
+.recent-viewed-list :deep(.poster) { border-radius: 6px; }
 .results-wrap { margin-top: 16px; }
 .result-count { color: var(--muted); font-size: 13px; }
 .no-results { margin-top: 14px; padding: 18px 0; color: var(--muted); border-top: 1px solid rgba(255,255,255,0.08); }
