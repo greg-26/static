@@ -4,17 +4,17 @@ Focused active sprint plans live in dated sprint-set folders under this director
 
 ## Status
 
-- Current planning status: brand-new issue-driven cycle is active in [`2026-07-28-open-issues-37-39/`](2026-07-28-open-issues-37-39/); all current open working-fork issues are mapped.
-- Current implementation phase: Sprint 036 complete; website issue #39 remains blocked by API issue #38.
-- Next executable sprint: None — #39 remains blocked by API issue #38.
-- Latest planning update: 2026-07-28 21:15 Europe/Madrid.
+- Current planning status: issue-driven cycle is active in [`2026-07-28-open-issues-37-39/`](2026-07-28-open-issues-37-39/); all current working-fork issues in this tranche are mapped.
+- Current implementation phase: Sprint 036 complete; Sprint 037 complete now that API issue #38 shipped the content-ratings contract in `bc3e53c`.
+- Next executable sprint: None in the current sprint set.
+- Latest planning update: 2026-07-28 22:34 Europe/Madrid.
 
 ## Roadmap
 
 | Sprint | Outcome | Status | Depends on |
 | --- | --- | --- | --- |
 | [Sprint 036](2026-07-28-open-issues-37-39/sprint-036-remove-poster-expand-button.md) | Remove the visible `Expand` affordance from the movie-detail poster while keeping poster-click expansion intact and accessible. | `complete` | None |
-| Future content-rating sprint | Surface TMDB/current-country content ratings in movie details. | `blocked` | API issue #38 must ship the frontend data contract first |
+| [Sprint 037](2026-07-28-open-issues-37-39/sprint-037-tmdb-content-ratings-detail.md) | Surface API-selected TMDB content ratings in the movie-detail content details box. | `complete` | API issue #38 / commit `bc3e53c` |
 
 ## Active sprint set
 
@@ -31,31 +31,32 @@ Open issue query for `origin` / `greg-26/static` found three open issues during 
 | Issue | Sprint coverage | Planning note |
 | --- | --- | --- |
 | [#37 Remove the expand button on poster](https://github.com/greg-26/static/issues/37) | [Sprint 036](2026-07-28-open-issues-37-39/sprint-036-remove-poster-expand-button.md) | Remove the visible `Expand` affordance from the movie-detail poster; keep poster click/tap expansion behavior. |
-| [#38 API - content ratings](https://github.com/greg-26/static/issues/38) | Not a website sprint | API/data-model prerequisite for #39; do not solve inside website planning docs. |
-| [#39 Website - tmdb content ratings on movie detail page](https://github.com/greg-26/static/issues/39) | Future blocked sprint | Wait for #38 to define and ship the frontend contract, including current-country and fallback behavior. |
+| [#38 API - content ratings](https://github.com/greg-26/static/issues/38) | Not a website sprint | API/data-model prerequisite completed in `bc3e53c`; website Sprint 037 consumes the normalized field. |
+| [#39 Website - tmdb content ratings on movie detail page](https://github.com/greg-26/static/issues/39) | [Sprint 037](2026-07-28-open-issues-37-39/sprint-037-tmdb-content-ratings-detail.md) | Display the API-selected current-country/fallback content rating in the movie-detail content details box. |
 
-No remaining open website issue is intentionally unplanned: #37 is executable now; #39 is mapped as blocked by #38.
+No remaining open website issue is intentionally unplanned: #37 and #39 are covered by completed website sprints; #38 was the completed API prerequisite.
 
 ## Decisions and assumptions
 
 - Working-fork issues (`origin`, currently `greg-26/static`) remain the active issue tracker for agent-driven website work.
-- Keep this cycle to one executable sprint because only #37 is ready without backend/API changes.
-- Do not mock or infer TMDB content-ratings data for #39 before the API contract from #38 exists.
+- The website trusts the API `contentRating` contract and does not duplicate TMDB fallback selection logic.
+- Missing TMDB content-ratings data is represented as a compact unavailable state after API detail enrichment returns.
 - Sprint numbers continue from the existing completed sequence; do not renumber completed sprints.
 - Keep the completed #33–#36 tranche archived and intact.
 
 ## Open questions
 
-- For the future #39 sprint after #38 lands: what normalized field and fallback metadata should the website use for current country, same rating system, then US?
+None for the current active sprint set.
 
 ## Completion criteria
 
 The current planned tranche is complete when:
 
 - Sprint 036 removes the visible poster `Expand` affordance while preserving click/tap and keyboard access to the larger poster viewer. ✅ Sprint 036 complete.
-- `npm run qa:sprint36`, `npm run build`, and `git diff --check` pass after implementation. ✅
+- Sprint 037 surfaces API-selected TMDB content ratings in the movie-detail content details box. ✅ Sprint 037 complete.
+- `npm run qa:sprint36`, `npm run qa:sprint37`, `npm run build`, and `git diff --check` pass after implementation. ✅
 - Issue #37 has an implementation comment linking final changes and verification.
-- Issue #39 is not implemented until #38 ships the API/data-model contract, or a new sprint is planned once that contract is available.
+- Issue #39 has an implementation comment linking final changes and verification, then is closed after push.
 
 ## Maintenance rules
 

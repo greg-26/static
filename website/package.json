@@ -24,7 +24,8 @@
     "qa:sprint20": "node scripts/qa-sprint20-parent-guide-density.mjs",
     "qa:sprint21": "node scripts/qa-sprint21-cast-collection-media.mjs",
     "qa:sprint23": "node scripts/qa-sprint23-detail-actions-poster.mjs",
-    "qa:sprint36": "node scripts/qa-sprint36-poster-expand-affordance.mjs"
+    "qa:sprint36": "node scripts/qa-sprint36-poster-expand-affordance.mjs",
+    "qa:sprint37": "node scripts/qa-sprint37-content-ratings.mjs"
   },
   "dependencies": {
     "fuse.js": "^7.0.0",

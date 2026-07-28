@@ -189,6 +189,19 @@ function normalizePosterImage(artwork) {
   return normalizeArtworkImage(artwork.poster, ["medium", "large", "small", "original"], "poster");
 }
 
+function normalizeContentRating(contentRating) {
+  if (!contentRating || typeof contentRating !== "object") return null;
+  const rating = typeof contentRating.rating === "string" ? contentRating.rating.trim() : "";
+  const region = typeof contentRating.region === "string" ? contentRating.region.trim().toUpperCase() : "";
+  if (!rating || !region) return null;
+  return {
+    rating,
+    region,
+    source: contentRating.source || null,
+    fallback: Boolean(contentRating.fallback),
+  };
+}
+
 function normalizeTitleDetail(data) {
   if (!data || typeof data !== "object") return null;
   const cast = Array.isArray(data.cast) ? data.cast.map(normalizeCastMember).filter(Boolean).slice(0, 8) : [];
@@ -214,6 +227,7 @@ function normalizeTitleDetail(data) {
     heroImageCandidates: normalizeHeroImageCandidates(data.artwork),
     providerRegion: data.streamingProviders?.region || null,
     providerGroups: normalizeProviderGroups(data.streamingProviders),
+    contentRating: normalizeContentRating(data.contentRating),
     collection: data.collection ? {
       id: data.collection.id || null,
       name: data.collection.name || "Collection",

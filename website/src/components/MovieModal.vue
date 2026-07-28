@@ -193,6 +193,13 @@
                 <p class="compatibility-subcopy">Movie score vs. this profile’s allowed level.</p>
               </div>
               <div class="compatibility-actions">
+                <span
+                  v-if="contentRatingLabel"
+                  class="content-rating-pill"
+                  :class="{ 'content-rating-pill--unavailable': !apiContentRating }"
+                  :title="contentRatingTitle"
+                  :aria-label="contentRatingAriaLabel"
+                >{{ contentRatingLabel }}</span>
                 <UiBadge v-if="movie.mpa" tone="gold">{{ movie.mpa }}</UiBadge>
                 <span class="compatibility-pill" :class="compatibilityOk ? 'compatibility-pill--ok' : 'compatibility-pill--warn'">
                   {{ hasSelectedMaturityLimits ? (compatibilityOk ? 'Fits selected profile' : 'Review before watching') : 'No limit set' }}
@@ -264,6 +271,13 @@
             <div class="compatibility-summary-head">
               <p id="maturity-section-label" class="modal-section-label">Compatible with: <strong>{{ selectedDetailProfileName }}</strong></p>
               <div class="compatibility-actions">
+                <span
+                  v-if="contentRatingLabel"
+                  class="content-rating-pill"
+                  :class="{ 'content-rating-pill--unavailable': !apiContentRating }"
+                  :title="contentRatingTitle"
+                  :aria-label="contentRatingAriaLabel"
+                >{{ contentRatingLabel }}</span>
                 <UiBadge v-if="movie.mpa" tone="gold">{{ movie.mpa }}</UiBadge>
                 <span class="compatibility-pill compatibility-pill--warn">Unknown</span>
                 <a
@@ -718,6 +732,22 @@ const tmdbExternalUrl = computed(() => {
   if (!title) return null;
   const query = [title, props.movie?.y].filter(Boolean).join(" ");
   return `https://www.themoviedb.org/search?query=${encodeURIComponent(query)}`;
+});
+const apiContentRating = computed(() => apiDetail.value?.contentRating || null);
+const contentRatingLabel = computed(() => {
+  if (apiContentRating.value) return `${apiContentRating.value.region} ${apiContentRating.value.rating}`;
+  if (apiDetail.value && !apiDetailLoading.value) return "Rating unavailable";
+  return null;
+});
+const contentRatingTitle = computed(() => {
+  if (!apiContentRating.value) return "TMDB content rating unavailable for this title.";
+  const fallbackCopy = apiContentRating.value.fallback ? "fallback selected by Ohana API" : "current country match";
+  return `TMDB content rating: ${apiContentRating.value.rating} (${apiContentRating.value.region}, ${fallbackCopy}).`;
+});
+const contentRatingAriaLabel = computed(() => {
+  if (!apiContentRating.value) return "TMDB content rating unavailable";
+  const fallbackCopy = apiContentRating.value.fallback ? "fallback region" : "current country";
+  return `TMDB content rating ${apiContentRating.value.rating}, ${apiContentRating.value.region} ${fallbackCopy}`;
 });
 
 const apiCastPreview = computed(() => apiDetail.value?.cast?.slice(0, 6) || []);
@@ -1840,6 +1870,24 @@ onUnmounted(() => {
   justify-content: flex-end;
   flex-wrap: wrap;
   gap: 6px;
+}
+.content-rating-pill {
+  flex-shrink: 0;
+  max-width: 100%;
+  padding: 5px 9px;
+  border: 1px solid rgba(245,200,66,0.28);
+  border-radius: 999px;
+  background: rgba(245,200,66,0.12);
+  color: #f8d86a;
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+.content-rating-pill--unavailable {
+  border-color: rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.045);
+  color: rgba(240,238,232,0.58);
 }
 .compatibility-pill {
   flex-shrink: 0;
