@@ -1,7 +1,7 @@
 # Sprint 029 — Movie-Detail List Actions and Scroll Polish
 
 ## Status
-ready
+in-progress
 
 ## Outcome
 
