@@ -34,6 +34,7 @@
             menu-class="filter-menu--picker"
             button-class="control-chip--dropdown"
             @toggle="togglePanel('availability')"
+            @close="closePanel('availability')"
           >
             <template #label>
               <span class="chip-label-with-icon">
@@ -87,6 +88,7 @@
             menu-class="filter-menu--picker"
             button-class="control-chip--safe"
             @toggle="togglePanel('maturity')"
+            @close="closePanel('maturity')"
           >
             <template #label>
               <span class="chip-label-with-icon">
@@ -138,6 +140,7 @@
             menu-class="filter-menu--picker"
             button-class="control-chip--dropdown"
             @toggle="togglePanel('genres')"
+            @close="closePanel('genres')"
           >
             <template #label>
               <span class="chip-label-with-icon">
@@ -168,6 +171,7 @@
             :label="ratingChipLabel"
             menu-class="filter-menu--rating"
             @toggle="togglePanel('rating')"
+            @close="closePanel('rating')"
           >
               <div class="filter-heading">
                 <p class="filter-label">Min rating</p>
@@ -209,16 +213,18 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import FilterMenu from "@/components/FilterMenu.vue";
 import UiChip from "@/components/UiChip.vue";
 import { useMovieStore, GENRE_LABELS } from "@/stores/movies.js";
 import { profileLabel } from "@/lib/maturityProfiles.js";
 
-const emit = defineEmits(["open-settings"]);
+const props = defineProps({ activeMenu: { type: String, default: null } });
+const emit = defineEmits(["open-settings", "set-active-menu"]);
 const store = useMovieStore();
 const activePanel = ref(null);
 const chipRowEl = ref(null);
+const menuNamespace = "discover-control";
 
 const BASE = "https://image.tmdb.org/t/p/w342/";
 const HERO_POSTER_COLS = [
@@ -295,18 +301,26 @@ function openStreamingSettings() {
   emit("open-settings", "streaming");
 }
 
+function menuId(panel) {
+  return `${menuNamespace}:${panel}`;
+}
+
 function togglePanel(panel) {
-  activePanel.value = activePanel.value === panel ? null : panel;
+  const next = activePanel.value === panel ? null : panel;
+  activePanel.value = next;
+  emit("set-active-menu", next ? menuId(next) : null);
 }
 
-function onDocumentPointerDown(event) {
-  if (!activePanel.value) return;
-  if (chipRowEl.value?.contains(event.target)) return;
+function closePanel(panel) {
+  if (activePanel.value !== panel) return;
   activePanel.value = null;
+  emit("set-active-menu", null);
 }
 
-onMounted(() => document.addEventListener("pointerdown", onDocumentPointerDown));
-onUnmounted(() => document.removeEventListener("pointerdown", onDocumentPointerDown));
+watch(() => props.activeMenu, menu => {
+  if (!activePanel.value) return;
+  if (menu !== menuId(activePanel.value)) activePanel.value = null;
+});
 
 const hasFilters = computed(() =>
   browseFilterCount.value > 0 ||

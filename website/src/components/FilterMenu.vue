@@ -20,6 +20,7 @@
         :style="menuStyle"
         role="menu"
         @pointerdown.stop
+        @pointerleave="onMenuPointerLeave"
       >
         <slot />
       </div>
@@ -40,7 +41,7 @@ const props = defineProps({
   highlightActive: { type: Boolean, default: true },
 });
 
-const emit = defineEmits(["toggle"]);
+const emit = defineEmits(["toggle", "close"]);
 const wrapEl = ref(null);
 const menuEl = ref(null);
 const menuLeft = ref(0);
@@ -89,6 +90,26 @@ function fitMenuToViewport() {
   });
 }
 
+function closeMenu() {
+  if (props.open) emit("close");
+}
+
+function onDocumentPointerDown(event) {
+  if (!props.open) return;
+  const target = event.target;
+  if (wrapEl.value?.contains(target) || menuEl.value?.contains(target)) return;
+  emit("close");
+}
+
+function onDocumentKeydown(event) {
+  if (event.key === "Escape") closeMenu();
+}
+
+function onMenuPointerLeave(event) {
+  if (event.pointerType === "touch") return;
+  closeMenu();
+}
+
 watch(() => props.open, open => {
   if (open) nextTick(fitMenuToViewport);
   else xOffset.value = 0;
@@ -97,10 +118,14 @@ watch(() => props.open, open => {
 onMounted(() => {
   window.addEventListener("resize", fitMenuToViewport);
   window.addEventListener("scroll", fitMenuToViewport, true);
+  document.addEventListener("pointerdown", onDocumentPointerDown);
+  document.addEventListener("keydown", onDocumentKeydown);
 });
 onBeforeUnmount(() => {
   window.removeEventListener("resize", fitMenuToViewport);
   window.removeEventListener("scroll", fitMenuToViewport, true);
+  document.removeEventListener("pointerdown", onDocumentPointerDown);
+  document.removeEventListener("keydown", onDocumentKeydown);
 });
 </script>
 

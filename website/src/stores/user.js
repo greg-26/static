@@ -9,9 +9,11 @@ export const useUserStore = defineStore("user", () => {
   const userData = ref(null); // { name, listTokens, watched, customProviders, filterPrefs }
   const lists = ref([]);      // [{ token, name, movies }]
   const loading = ref(false);
+  const initialized = ref(!userToken.value);
   const saving = ref(false);
 
   const isLoggedIn = computed(() => !!userToken.value && !!userData.value);
+  const listsReady = computed(() => initialized.value && !loading.value);
   const watchedSet = computed(() => new Set(userData.value?.watched ?? []));
 
   function isWatched(id) { return watchedSet.value.has(id); }
@@ -22,7 +24,11 @@ export const useUserStore = defineStore("user", () => {
   // ── Core persistence ───────────────────────────────────────────────────────
 
   async function init() {
-    if (!userToken.value) return;
+    initialized.value = false;
+    if (!userToken.value) {
+      initialized.value = true;
+      return;
+    }
     loading.value = true;
     try {
       const data = await kvRead(userToken.value);
@@ -33,6 +39,7 @@ export const useUserStore = defineStore("user", () => {
       console.warn("user init failed:", e);
     } finally {
       loading.value = false;
+      initialized.value = true;
     }
   }
 
@@ -56,6 +63,7 @@ export const useUserStore = defineStore("user", () => {
     userToken.value = token;
     userData.value = data;
     lists.value = [];
+    initialized.value = true;
     localStorage.setItem(LS_KEY, token);
   }
 
@@ -65,8 +73,15 @@ export const useUserStore = defineStore("user", () => {
     userToken.value = token;
     userData.value = data;
     lists.value = [];
+    loading.value = true;
+    initialized.value = false;
     localStorage.setItem(LS_KEY, token);
-    await _loadAllLists();
+    try {
+      await _loadAllLists();
+    } finally {
+      loading.value = false;
+      initialized.value = true;
+    }
   }
 
   async function setName(name) {
@@ -228,11 +243,12 @@ export const useUserStore = defineStore("user", () => {
     userToken.value = null;
     userData.value = null;
     lists.value = [];
+    initialized.value = true;
     localStorage.removeItem(LS_KEY);
   }
 
   return {
-    userToken, userData, lists, loading, saving, isLoggedIn, watchedSet,
+    userToken, userData, lists, loading, initialized, listsReady, saving, isLoggedIn, watchedSet,
     isWatched, isInList, init, createUser, importUser, setName,
     createList, addListByToken, removeList, renameList, toggleMovieInList, toggleWatched,
     addCustomProvider, removeCustomProvider, saveFilterPrefs,

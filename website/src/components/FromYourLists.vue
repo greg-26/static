@@ -12,7 +12,8 @@
           :active="selectedList !== 'all'"
           menu-class="filter-menu--picker"
           button-class="list-selector-chip"
-          @toggle="listMenuOpen = !listMenuOpen"
+          @toggle="toggleListMenu"
+          @close="closeListMenu"
         >
           <template #label>
             <span class="selector-label">
@@ -58,15 +59,23 @@ import FilterMenu from "@/components/FilterMenu.vue";
 import MovieRow from "@/components/MovieRow.vue";
 import UiChip from "@/components/UiChip.vue";
 
-const props = defineProps({ rows: { type: Array, default: () => [] } });
-defineEmits(["selectMovie", "manage"]);
+const props = defineProps({
+  rows: { type: Array, default: () => [] },
+  activeMenu: { type: String, default: null },
+});
+const emit = defineEmits(["selectMovie", "manage", "set-active-menu"]);
 
 const PREVIEW_LIMIT = 24;
 const selectedList = ref("all");
 const listMenuOpen = ref(false);
+const LIST_MENU_ID = "from-lists:chooser";
 
 watch(() => props.rows.map(r => r.id).join("|"), () => {
   if (selectedList.value !== "all" && !props.rows.some(row => row.id === selectedList.value)) selectedList.value = "all";
+});
+
+watch(() => props.activeMenu, menu => {
+  if (menu !== LIST_MENU_ID) listMenuOpen.value = false;
 });
 
 const selectedListLabel = computed(() => {
@@ -75,9 +84,20 @@ const selectedListLabel = computed(() => {
   return row ? cleanLabel(row.label) : "All lists";
 });
 
+function toggleListMenu() {
+  listMenuOpen.value = !listMenuOpen.value;
+  emit("set-active-menu", listMenuOpen.value ? LIST_MENU_ID : null);
+}
+
+function closeListMenu() {
+  if (!listMenuOpen.value) return;
+  listMenuOpen.value = false;
+  emit("set-active-menu", null);
+}
+
 function selectList(id) {
   selectedList.value = id;
-  listMenuOpen.value = false;
+  closeListMenu();
 }
 
 const visibleRows = computed(() => {

@@ -1,7 +1,7 @@
 # Sprint 025 — Discover loading and menu stability
 
 ## Status
-ready
+complete
 
 ## Outcome
 
@@ -64,12 +64,12 @@ Prefer a small shared menu-open coordinator via props/events/provide/inject or a
 
 ## Acceptance criteria
 
-- [ ] Discover does not visibly shift when From-your-lists/watchlist data finishes loading.
-- [ ] A lightweight skeleton/reserved row appears only while list readiness is genuinely unresolved.
-- [ ] Opening the lists menu closes flatrate/provider/maturity/genre menus, and opening any control menu closes the lists menu.
-- [ ] Leaving/dismissing a menu closes it without requiring a second tap elsewhere.
-- [ ] Touch/mobile behavior remains stable; no sticky hover-selected color regression.
-- [ ] Filtering and recommendation row semantics are unchanged.
+- [x] Discover does not visibly shift when From-your-lists/watchlist data finishes loading.
+- [x] A lightweight skeleton/reserved row appears only while list readiness is genuinely unresolved.
+- [x] Opening the lists menu closes flatrate/provider/maturity/genre menus, and opening any control menu closes the lists menu.
+- [x] Leaving/dismissing a menu closes it without requiring a second tap elsewhere.
+- [x] Touch/mobile behavior remains stable; no sticky hover-selected color regression.
+- [x] Filtering and recommendation row semantics are unchanged.
 
 ## Required tests
 
@@ -91,3 +91,13 @@ Implementation agent: comment on issues #21 and #22 after implementation evidenc
 ## Dependencies unlocked
 
 - Sprint 026 can add previews inside the now-coordinated lists menu.
+
+
+## Implementation evidence — 2026-07-28
+
+- Added `userStore.listsReady` / `initialized` so Discover can distinguish unresolved profile/list state from a real no-list account.
+- Discover now reserves a lightweight From-your-lists skeleton while list readiness is unresolved, then renders list-dependent rows only after state is known; recommendation row generation/filter semantics are unchanged.
+- `FilterMenu` now supports shared close events, outside click, Escape, and non-touch pointer-leave dismissal.
+- Discover passes one active menu id between hero controls and the lists chooser so opening any menu closes the others.
+- Verification: `npm run build` passed; `git diff --check` passed; Vite dev server responded at `http://100.85.92.106:5173/`.
+- Manual smoke: source-level menu coordination verified across lists/availability/maturity/genre/rating controls; mobile behavior avoids touch pointer-leave closures. Real-device visual review remains recommended.

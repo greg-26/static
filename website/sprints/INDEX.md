@@ -5,8 +5,8 @@ Focused active sprint plans live in dated sprint-set folders under this director
 ## Status
 
 - Current planning status: new issue-driven website tranche for open working-fork issues #18–#24 is planned in [`2026-07-28-issue-driven-polish/`](2026-07-28-issue-driven-polish/).
-- Current implementation phase: Sprints 018–024 are complete; Sprint 025 is the next ready implementation slice.
-- Next executable sprint: Sprint 025 — Discover loading and menu stability.
+- Current implementation phase: Sprints 018–025 are complete; Sprint 026 is the next ready implementation slice.
+- Next executable sprint: Sprint 026 — List menu previews.
 - Latest planning update: 2026-07-28.
 
 ## Roadmap
@@ -15,8 +15,8 @@ Focused active sprint plans live in dated sprint-set folders under this director
 | --- | --- | --- | --- |
 | 023 | Move list actions into the first movie-detail decision area and add a mobile-safe way to inspect the poster larger. | `complete` | Current movie-detail modal/list persistence remains stable |
 | 024 | Polish movie-detail media surfaces: sharp/blended backdrop, tighter internal collection/season cards, and one-row circular cast. | `complete` | Sprint 023 complete |
-| 025 | Stabilize Discover loading and menus so list rows do not cause layout drift and only one chip menu can be open at a time. | `ready` | Existing Discover list/menu components retained |
-| 026 | Add compact list-preview posters to the lists menu without turning lists into a primary navigation tab. | `ready` | Sprint 025 menu-open behavior complete |
+| 025 | Stabilize Discover loading and menus so list rows do not cause layout drift and only one chip menu can be open at a time. | `complete` | Existing Discover list/menu components retained |
+| 026 | Add compact list-preview posters to the lists menu without turning lists into a primary navigation tab. | `ready` | Sprint 025 complete |
 | 027 | Remove the ugly rounded-container treatment from Search recents while preserving scannable recent searches/viewed titles. | `ready` | Current Search recent-activity storage remains unchanged |
 
 ## Active sprint set
@@ -65,8 +65,8 @@ The current planned tranche is complete when:
 - Issue #19 is implemented, source/build verified, commented, and closed by the implementation workflow with mobile review caveat.
 - Issue #20 is implemented with a keyboard/touch-accessible larger-poster affordance, source/build verified, commented, and closed by the implementation workflow with mobile review caveat.
 - Issue #18 is implemented without regressing Sprint 017–021 movie-detail behavior and closed with evidence.
-- Issue #21 is implemented with source/build verification and a mobile-width load-state check.
-- Issue #22 is implemented with menu interaction verification for Discover/list/provider/maturity/genre controls.
+- Issue #21 is implemented with source/build verification and a mobile-width load-state check. ✅ Sprint 025 complete; real-device visual review still recommended.
+- Issue #22 is implemented with menu interaction verification for Discover/list/provider/maturity/genre controls. ✅ Sprint 025 complete; real-device visual review still recommended.
 - Issue #23 is implemented with compact list-preview posters in the lists chooser/menu and no new primary Lists tab.
 - Issue #24 is implemented with Search recents visual polish and no change to recent-search storage semantics.
 - Each implementation sprint runs its listed verification commands and keeps the app reviewable over the existing Vite/Tailscale path when UI changes are made.

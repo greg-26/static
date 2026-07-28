@@ -1,5 +1,9 @@
 <template>
-  <HeroSection @open-settings="$emit('openSettings')" />
+  <HeroSection
+    :active-menu="activeMenu"
+    @set-active-menu="setActiveMenu"
+    @open-settings="$emit('openSettings')"
+  />
 
   <main class="catalog">
     <template v-if="store.loading">
@@ -11,7 +15,7 @@
       </div>
     </template>
 
-    <template v-else>
+    <template v-else-if="listStateReady">
       <div v-if="store.filteredMovies.length === 0" class="empty-state">
         <p class="empty-icon">◌</p>
         <p class="empty-title">No movies match your filters</p>
@@ -21,6 +25,8 @@
       <template v-else>
         <FromYourLists
           :rows="listRows"
+          :active-menu="activeMenu"
+          @set-active-menu="setActiveMenu"
           @selectMovie="$emit('selectMovie', $event)"
           @manage="$emit('openSettings', 'lists')"
         />
@@ -40,11 +46,27 @@
         />
       </template>
     </template>
+
+    <template v-else>
+      <div class="skeleton-row skeleton-row--lists" aria-label="Loading your lists" role="status">
+        <div class="skeleton-label skeleton-label--lists"></div>
+        <div class="skeleton-cards">
+          <div class="skeleton-card" v-for="c in 8" :key="c"></div>
+        </div>
+      </div>
+
+      <MovieRow
+        v-for="row in store.movieRows"
+        :key="row.id"
+        :row="row"
+        @selectMovie="$emit('selectMovie', $event)"
+      />
+    </template>
   </main>
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useMovieStore } from "@/stores/movies.js";
 import { useUserStore } from "@/stores/user.js";
 import HeroSection from "@/components/HeroSection.vue";
@@ -55,6 +77,13 @@ defineEmits(["selectMovie", "openSettings"]);
 
 const store = useMovieStore();
 const userStore = useUserStore();
+const activeMenu = ref(null);
+
+const listStateReady = computed(() => !userStore.userToken || userStore.listsReady);
+
+function setActiveMenu(menu) {
+  activeMenu.value = menu;
+}
 
 const movieById = computed(() => {
   const map = new Map();
