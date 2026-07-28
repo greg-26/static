@@ -348,8 +348,6 @@ onUnmounted(() => window.removeEventListener("ohana:recent-activity", refreshRec
 .recent-section { padding: 16px 0; color: var(--muted); }
 .recent-section { border-top: 1px solid rgba(255,255,255,0.08); }
 .recent-section h3 { color: var(--white); font-size: 16px; }
-.recent-section button:not(.ui-chip) { border: 1px solid rgba(255,255,255,0.12); border-radius: 999px; background: rgba(255,255,255,0.05); color: rgba(240,238,232,0.72); font: inherit; font-size: 12px; min-height: 32px; padding: 0 12px; cursor: pointer; }
-.recent-section button:not(.ui-chip):hover { border-color: rgba(45,212,191,0.42); color: var(--teal); }
 .recent-viewed-list { display: grid; gap: 6px; }
 .recent-viewed-list :deep(.search-card) {
   padding: 10px 0;
