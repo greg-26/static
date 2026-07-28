@@ -181,6 +181,27 @@
 
       <template v-else-if="activeSection === 'lists'">
         <div v-if="userStore.isLoggedIn" class="list-stack">
+          <div class="list-action-panel" aria-label="List actions">
+            <div class="list-action-buttons">
+              <button type="button" :class="{ active: activeListAction === 'create' }" @click="toggleListAction('create')">Create list</button>
+              <button type="button" :class="{ active: activeListAction === 'import' }" @click="toggleListAction('import')">Import list</button>
+            </div>
+            <div v-if="activeListAction === 'create'" class="settings-form settings-form--inline list-action-row">
+              <label>
+                <span>Create list</span>
+                <input v-model="newListName" maxlength="40" placeholder="Family night, classics…" @keydown.enter="createList" />
+              </label>
+              <button type="button" :disabled="creatingList || !newListName.trim()" @click="createList">{{ creatingList ? 'Creating…' : 'Create' }}</button>
+            </div>
+            <div v-if="activeListAction === 'import'" class="settings-form settings-form--inline list-action-row">
+              <label>
+                <span>Import shared list</span>
+                <input v-model="addListToken" class="mono" placeholder="Paste list token or share URL" @keydown.enter="addSharedList" />
+              </label>
+              <button type="button" :disabled="addingList || !addListToken.trim()" @click="addSharedList">{{ addingList ? 'Adding…' : 'Add' }}</button>
+              <p v-if="listError" class="form-error">{{ listError }}</p>
+            </div>
+          </div>
           <div
             v-for="list in userStore.lists"
             :key="list.token"
@@ -191,38 +212,30 @@
             @click="openList(list)"
             @keydown.enter.prevent="openList(list)"
             @keydown.space.prevent="openList(list)"
+            @keydown.escape.stop="closeListMenu"
           >
             <div class="list-row__summary">
-              <span class="list-row__label">Saved list</span>
               <strong>{{ list.name }}</strong>
               <span>{{ list.movies.length }} {{ list.movies.length === 1 ? 'title' : 'titles' }}</span>
             </div>
-            <div class="list-row__open" aria-hidden="true">
-              <span>Open</span>
-              <span class="list-row__chevron">›</span>
-            </div>
             <div class="list-row__actions" @click.stop @keydown.stop>
-              <button type="button" @click="renameList(list)">Rename</button>
-              <button type="button" @click="copyListShareLink(list)">{{ copiedToken === list.token ? 'Copied' : 'Copy link' }}</button>
-              <button type="button" class="danger" @click="userStore.removeList(list.token)">Remove</button>
+              <button
+                type="button"
+                class="list-row__menu-button"
+                aria-haspopup="menu"
+                :aria-expanded="openListMenuToken === list.token"
+                :aria-label="`Manage ${list.name}`"
+                @click="toggleListMenu(list.token)"
+              >⋯</button>
+              <div v-if="openListMenuToken === list.token" class="list-row__menu" role="menu">
+                <button type="button" role="menuitem" @click="renameListFromMenu(list)">Rename</button>
+                <button type="button" role="menuitem" @click="copyListShareLinkFromMenu(list)">{{ copiedToken === list.token ? 'Copied' : 'Copy link' }}</button>
+                <button type="button" role="menuitem" class="danger" @click="removeListFromMenu(list)">Remove</button>
+              </div>
             </div>
+            <span class="list-row__chevron" aria-hidden="true">›</span>
           </div>
           <p v-if="!userStore.lists.length" class="empty-note">No lists yet.</p>
-          <div class="settings-form settings-form--inline list-action-row">
-            <label>
-              <span>Create list</span>
-              <input v-model="newListName" maxlength="40" placeholder="Family night, classics…" @keydown.enter="createList" />
-            </label>
-            <button type="button" :disabled="creatingList || !newListName.trim()" @click="createList">{{ creatingList ? 'Creating…' : 'Create' }}</button>
-          </div>
-          <div class="settings-form settings-form--inline list-action-row">
-            <label>
-              <span>Import shared list</span>
-              <input v-model="addListToken" class="mono" placeholder="Paste list token or share URL" @keydown.enter="addSharedList" />
-            </label>
-            <button type="button" :disabled="addingList || !addListToken.trim()" @click="addSharedList">{{ addingList ? 'Adding…' : 'Add' }}</button>
-            <p v-if="listError" class="form-error">{{ listError }}</p>
-          </div>
         </div>
         <section v-else class="empty-state empty-state--inline" aria-label="Lists need a profile">
           <p class="empty-title">Create or restore a profile first</p>
@@ -264,6 +277,8 @@ const addListToken = ref("");
 const listError = ref("");
 const creatingList = ref(false);
 const addingList = ref(false);
+const activeListAction = ref(null);
+const openListMenuToken = ref(null);
 const newCustomProvider = ref("");
 const newMaturityProfileName = ref("");
 const maturityProfileError = ref("");
@@ -418,7 +433,35 @@ async function renameList(list) {
   await userStore.renameList(list.token, nextName);
 }
 
+function toggleListAction(action) {
+  activeListAction.value = activeListAction.value === action ? null : action;
+  listError.value = "";
+}
+
+function toggleListMenu(token) {
+  openListMenuToken.value = openListMenuToken.value === token ? null : token;
+}
+
+function closeListMenu() {
+  openListMenuToken.value = null;
+}
+
+async function renameListFromMenu(list) {
+  closeListMenu();
+  await renameList(list);
+}
+
+async function copyListShareLinkFromMenu(list) {
+  await copyListShareLink(list);
+}
+
+async function removeListFromMenu(list) {
+  closeListMenu();
+  await userStore.removeList(list.token);
+}
+
 function openList(list) {
+  closeListMenu();
   router.push({ name: "list", params: { listId: list.token } });
 }
 
@@ -441,6 +484,7 @@ async function createList() {
   try {
     await userStore.createList(newListName.value.trim());
     newListName.value = "";
+    activeListAction.value = null;
   } catch (e) {
     listError.value = e.message;
   } finally {
@@ -458,6 +502,7 @@ async function addSharedList() {
     if (urlParam) token = urlParam;
     await userStore.addListByToken(token);
     addListToken.value = "";
+    activeListAction.value = null;
   } catch (e) {
     listError.value = e.message;
   } finally {
@@ -557,11 +602,19 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .maturity-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 
 .list-stack { display: grid; gap: 10px; }
+.list-action-panel { display: grid; gap: 10px; padding-bottom: 4px; }
+.list-action-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.list-action-buttons button.active {
+  border-color: rgba(45,212,191,0.42);
+  background: rgba(45,212,191,0.12);
+  color: var(--teal);
+}
 .list-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 14px;
+  position: relative;
   padding: 14px 14px 14px 16px;
   border: 1px solid rgba(255,255,255,0.09);
   border-radius: 16px;
@@ -581,19 +634,43 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .list-row:focus-visible .list-row__chevron { color: var(--teal); transform: translateX(2px); }
 .list-row__summary { display: grid; gap: 3px; min-width: 0; }
 .list-row__summary strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--white); font-size: 16px; }
-.list-row__label { color: var(--teal); font-size: 10px; font-weight: 800; letter-spacing: 0.13em; text-transform: uppercase; }
-.list-row__open { display: inline-flex; align-items: center; gap: 4px; color: rgba(240,238,232,0.58); font-size: 12px; font-weight: 700; }
 .list-row__chevron { color: rgba(240,238,232,0.42); font-size: 24px; line-height: 1; transition: transform 0.15s ease, color 0.15s ease; }
-.list-row__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding-left: 14px; border-left: 1px solid rgba(255,255,255,0.09); }
-.list-row span:not(.list-row__label):not(.list-row__chevron) { color: var(--muted); font-size: 12px; }
-.list-action-row { padding: 16px 0 0; }
+.list-row__actions { position: relative; display: flex; justify-content: flex-end; }
+.list-row__menu-button {
+  width: 36px;
+  min-width: 36px;
+  padding: 0;
+  justify-content: center;
+  font-size: 20px;
+  line-height: 1;
+}
+.list-row__menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  display: grid;
+  gap: 6px;
+  min-width: 144px;
+  padding: 8px;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 14px;
+  background: rgba(15,15,26,0.98);
+  box-shadow: 0 18px 48px rgba(0,0,0,0.36);
+}
+.list-row__menu button { width: 100%; justify-content: flex-start; border-color: transparent; background: transparent; }
+.list-row__menu button:hover,
+.list-row__menu button:focus-visible { background: rgba(255,255,255,0.08); }
+.list-row span:not(.list-row__chevron) { color: var(--muted); font-size: 12px; }
+.list-action-row { padding: 0; }
 .danger:hover { border-color: rgba(248,113,113,0.45); color: #fca5a5; }
 @media (max-width: 720px) {
   .settings-view { padding: 20px 14px 48px; }
   .settings-card--primary, .settings-card--wide { grid-column: auto; }
   .settings-form--inline { grid-template-columns: 1fr; }
   .list-row { grid-template-columns: minmax(0, 1fr) auto; gap: 10px 12px; padding: 14px; }
-  .list-row__actions { grid-column: 1 / -1; width: 100%; justify-content: flex-start; padding: 12px 0 0; border-left: 0; border-top: 1px solid rgba(255,255,255,0.08); }
+  .list-row__actions { grid-column: 2; grid-row: 1; }
+  .list-row__chevron { display: none; }
   .custom-provider-row { align-items: flex-start; flex-direction: column; }
 }
 

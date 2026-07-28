@@ -1,7 +1,7 @@
 # Sprint 031 — Settings Lists Actions
 
 ## Status
-ready
+complete
 
 ## Outcome
 
@@ -62,12 +62,12 @@ Issues #29 and #30 are one Settings → Lists interaction pass. Combining them p
 
 ## Acceptance criteria
 
-- [ ] Create/import actions are visible at the top of Settings → Lists without scrolling.
-- [ ] Inputs are hidden until the user chooses Create or Import.
-- [ ] Clicking or keyboard-activating a list row opens that list.
-- [ ] Row management actions live behind a three-dots menu in the top-right of each row.
-- [ ] “Saved list” and visible “Open” row labels are removed.
-- [ ] Rename/share/remove behavior remains intact.
+- [x] Create/import actions are visible at the top of Settings → Lists without scrolling.
+- [x] Inputs are hidden until the user chooses Create or Import.
+- [x] Clicking or keyboard-activating a list row opens that list.
+- [x] Row management actions live behind a three-dots menu in the top-right of each row.
+- [x] “Saved list” and visible “Open” row labels are removed.
+- [x] Rename/share/remove behavior remains intact.
 
 ## Required tests
 
@@ -85,6 +85,10 @@ git diff --check
 ## Handoff
 
 Comment on issues #29 and #30 with changed files, verification, and any mobile caveat. Close only if both interaction changes are verified.
+
+## Implementation log
+
+- 2026-07-28: Implemented the Settings → Lists action pass in `src/components/SettingsView.vue`. Create/import now begin as two top buttons and reveal only their active form; list rows open directly by click/Enter/Space; row management moved into a compact three-dots menu with existing rename/copy/remove behavior preserved. Verified with `npm run build`, `git diff --check`, and Vite reachability at `http://100.85.92.106:5173/settings/lists`. Manual mobile-width visual interaction smoke is still recommended on Alex's phone.
 
 ## Dependencies unlocked
 

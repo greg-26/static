@@ -5,8 +5,8 @@ Focused active sprint plans live in dated sprint-set folders under this director
 ## Status
 
 - Current planning status: new issue-driven website tranche for open working-fork issues #25–#32 is planned in [`2026-07-28-open-issues-25-32/`](2026-07-28-open-issues-25-32/).
-- Current implementation phase: Sprints 023–030 are complete; Sprints 031–032 remain in the active tranche.
-- Next executable sprint: [`Sprint 031 — Settings lists actions`](2026-07-28-open-issues-25-32/sprint-031-settings-lists-actions.md).
+- Current implementation phase: Sprints 023–031 are complete; Sprint 032 remains in the active tranche.
+- Next executable sprint: [`Sprint 032 — Mobile first-paint stability`](2026-07-28-open-issues-25-32/sprint-032-mobile-first-paint-stability.md).
 - Latest planning update: 2026-07-28.
 
 ## Roadmap
@@ -16,7 +16,7 @@ Focused active sprint plans live in dated sprint-set folders under this director
 | 028 | Search recent-search suggestions and recent-viewed surfaces lose the remaining off-radius/border artifact. | `complete` | Sprint 027 complete |
 | 029 | Movie-detail list chips look persistent, include a manage-lists escape hatch, and related-title navigation resets modal scroll sanely. | `complete` | Current modal list actions and router behavior |
 | 030 | Movie-detail cast, collection, and season rails are sorted, correctly proportioned, uncluttered, and mobile-readable. | `complete` | Sprint 024 media surfaces complete |
-| 031 | Settings → Lists keeps create/import actions handy while moving row management behind a compact overflow menu. | `ready` | Current profile/list persistence unchanged |
+| 031 | Settings → Lists keeps create/import actions handy while moving row management behind a compact overflow menu. | `complete` | Current profile/list persistence unchanged |
 | 032 | Mobile first paint does not flash the desktop layout or visibly drift before responsive styles settle. | `ready` | Current app shell/static CSS behavior |
 
 ## Active sprint set
