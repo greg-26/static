@@ -88,7 +88,7 @@ Implementation agent: take this sprint first. Comment on issues #19 and #20 only
 
 ## Implementation evidence
 
-- Completed 2026-07-28 by Greg in commit 1e28682.
+- Completed 2026-07-28 by Greg in commit f1f3610.
 - `MovieModal.vue` now renders watched/list chips directly under the movie title before maturity/profile sections, preserving existing `userStore.toggleWatched`, `userStore.toggleMovieInList`, and `userStore.isInList` behavior.
 - Poster image is now a keyboard-focusable button that opens a temporary full-screen poster dialog using `posterImageSrc` (`apiDetail.posterImage.url` with static poster fallback), with visible close, backdrop close, Escape close, tab trap, and focus return to the poster button.
 - Added `scripts/qa-sprint23-detail-actions-poster.mjs` and `npm run qa:sprint23` for source/DOM checks covering action order, existing list wiring, compact default poster, and poster overlay selectors.
