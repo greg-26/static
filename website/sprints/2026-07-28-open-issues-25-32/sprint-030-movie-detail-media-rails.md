@@ -1,7 +1,7 @@
 # Sprint 030 — Movie-Detail Media Rails
 
 ## Status
-ready
+complete
 
 ## Outcome
 
@@ -61,11 +61,11 @@ Issues #25 and #32 both target the media rails introduced/refined by Sprint 024.
 
 ## Acceptance criteria
 
-- [ ] Cast rail uses larger images and centered names that do not feel misaligned on mobile.
-- [ ] Seasons sort by season number and keep year visible.
-- [ ] Season cards omit descriptions in the compact rail.
-- [ ] Collection cards preserve poster aspect ratio, are not thin/cropped incorrectly, and keep year visible.
-- [ ] Collection order uses known order when available, else year ascending.
+- [x] Cast rail uses larger images and centered names that do not feel misaligned on mobile.
+- [x] Seasons sort by season number and keep year visible.
+- [x] Season cards omit descriptions in the compact rail.
+- [x] Collection cards preserve poster aspect ratio, are not thin/cropped incorrectly, and keep year visible.
+- [x] Collection order uses known order when available, else year ascending.
 
 ## Required tests
 
@@ -83,7 +83,21 @@ git diff --check
 
 ## Handoff
 
-Comment on issues #25 and #32 with changed files, verification, example titles checked, and any data-order caveat. Close only when requested behavior is satisfied.
+Sprint 030 completed on 2026-07-28.
+
+Changed files:
+
+- `src/lib/ohanaApi.js`: normalized numeric sort keys for seasons and collections; seasons sort by season number; collections sort by explicit order fields when present, then year/title fallback.
+- `src/components/MovieModal.vue`: cast avatars enlarged and names centered; season descriptions removed from compact cards; season/collection cards enlarged while preserving 2:3 poster aspect and year display.
+
+Verification:
+
+- `npm run build` passed.
+- `git diff --check` passed.
+- Vite reachable at `http://100.85.92.106:5173/`.
+- Data-shape examples inspected from Ohana API: `tt0944947` / `tt0108778` seasons and `tt0241527` collection/cast.
+
+Issue closure comments were added to #25 and #32 with verification evidence before closing.
 
 ## Dependencies unlocked
 

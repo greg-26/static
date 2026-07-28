@@ -443,7 +443,6 @@
                     class="api-secondary-link api-secondary-link--button"
                     @click.stop="openSeasonItem(season)"
                   >Open title</button>
-                  <p v-if="season.overview" class="api-season-overview">{{ season.overview }}</p>
                 </div>
               </article>
             </div>
@@ -726,7 +725,6 @@ const apiCastPreview = computed(() => apiDetail.value?.cast?.slice(0, 6) || []);
 const apiCollectionItems = computed(() => apiDetail.value?.collection?.items || []);
 const apiSeasons = computed(() => apiDetail.value?.seasons || []);
 const apiProviderGroups = computed(() => apiDetail.value?.providerGroups || []);
-const regularApiSeasons = computed(() => apiSeasons.value.filter(season => !season.isSpecials));
 const apiSeasonSummary = computed(() => {
   const count = apiDetail.value?.seasonCount;
   if (!count && !apiSeasons.value.length) return null;
@@ -739,8 +737,7 @@ const apiSeasonSummary = computed(() => {
 const visibleApiSeasons = computed(() => {
   if (!apiSeasons.value.length) return [];
   if (showAllApiSeasons.value || apiSeasons.value.length <= 4) return apiSeasons.value;
-  const firstRegular = regularApiSeasons.value.slice(0, 4);
-  return firstRegular.length ? firstRegular : apiSeasons.value.slice(0, 4);
+  return apiSeasons.value.slice(0, 4);
 });
 const hasHiddenApiSeasons = computed(() => apiSeasons.value.length > visibleApiSeasons.value.length || (showAllApiSeasons.value && apiSeasons.value.length > 4));
 
@@ -784,7 +781,7 @@ function seasonMeta(season) {
   const parts = [];
   if (season.episodeCount) parts.push(`${season.episodeCount} episode${season.episodeCount === 1 ? "" : "s"}`);
   if (season.isSpecials) parts.push("bonus material");
-  return parts.join(" · ") || "Season details from Ohana API";
+  return parts.join(" · ") || "Season details";
 }
 
 function hideBrokenProviderLogo(event) {
@@ -1288,30 +1285,31 @@ onUnmounted(() => {
 }
 .api-cast-list::-webkit-scrollbar { display: none; }
 .api-cast-person {
-  flex: 0 0 72px;
-  min-width: 72px;
+  flex: 0 0 86px;
+  min-width: 86px;
   display: grid;
   justify-items: center;
   align-content: start;
-  gap: 6px;
+  gap: 8px;
   padding: 0;
+  text-align: center;
   scroll-snap-align: start;
 }
 .api-cast-avatar,
 .api-cast-avatar img {
   display: block;
-  width: 54px;
-  height: 54px;
+  width: 68px;
+  height: 68px;
   border-radius: 50%;
 }
 .api-cast-avatar {
   overflow: hidden;
   background: linear-gradient(145deg, rgba(45,212,191,0.18), rgba(255,255,255,0.055));
   color: rgba(255,255,255,0.78);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 800;
   letter-spacing: 0.03em;
-  line-height: 54px;
+  line-height: 68px;
   text-align: center;
 }
 .api-cast-avatar img { object-fit: cover; }
@@ -1320,12 +1318,26 @@ onUnmounted(() => {
 .api-cast-copy span {
   display: block;
   min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.api-cast-copy strong {
+  color: var(--white);
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.api-cast-copy span {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.2;
   white-space: nowrap;
 }
-.api-cast-copy strong { color: var(--white); font-size: 12px; }
-.api-cast-copy span { margin-top: 3px; color: var(--muted); font-size: 11px; }
 .api-collection-list {
   display: flex;
   gap: 8px;
@@ -1337,7 +1349,7 @@ onUnmounted(() => {
 }
 .api-collection-list::-webkit-scrollbar { display: none; }
 .api-collection-item {
-  flex: 0 0 88px;
+  flex: 0 0 108px;
   border: 0;
   padding: 0;
   background: transparent;
@@ -1357,7 +1369,7 @@ onUnmounted(() => {
 .api-collection-item img,
 .api-collection-poster-fallback {
   display: block;
-  width: 84px;
+  width: 104px;
   aspect-ratio: 2 / 3;
   border-radius: 10px;
   object-fit: cover;
@@ -1429,10 +1441,10 @@ onUnmounted(() => {
 }
 .api-season-list::-webkit-scrollbar { display: none; }
 .api-season-card {
-  flex: 0 0 148px;
+  flex: 0 0 176px;
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr);
-  gap: 8px;
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: 9px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -1441,9 +1453,9 @@ onUnmounted(() => {
 .api-season-card--specials { opacity: 0.78; }
 .api-season-card img,
 .api-season-poster-fallback {
-  width: 42px;
+  width: 58px;
   aspect-ratio: 2 / 3;
-  border-radius: 7px;
+  border-radius: 8px;
   object-fit: cover;
   background: var(--surface3);
 }
@@ -2079,8 +2091,8 @@ onUnmounted(() => {
   }
   .modal-close--mobile svg { width: 18px; height: 18px; }
   .overview-text--clamped { -webkit-line-clamp: 3; }
-  .api-collection-item { flex-basis: 86px; }
-  .api-season-card { flex-basis: 136px; }
+  .api-collection-item { flex-basis: 108px; }
+  .api-season-card { flex-basis: 172px; }
   .api-season-head { flex-direction: column; gap: 8px; }
   .api-season-toggle { align-self: flex-start; }
   .compatibility-summary-head { flex-direction: column; }

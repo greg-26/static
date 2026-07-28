@@ -30,21 +30,64 @@ function normalizeCastMember(member) {
   };
 }
 
+function numericOrNull(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
+function compareText(a, b) {
+  return String(a || "").localeCompare(String(b || ""), undefined, { sensitivity: "base" });
+}
+
+function compareCollectionItems(a, b) {
+  if (a.order !== null || b.order !== null) {
+    if (a.order === null) return 1;
+    if (b.order === null) return -1;
+    if (a.order !== b.order) return a.order - b.order;
+  }
+
+  if (a.year !== null || b.year !== null) {
+    if (a.year === null) return 1;
+    if (b.year === null) return -1;
+    if (a.year !== b.year) return a.year - b.year;
+  }
+
+  return compareText(a.title, b.title);
+}
+
+function compareSeasons(a, b) {
+  if (a.seasonNumber !== null || b.seasonNumber !== null) {
+    if (a.seasonNumber === null) return 1;
+    if (b.seasonNumber === null) return -1;
+    if (a.seasonNumber !== b.seasonNumber) return a.seasonNumber - b.seasonNumber;
+  }
+
+  if (a.year !== null || b.year !== null) {
+    if (a.year === null) return 1;
+    if (b.year === null) return -1;
+    if (a.year !== b.year) return a.year - b.year;
+  }
+
+  return compareText(a.title, b.title);
+}
+
 function normalizeCollectionItem(item) {
   if (!item || typeof item !== "object" || !item.title) return null;
+  const year = numericOrNull(item.release?.year ?? item.year);
+  const order = numericOrNull(item.order ?? item.collectionOrder ?? item.sortOrder ?? item.sequenceNumber);
   return {
-    id: item.id ? String(item.id) : `${item.title}-${item.release?.year || ""}`,
+    id: item.id ? String(item.id) : `${item.title}-${year || ""}`,
     imdbId: item.imdbId || null,
     title: String(item.title),
-    year: item.release?.year || null,
-    posterUrl: bestImageUrl(item.poster, ["thumbnail", "small", "medium", "original"]),
-    order: Number.isFinite(item.order) ? item.order : null,
+    year,
+    posterUrl: bestImageUrl(item.poster, ["small", "medium", "thumbnail", "original"]),
+    order,
   };
 }
 
 function normalizeSeason(season) {
   if (!season || typeof season !== "object") return null;
-  const seasonNumber = Number.isFinite(season.seasonNumber) ? season.seasonNumber : null;
+  const seasonNumber = numericOrNull(season.seasonNumber);
   const title = season.name || (seasonNumber === 0 ? "Specials" : seasonNumber ? `Season ${seasonNumber}` : "Season");
   return {
     id: season.id ? String(season.id) : `${seasonNumber ?? "unknown"}-${title}`,
@@ -150,13 +193,10 @@ function normalizeTitleDetail(data) {
   if (!data || typeof data !== "object") return null;
   const cast = Array.isArray(data.cast) ? data.cast.map(normalizeCastMember).filter(Boolean).slice(0, 8) : [];
   const collectionItems = Array.isArray(data.collection?.items)
-    ? data.collection.items.map(normalizeCollectionItem).filter(Boolean).sort((a, b) => (a.order ?? 999) - (b.order ?? 999)).slice(0, 8)
+    ? data.collection.items.map(normalizeCollectionItem).filter(Boolean).sort(compareCollectionItems).slice(0, 8)
     : [];
   const seasons = Array.isArray(data.seasons)
-    ? data.seasons.map(normalizeSeason).filter(Boolean).sort((a, b) => {
-      if (a.isSpecials !== b.isSpecials) return a.isSpecials ? 1 : -1;
-      return (a.seasonNumber ?? 999) - (b.seasonNumber ?? 999);
-    })
+    ? data.seasons.map(normalizeSeason).filter(Boolean).sort(compareSeasons)
     : [];
 
   return {

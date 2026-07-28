@@ -3,8 +3,8 @@
 ## Status
 
 - Current planning status: ready issue-driven tranche for working-fork website issues #25–#32.
-- Current implementation phase: Sprints 028–029 are complete; Sprints 030–032 are sequenced behind them.
-- Next executable sprint: [`Sprint 030 — Movie-detail media rails`](sprint-030-movie-detail-media-rails.md).
+- Current implementation phase: Sprints 028–030 are complete; Sprints 031–032 are sequenced behind them.
+- Next executable sprint: [`Sprint 031 — Settings lists actions`](sprint-031-settings-lists-actions.md).
 - Latest planning revision date: 2026-07-28.
 
 ## Roadmap
@@ -13,7 +13,7 @@
 | --- | --- | --- | --- |
 | 028 | Search recents border/radius artifact fixed. | `complete` | Sprint 027 complete |
 | 029 | Movie-detail list chips and related-title navigation polished. | `complete` | Current modal/list behavior |
-| 030 | Movie-detail cast, collection, and season rails polished. | `ready` | Sprint 024 complete |
+| 030 | Movie-detail cast, collection, and season rails polished. | `complete` | Sprint 024 complete |
 | 031 | Settings → Lists actions become compact and top-accessible. | `ready` | Current list persistence |
 | 032 | Mobile first-paint responsive drift fixed or precisely blocked. | `ready` | Current app shell/CSS behavior |
 
@@ -49,3 +49,4 @@ This sprint set is complete when all mapped issues have implementation evidence 
 
 - 2026-07-28: Sprint 028 completed. Search recently-viewed cards no longer inherit the broad pill-button border/radius styling; `npm run build`, `git diff --check`, and Vite `/search` reachability passed. Issue #31 was commented with evidence and closed.
 - 2026-07-28: Sprint 029 completed. Movie-detail list membership chips now use scoped smaller persistent-control radius, include a Manage lists route action to `/settings/lists`, and internal movie changes reset the modal scroll container to the top; `npm run build`, `git diff --check`, and Vite reachability passed. Issues #27 and #28 were commented with evidence and closed.
+- 2026-07-28: Sprint 030 completed. Movie-detail cast avatars/names, season cards, and collection cards were polished; sort normalization now prefers explicit collection order and falls back to year/title, while seasons sort by season number. `npm run build`, `git diff --check`, and Vite reachability passed. Issues #25 and #32 were commented with evidence and closed.

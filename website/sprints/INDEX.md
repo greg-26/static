@@ -5,8 +5,8 @@ Focused active sprint plans live in dated sprint-set folders under this director
 ## Status
 
 - Current planning status: new issue-driven website tranche for open working-fork issues #25–#32 is planned in [`2026-07-28-open-issues-25-32/`](2026-07-28-open-issues-25-32/).
-- Current implementation phase: Sprints 023–029 are complete; Sprints 030–032 remain in the active tranche.
-- Next executable sprint: [`Sprint 030 — Movie-detail media rails`](2026-07-28-open-issues-25-32/sprint-030-movie-detail-media-rails.md).
+- Current implementation phase: Sprints 023–030 are complete; Sprints 031–032 remain in the active tranche.
+- Next executable sprint: [`Sprint 031 — Settings lists actions`](2026-07-28-open-issues-25-32/sprint-031-settings-lists-actions.md).
 - Latest planning update: 2026-07-28.
 
 ## Roadmap
@@ -15,7 +15,7 @@ Focused active sprint plans live in dated sprint-set folders under this director
 | --- | --- | --- | --- |
 | 028 | Search recent-search suggestions and recent-viewed surfaces lose the remaining off-radius/border artifact. | `complete` | Sprint 027 complete |
 | 029 | Movie-detail list chips look persistent, include a manage-lists escape hatch, and related-title navigation resets modal scroll sanely. | `complete` | Current modal list actions and router behavior |
-| 030 | Movie-detail cast, collection, and season rails are sorted, correctly proportioned, uncluttered, and mobile-readable. | `ready` | Sprint 024 media surfaces complete |
+| 030 | Movie-detail cast, collection, and season rails are sorted, correctly proportioned, uncluttered, and mobile-readable. | `complete` | Sprint 024 media surfaces complete |
 | 031 | Settings → Lists keeps create/import actions handy while moving row management behind a compact overflow menu. | `ready` | Current profile/list persistence unchanged |
 | 032 | Mobile first paint does not flash the desktop layout or visibly drift before responsive styles settle. | `ready` | Current app shell/static CSS behavior |
 
@@ -65,7 +65,7 @@ The current planned tranche is complete when:
 
 - Issue #31 is visually repaired without changing recent-search storage semantics, source/build verified, commented, and closed by implementation workflow. ✅ Sprint 028 complete; real-device visual review still welcome.
 - Issues #27 and #28 are implemented in the movie-detail modal without changing list persistence semantics. ✅ Sprint 029 complete; real-device visual review still welcome.
-- Issues #25 and #32 are implemented with sorted media rails, correct poster aspect ratios, and mobile-readable cast names.
+- Issues #25 and #32 are implemented with sorted media rails, correct poster aspect ratios, and mobile-readable cast names. ✅ Sprint 030 complete; real-device visual review still welcome.
 - Issues #29 and #30 are implemented in Settings → Lists with row click-to-open and compact overflow management.
 - Issue #26 is either fixed with mobile/throttled evidence or left open with a precise blocker/repro note.
 - Each implementation sprint runs its listed verification commands and keeps the app reviewable over the existing Vite/Tailscale path when UI changes are made.
