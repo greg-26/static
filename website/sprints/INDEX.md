@@ -4,60 +4,58 @@ Focused active sprint plans live in dated sprint-set folders under this director
 
 ## Status
 
-- Current planning status: brand-new issue-driven cycle is active in [`2026-07-28-open-issues-33-36/`](2026-07-28-open-issues-33-36/); all current open website-scoped working-fork issues are mapped.
-- Current implementation phase: Sprint 035 complete; open-issues #33–#36 tranche is complete.
-- Next executable sprint: None — no remaining planned implementation items in the active sprint set.
-- Latest planning update: 2026-07-28.
+- Current planning status: brand-new issue-driven cycle is active in [`2026-07-28-open-issues-37-39/`](2026-07-28-open-issues-37-39/); all current open working-fork issues are mapped.
+- Current implementation phase: Sprint 036 complete; website issue #39 remains blocked by API issue #38.
+- Next executable sprint: None — #39 remains blocked by API issue #38.
+- Latest planning update: 2026-07-28 21:15 Europe/Madrid.
 
 ## Roadmap
 
 | Sprint | Outcome | Status | Depends on |
 | --- | --- | --- | --- |
-| [Sprint 033](2026-07-28-open-issues-33-36/sprint-033-header-brand-back-navigation.md) | Remove the stretched logo and compress header/back navigation into a mobile-first app-bar pattern. | `complete` | None |
-| [Sprint 034](2026-07-28-open-issues-33-36/sprint-034-discover-list-menu-manage-action.md) | Move Discover row Manage lists from row actions into the list chooser menu. | `complete` | None |
-| [Sprint 035](2026-07-28-open-issues-33-36/sprint-035-list-detail-management-menu.md) | Add list rename/share/remove actions inside the dedicated list view. | `complete` | Sprint 034 preferred, but not blocking |
+| [Sprint 036](2026-07-28-open-issues-37-39/sprint-036-remove-poster-expand-button.md) | Remove the visible `Expand` affordance from the movie-detail poster while keeping poster-click expansion intact and accessible. | `complete` | None |
+| Future content-rating sprint | Surface TMDB/current-country content ratings in movie details. | `blocked` | API issue #38 must ship the frontend data contract first |
 
 ## Active sprint set
 
-- Sprint-set index: [`2026-07-28-open-issues-33-36/INDEX.md`](2026-07-28-open-issues-33-36/INDEX.md)
+- Sprint-set index: [`2026-07-28-open-issues-37-39/INDEX.md`](2026-07-28-open-issues-37-39/INDEX.md)
+- Archived completed sprint set: [`archive/2026-07-28-open-issues-33-36/`](archive/2026-07-28-open-issues-33-36/)
+- Earlier archived sprint set: [`archive/2026-07-28-open-issues-25-32/`](archive/2026-07-28-open-issues-25-32/)
 - Superseded no-open-issues intake marker: [`archive/2026-07-28-no-open-website-issues/`](archive/2026-07-28-no-open-website-issues/)
-- Archived completed sprint set: [`archive/2026-07-28-open-issues-25-32/`](archive/2026-07-28-open-issues-25-32/)
 - Earlier archived sprint set: [`archive/2026-07-28-issue-driven-polish/`](archive/2026-07-28-issue-driven-polish/)
 
 ## Issue mapping
 
-Open issue query for `origin` / `greg-26/static` found four website-scoped issues during this planning run.
+Open issue query for `origin` / `greg-26/static` found three open issues during this planning run. Open issue query for `upstream` / `ohanamovies/static` found none.
 
 | Issue | Sprint coverage | Planning note |
 | --- | --- | --- |
-| [#33 Website - Settings - lists](https://github.com/greg-26/static/issues/33) | [Sprint 035](2026-07-28-open-issues-33-36/sprint-035-list-detail-management-menu.md) | Add the same three-dot management affordance inside a specific list view. |
-| [#34 Website - settings - back buttons](https://github.com/greg-26/static/issues/34) | [Sprint 033](2026-07-28-open-issues-33-36/sprint-033-header-brand-back-navigation.md) | Compress settings/list child-page chrome and prefer compact chevron back navigation. |
-| [#35 Ohana logo isn't square - remove it for now](https://github.com/greg-26/static/issues/35) | [Sprint 033](2026-07-28-open-issues-33-36/sprint-033-header-brand-back-navigation.md) | Remove the stretched header logo while preserving visible `Ohana TV` brand text where required. |
-| [#36 Website - discover - list row - manage link](https://github.com/greg-26/static/issues/36) | [Sprint 034](2026-07-28-open-issues-33-36/sprint-034-discover-list-menu-manage-action.md) | Move Manage lists into the existing From-your-lists chooser menu. |
+| [#37 Remove the expand button on poster](https://github.com/greg-26/static/issues/37) | [Sprint 036](2026-07-28-open-issues-37-39/sprint-036-remove-poster-expand-button.md) | Remove the visible `Expand` affordance from the movie-detail poster; keep poster click/tap expansion behavior. |
+| [#38 API - content ratings](https://github.com/greg-26/static/issues/38) | Not a website sprint | API/data-model prerequisite for #39; do not solve inside website planning docs. |
+| [#39 Website - tmdb content ratings on movie detail page](https://github.com/greg-26/static/issues/39) | Future blocked sprint | Wait for #38 to define and ship the frontend contract, including current-country and fallback behavior. |
 
-No relevant open website issue remains unplanned.
+No remaining open website issue is intentionally unplanned: #37 is executable now; #39 is mapped as blocked by #38.
 
 ## Decisions and assumptions
 
 - Working-fork issues (`origin`, currently `greg-26/static`) remain the active issue tracker for agent-driven website work.
-- The prior no-open-issues sprint-set marker was moved under `sprints/archive/` when new issues #33–#36 appeared; it remains historical evidence, not active work.
+- Keep this cycle to one executable sprint because only #37 is ready without backend/API changes.
+- Do not mock or infer TMDB content-ratings data for #39 before the API contract from #38 exists.
 - Sprint numbers continue from the existing completed sequence; do not renumber completed sprints.
-- Keep this tranche UI-only and mobile-conscious. Do not change list/profile persistence or static hosting behavior.
-- Implement one sprint at a time unless Alex explicitly asks for batching.
+- Keep the completed #33–#36 tranche archived and intact.
 
 ## Open questions
 
-- None. Recommended default for implementers: reuse existing `UiChip`, `FilterMenu`, Settings list menu behavior, and route metadata before adding new primitives.
+- For the future #39 sprint after #38 lands: what normalized field and fallback metadata should the website use for current country, same rating system, then US?
 
 ## Completion criteria
 
 The current planned tranche is complete when:
 
-- Issues #33, #34, #35, and #36 each have implementation evidence and issue comments linking the final changes and verification.
-- Sprint 033 removes the stretched logo and compresses child-page back/header chrome.
-- Sprint 034 moves Discover list management into the list chooser menu. ✅ Sprint 034 complete.
-- Sprint 035 adds dedicated list-page rename/share/remove actions. ✅ Sprint 035 complete.
-- `npm run build` passes after implementation, and affected flows have a narrow/mobile smoke check recorded. ✅ Build and code-path smoke complete; no browser automation exists for profile/list mutation.
+- Sprint 036 removes the visible poster `Expand` affordance while preserving click/tap and keyboard access to the larger poster viewer. ✅ Sprint 036 complete.
+- `npm run qa:sprint36`, `npm run build`, and `git diff --check` pass after implementation. ✅
+- Issue #37 has an implementation comment linking final changes and verification.
+- Issue #39 is not implemented until #38 ships the API/data-model contract, or a new sprint is planned once that contract is available.
 
 ## Maintenance rules
 

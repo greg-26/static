@@ -58,7 +58,6 @@
             @click="openPosterViewer"
           >
             <img :src="posterImageSrc" :alt="`${movie.t} poster`" loading="eager" />
-            <span class="modal-poster-affordance" aria-hidden="true">Expand</span>
           </button>
           <div v-else class="modal-poster">
             <div class="modal-poster-placeholder" :style="{ background: movie._mockColor || '#16161f' }">
@@ -1156,31 +1155,6 @@ onUnmounted(() => {
   outline: 3px solid rgba(45,212,191,0.78);
   outline-offset: 3px;
 }
-.modal-poster-affordance {
-  position: absolute;
-  right: 7px;
-  bottom: 7px;
-  max-width: calc(100% - 14px);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  border-radius: 999px;
-  background: rgba(8,8,16,0.76);
-  border: 1px solid rgba(255,255,255,0.16);
-  color: rgba(255,255,255,0.88);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.03em;
-  padding: 4px 7px;
-  opacity: 0;
-  transform: translateY(3px);
-  transition: opacity 0.15s ease, transform 0.15s ease;
-}
-.modal-poster--button:hover .modal-poster-affordance,
-.modal-poster--button:focus-visible .modal-poster-affordance {
-  opacity: 1;
-  transform: translateY(0);
-}
 .modal-poster-placeholder {
   width: 100%; height: 100%;
   display: flex; align-items: flex-end; padding: 10px;
@@ -2070,12 +2044,6 @@ onUnmounted(() => {
     margin-left: 12px;
     border-radius: 12px;
     border: 2px solid rgba(8,8,16,0.88);
-  }
-  .modal-poster-affordance {
-    opacity: 1;
-    transform: none;
-    font-size: 9px;
-    padding: 3px 6px;
   }
   .modal-close--desktop { display: none; }
   .modal-close--mobile  {
