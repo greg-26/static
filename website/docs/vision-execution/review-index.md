@@ -17,7 +17,8 @@ Historical human/PMT feedback is now PMT-owned and lives under `reports/pmt/huma
 
 Historical planning reports may live under the old `reports/principal-engineer/` path; new planning reports belong in `reports/sprint-planner/`.
 
-- [`reports/sprint-planner/2026-07-28-sprint-planner-open-issues-25-32.md`](../../reports/sprint-planner/2026-07-28-sprint-planner-open-issues-25-32.md) — current open issue tranche #25–#32 mapped to fresh Sprint 028–032 folder and completed Sprint 023–027 set archived.
+- [`reports/sprint-planner/2026-07-28-sprint-planner-no-open-website-issues.md`](../../reports/sprint-planner/2026-07-28-sprint-planner-no-open-website-issues.md) — brand-new active sprint folder created after archiving completed Sprint 028–032 set; no open working-fork website issues remain to plan.
+- [`reports/sprint-planner/2026-07-28-sprint-planner-open-issues-25-32.md`](../../reports/sprint-planner/2026-07-28-sprint-planner-open-issues-25-32.md) — completed open issue tranche #25–#32 mapped to Sprint 028–032 folder and completed Sprint 023–027 set archived.
 - [`reports/sprint-planner/2026-07-28-sprint-planner-plan.md`](../../reports/sprint-planner/2026-07-28-sprint-planner-plan.md) — prior open issue tranche #18–#24 mapped to Sprint 023–027 folder and completed Sprints 018–022 archived.
 - [`reports/sprint-planner/2026-07-22-sprint-planner-next-issue-tranche.md`](../../reports/sprint-planner/2026-07-22-sprint-planner-next-issue-tranche.md) — current open issue tranche mapped to Sprints 018–022 and completed Sprints 010–017 archived.
 - [`reports/sprint-planner/2026-07-22-sprint-planner-issue-13.md`](../../reports/sprint-planner/2026-07-22-sprint-planner-issue-13.md) — working-fork issue #13 mapped to Sprint 017 movie-detail imagery hierarchy.
