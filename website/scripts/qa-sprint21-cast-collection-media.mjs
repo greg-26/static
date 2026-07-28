@@ -15,6 +15,7 @@ function cssBlock(selector) {
 }
 
 const castPersonBlock = cssBlock('.api-cast-person');
+const castListBlock = cssBlock('.api-cast-list');
 const collectionItemBlock = cssBlock('.api-collection-item');
 const collectionPosterBlock = cssBlock('.api-collection-item img,\n.api-collection-poster-fallback');
 
@@ -27,8 +28,8 @@ const checks = [
     name: 'cast cards render profile photos with lazy loading, explicit dimensions, and error fallback tracking',
     pass: /person\.profileUrl && !brokenCastProfileUrls\.has\(person\.profileUrl\)/.test(modal)
       && /:src="person\.profileUrl"/.test(modal)
-      && /width="44"/.test(modal)
-      && /height="60"/.test(modal)
+      && /width="54"/.test(modal)
+      && /height="54"/.test(modal)
       && /loading="lazy"/.test(modal)
       && /@error="hideBrokenCastProfile"/.test(modal)
       && /function hideBrokenCastProfile\(event\)/.test(modal),
@@ -40,30 +41,31 @@ const checks = [
       && /brokenCastProfileUrls\.value = new Set\(\)/.test(modal),
   },
   {
-    name: 'cast layout preserves mobile truncation and compact media/name hierarchy',
-    pass: /grid-template-columns: 44px minmax\(0, 1fr\);/.test(castPersonBlock)
-      && /\.api-cast-avatar,\n\.api-cast-avatar img \{[\s\S]*width: 44px;[\s\S]*height: 60px;/.test(modal)
+    name: 'cast layout is one horizontal row with circular photos and compact truncation',
+    pass: /display: flex;/.test(castListBlock)
+      && /overflow-x: auto;/.test(castListBlock)
+      && /flex: 0 0 72px;/.test(castPersonBlock)
+      && /\.api-cast-avatar,\n\.api-cast-avatar img \{[\s\S]*width: 54px;[\s\S]*height: 54px;[\s\S]*border-radius: 50%;/.test(modal)
       && /\.api-cast-copy,[\s\S]*white-space: nowrap;/.test(modal)
-      && /\.api-cast-list \{ grid-template-columns: 1fr; \}/.test(modal),
   },
   {
-    name: 'collection posters are larger portrait media with graceful broken-image fallback',
+    name: 'collection posters are tight portrait media with graceful broken-image fallback',
     pass: /item\.posterUrl && !brokenCollectionPosterUrls\.has\(item\.posterUrl\)/.test(modal)
       && /width="96"/.test(modal)
       && /height="144"/.test(modal)
       && /@error="hideBrokenCollectionPoster"/.test(modal)
       && /function hideBrokenCollectionPoster\(event\)/.test(modal)
-      && /width: 96px;/.test(collectionPosterBlock)
+      && /width: 84px;/.test(collectionPosterBlock)
       && /aspect-ratio: 2 \/ 3;/.test(collectionPosterBlock)
       && /object-fit: cover;/.test(collectionPosterBlock),
   },
   {
-    name: 'collection remains horizontally scrollable with comfortable larger poster cards',
+    name: 'collection remains horizontally scrollable with tighter poster cards',
     pass: /display: flex;/.test(cssBlock('.api-collection-list'))
       && /overflow-x: auto;/.test(cssBlock('.api-collection-list'))
-      && /flex: 0 0 104px;/.test(collectionItemBlock)
+      && /flex: 0 0 88px;/.test(collectionItemBlock)
       && /scroll-snap-align: start;/.test(collectionItemBlock)
-      && /\.api-collection-item \{ flex-basis: 100px; \}/.test(modal),
+      && /\.api-collection-item \{ flex-basis: 86px; \}/.test(modal),
   },
   {
     name: 'cast and collection sections remain after providers and before seasons/user actions',

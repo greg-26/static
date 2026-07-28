@@ -362,13 +362,14 @@
           <section v-if="apiCollectionItems.length" class="api-detail-section" aria-labelledby="api-collection-label">
             <p id="api-collection-label" class="modal-section-label">{{ apiDetail.collection.name }}</p>
             <div class="api-collection-list">
-              <a
+              <component
                 v-for="item in apiCollectionItems"
                 :key="item.id"
+                :is="collectionItemMovie(item) ? 'button' : 'div'"
+                type="button"
                 class="api-collection-item"
-                :href="item.imdbId ? `https://www.imdb.com/title/${item.imdbId}/` : undefined"
-                :target="item.imdbId ? '_blank' : undefined"
-                :rel="item.imdbId ? 'noopener' : undefined"
+                :class="{ 'api-collection-item--button': collectionItemMovie(item), 'api-collection-item--static': !collectionItemMovie(item) }"
+                @click="openCollectionItem(item)"
               >
                 <img
                   v-if="item.posterUrl && !brokenCollectionPosterUrls.has(item.posterUrl)"
@@ -383,8 +384,16 @@
                 <span class="api-collection-copy">
                   <strong>{{ item.title }}</strong>
                   <small v-if="item.year">{{ item.year }}</small>
+                  <a
+                    v-if="!collectionItemMovie(item) && item.imdbId"
+                    :href="`https://www.imdb.com/title/${item.imdbId}/`"
+                    target="_blank"
+                    rel="noopener"
+                    class="api-secondary-link"
+                    @click.stop
+                  >IMDb</a>
                 </span>
-              </a>
+              </component>
             </div>
           </section>
 
@@ -409,6 +418,7 @@
                 :key="season.id"
                 class="api-season-card"
                 :class="{ 'api-season-card--specials': season.isSpecials }"
+                @click="openSeasonItem(season)"
               >
                 <img v-if="season.posterUrl" :src="season.posterUrl" :alt="`${season.title} poster`" loading="lazy" />
                 <span v-else class="api-season-poster-fallback" aria-hidden="true"></span>
@@ -418,6 +428,12 @@
                     <small v-if="season.year || season.airDate">{{ season.year || season.airDate }}</small>
                   </div>
                   <p class="api-season-meta">{{ seasonMeta(season) }}</p>
+                  <button
+                    v-if="seasonItemMovie(season)"
+                    type="button"
+                    class="api-secondary-link api-secondary-link--button"
+                    @click.stop="openSeasonItem(season)"
+                  >Open title</button>
                   <p v-if="season.overview" class="api-season-overview">{{ season.overview }}</p>
                 </div>
               </article>
@@ -433,8 +449,8 @@
                     v-if="person.profileUrl && !brokenCastProfileUrls.has(person.profileUrl)"
                     :src="person.profileUrl"
                     :alt="`${person.name} profile photo`"
-                    width="44"
-                    height="60"
+                    width="54"
+                    height="54"
                     loading="lazy"
                     @error="hideBrokenCastProfile"
                   />
@@ -493,7 +509,7 @@ const userStore = useUserStore();
 const movieStore = useMovieStore();
 
 const props = defineProps({ movie: { type: Object, default: null } });
-const emit = defineEmits(["close"]);
+const emit = defineEmits(["close", "selectMovie"]);
 
 const dialogRef = ref(null);
 const posterButtonRef = ref(null);
@@ -714,6 +730,37 @@ const visibleApiSeasons = computed(() => {
   return firstRegular.length ? firstRegular : apiSeasons.value.slice(0, 4);
 });
 const hasHiddenApiSeasons = computed(() => apiSeasons.value.length > visibleApiSeasons.value.length || (showAllApiSeasons.value && apiSeasons.value.length > 4));
+
+const localMovieById = computed(() => {
+  const map = new Map();
+  for (const candidate of movieStore.allMovies) {
+    if (candidate?.id) map.set(candidate.id, candidate);
+  }
+  return map;
+});
+
+function localMovieForImdbId(imdbId) {
+  if (!imdbId) return null;
+  return localMovieById.value.get(imdbId) || null;
+}
+
+function collectionItemMovie(item) {
+  return localMovieForImdbId(item?.imdbId);
+}
+
+function seasonItemMovie(season) {
+  return localMovieForImdbId(season?.imdbId);
+}
+
+function openCollectionItem(item) {
+  const localMovie = collectionItemMovie(item);
+  if (localMovie) emit("selectMovie", localMovie);
+}
+
+function openSeasonItem(season) {
+  const localMovie = seasonItemMovie(season);
+  if (localMovie) emit("selectMovie", localMovie);
+}
 
 function seasonDisplayTitle(season) {
   if (season.isSpecials) return "Specials";
@@ -1031,13 +1078,20 @@ onUnmounted(() => {
 .modal-hero {
   width: 100%;
   aspect-ratio: 16 / 9;
-  border-radius: var(--radius);
   overflow: hidden;
   position: relative;
-  background: rgba(255,255,255,0.045);
-  box-shadow: 0 16px 40px rgba(0,0,0,0.24);
+  background: var(--background, #0b0b0e);
 }
 .modal-hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.modal-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(11,11,14,0) 42%, var(--background, #0b0b0e) 100%),
+    linear-gradient(90deg, var(--background, #0b0b0e) 0%, rgba(11,11,14,0.22) 18%, rgba(11,11,14,0) 46%);
+}
 .modal-hero-fallback {
   width: 100%;
   height: 100%;
@@ -1208,28 +1262,31 @@ onUnmounted(() => {
 .api-detail-status--error { color: rgba(248,113,113,0.72); }
 .api-detail-section { margin-bottom: 18px; }
 .api-cast-list {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  display: flex;
+  gap: 10px;
   margin-top: 9px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x proximity;
 }
+.api-cast-list::-webkit-scrollbar { display: none; }
 .api-cast-person {
-  min-width: 0;
+  flex: 0 0 72px;
+  min-width: 72px;
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr);
-  align-items: center;
-  gap: 9px;
-  padding: 7px 8px;
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 12px;
-  background: rgba(255,255,255,0.035);
+  justify-items: center;
+  align-content: start;
+  gap: 6px;
+  padding: 0;
+  scroll-snap-align: start;
 }
 .api-cast-avatar,
 .api-cast-avatar img {
   display: block;
-  width: 44px;
-  height: 60px;
-  border-radius: 9px;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
 }
 .api-cast-avatar {
   overflow: hidden;
@@ -1238,7 +1295,7 @@ onUnmounted(() => {
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.03em;
-  line-height: 60px;
+  line-height: 54px;
   text-align: center;
 }
 .api-cast-avatar img { object-fit: cover; }
@@ -1255,7 +1312,7 @@ onUnmounted(() => {
 .api-cast-copy span { margin-top: 3px; color: var(--muted); font-size: 11px; }
 .api-collection-list {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   margin-top: 9px;
   overflow-x: auto;
   scrollbar-width: none;
@@ -1264,15 +1321,27 @@ onUnmounted(() => {
 }
 .api-collection-list::-webkit-scrollbar { display: none; }
 .api-collection-item {
-  flex: 0 0 104px;
+  flex: 0 0 88px;
+  border: 0;
+  padding: 0;
+  background: transparent;
   color: var(--white);
   text-decoration: none;
+  font: inherit;
+  text-align: left;
   scroll-snap-align: start;
 }
+.api-collection-item--button { cursor: pointer; }
+.api-collection-item--button:focus-visible {
+  outline: 2px solid rgba(45,212,191,0.68);
+  outline-offset: 3px;
+  border-radius: 10px;
+}
+.api-collection-item--static { cursor: default; }
 .api-collection-item img,
 .api-collection-poster-fallback {
   display: block;
-  width: 96px;
+  width: 84px;
   aspect-ratio: 2 / 3;
   border-radius: 10px;
   object-fit: cover;
@@ -1292,6 +1361,22 @@ onUnmounted(() => {
 }
 .api-collection-copy strong { font-size: 12px; }
 .api-collection-copy small { color: var(--muted); font-size: 10px; }
+.api-secondary-link {
+  width: max-content;
+  margin-top: 2px;
+  color: var(--teal);
+  font-size: 10px;
+  font-weight: 800;
+  text-decoration: none;
+}
+.api-secondary-link--button {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
 
 .api-season-section { margin-top: 2px; }
 .api-season-head {
@@ -1318,23 +1403,29 @@ onUnmounted(() => {
   cursor: pointer;
 }
 .api-season-list {
-  display: grid;
+  display: flex;
   gap: 8px;
   margin-top: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x proximity;
 }
+.api-season-list::-webkit-scrollbar { display: none; }
 .api-season-card {
+  flex: 0 0 148px;
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr);
-  gap: 10px;
-  padding: 9px;
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 12px;
-  background: rgba(255,255,255,0.035);
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  scroll-snap-align: start;
 }
 .api-season-card--specials { opacity: 0.78; }
 .api-season-card img,
 .api-season-poster-fallback {
-  width: 44px;
+  width: 42px;
   aspect-ratio: 2 / 3;
   border-radius: 7px;
   object-fit: cover;
@@ -1934,7 +2025,6 @@ onUnmounted(() => {
   .modal-hero {
     width: calc(100% + 32px);
     margin: calc(-48px - env(safe-area-inset-top, 0px)) -16px 0;
-    border-radius: 0 0 18px 18px;
   }
   .modal-poster {
     width: 108px;
@@ -1962,9 +2052,9 @@ onUnmounted(() => {
     box-shadow: 0 8px 24px rgba(0,0,0,0.32);
   }
   .modal-close--mobile svg { width: 18px; height: 18px; }
-  .api-cast-list { grid-template-columns: 1fr; }
   .overview-text--clamped { -webkit-line-clamp: 3; }
-  .api-collection-item { flex-basis: 100px; }
+  .api-collection-item { flex-basis: 86px; }
+  .api-season-card { flex-basis: 136px; }
   .api-season-head { flex-direction: column; gap: 8px; }
   .api-season-toggle { align-self: flex-start; }
   .compatibility-summary-head { flex-direction: column; }

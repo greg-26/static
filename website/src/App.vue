@@ -40,6 +40,7 @@
       <MovieModal
         :movie="selectedMovie"
         @close="closeMovie"
+        @selectMovie="openMovie"
       />
 
       <ConfigModal

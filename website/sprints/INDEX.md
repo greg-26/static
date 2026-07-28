@@ -5,8 +5,8 @@ Focused active sprint plans live in dated sprint-set folders under this director
 ## Status
 
 - Current planning status: new issue-driven website tranche for open working-fork issues #18–#24 is planned in [`2026-07-28-issue-driven-polish/`](2026-07-28-issue-driven-polish/).
-- Current implementation phase: Sprints 018–023 are complete; Sprint 024 is the next ready implementation slice.
-- Next executable sprint: Sprint 024 — movie-detail media surfaces.
+- Current implementation phase: Sprints 018–024 are complete; Sprint 025 is the next ready implementation slice.
+- Next executable sprint: Sprint 025 — Discover loading and menu stability.
 - Latest planning update: 2026-07-28.
 
 ## Roadmap
@@ -14,7 +14,7 @@ Focused active sprint plans live in dated sprint-set folders under this director
 | Sprint | Outcome | Status | Depends on |
 | --- | --- | --- | --- |
 | 023 | Move list actions into the first movie-detail decision area and add a mobile-safe way to inspect the poster larger. | `complete` | Current movie-detail modal/list persistence remains stable |
-| 024 | Polish movie-detail media surfaces: sharp/blended backdrop, tighter internal collection/season cards, and one-row circular cast. | `ready` | Sprint 023 complete |
+| 024 | Polish movie-detail media surfaces: sharp/blended backdrop, tighter internal collection/season cards, and one-row circular cast. | `complete` | Sprint 023 complete |
 | 025 | Stabilize Discover loading and menus so list rows do not cause layout drift and only one chip menu can be open at a time. | `ready` | Existing Discover list/menu components retained |
 | 026 | Add compact list-preview posters to the lists menu without turning lists into a primary navigation tab. | `ready` | Sprint 025 menu-open behavior complete |
 | 027 | Remove the ugly rounded-container treatment from Search recents while preserving scannable recent searches/viewed titles. | `ready` | Current Search recent-activity storage remains unchanged |
@@ -33,7 +33,7 @@ Focused active sprint plans live in dated sprint-set folders under this director
 
 | Issue | Sprint coverage | Planning note |
 | --- | --- | --- |
-| [#18 — Website - movie details](https://github.com/greg-26/static/issues/18) | Sprint 024 | Covers backdrop blend, internal collection/season navigation/spacing, horizontal circular cast. |
+| [#18 — Website - movie details](https://github.com/greg-26/static/issues/18) | Sprint 024 | Implemented: backdrop blend, internal collection/season navigation/spacing, horizontal circular cast. |
 | [#19 — Website - movie details](https://github.com/greg-26/static/issues/19) | Sprint 023 | Covers moving the watchlist/list widget into the top detail decision area. |
 | [#20 — Movie poster tweak](https://github.com/greg-26/static/issues/20) | Sprint 023 | Covers a full-screen/larger poster inspection affordance without expanding the default modal. |
 | [#21 — Watchlist skeleton](https://github.com/greg-26/static/issues/21) | Sprint 025 | Covers Discover load skeleton/hold state for list rows/results to prevent layout shift. |

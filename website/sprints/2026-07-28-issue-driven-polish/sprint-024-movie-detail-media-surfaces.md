@@ -1,7 +1,7 @@
 # Sprint 024 — Movie-detail media surfaces
 
 ## Status
-ready
+complete
 
 ## Outcome
 
@@ -62,12 +62,12 @@ Prefer wiring collection/season clicks through existing modal-opening paths inst
 
 ## Acceptance criteria
 
-- [ ] Backdrop/hero image has sharp edges and blends naturally into the dark modal background.
-- [ ] Collection and season posters are not over-spaced on mobile.
-- [ ] Collection/season items with resolvable title ids open Ohana details inside the current site.
-- [ ] Items without resolvable internal ids do not silently navigate users to IMDb as the primary action.
-- [ ] Cast members render in one horizontal row with circular profile photos or stable circular fallbacks.
-- [ ] Sprint 019–021 detail order, parent-guide density, where-to-watch display, and API loading feedback do not regress.
+- [x] Backdrop/hero image has sharp edges and blends naturally into the dark modal background.
+- [x] Collection and season posters are not over-spaced on mobile.
+- [x] Collection/season items with resolvable title ids open Ohana details inside the current site.
+- [x] Items without resolvable internal ids do not silently navigate users to IMDb as the primary action.
+- [x] Cast members render in one horizontal row with circular profile photos or stable circular fallbacks.
+- [x] Sprint 019–021 detail order, parent-guide density, where-to-watch display, and API loading feedback do not regress.
 
 ## Required tests
 
@@ -89,3 +89,13 @@ Implementation agent: comment on issue #18 with evidence after implementation. L
 ## Dependencies unlocked
 
 - Completes current movie-detail media follow-up tranche.
+
+## Implementation handoff — 2026-07-28
+
+- Updated `MovieModal.vue` so the hero backdrop has sharp edges and dark blend gradients instead of rounded-card treatment.
+- Tightened collection and season media strips; collection items now open local Ohana details when their IMDb ids exist in the static catalog, with IMDb only as an explicit secondary fallback when not locally resolvable.
+- Preserved season cards as internal-only when no title-level IMDb id is available from the API; no fake season routing was added.
+- Converted cast to a single horizontal row with circular 54px profile photos and stable initials fallback.
+- Updated API normalization to expose possible season IMDb ids if the backend provides them later.
+- Verification: `npm run qa:modal`, `npm run qa:sprint21`, `npm run build`, `git diff --check`; Vite reachable at `http://100.85.92.106:5173/`.
+- Issue #18 commented and closed after this sprint commit.

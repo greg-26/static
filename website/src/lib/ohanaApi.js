@@ -48,6 +48,7 @@ function normalizeSeason(season) {
   const title = season.name || (seasonNumber === 0 ? "Specials" : seasonNumber ? `Season ${seasonNumber}` : "Season");
   return {
     id: season.id ? String(season.id) : `${seasonNumber ?? "unknown"}-${title}`,
+    imdbId: season.imdbId || season.titleImdbId || null,
     seasonNumber,
     title: String(title),
     episodeCount: Number.isFinite(season.episodeCount) ? season.episodeCount : null,
