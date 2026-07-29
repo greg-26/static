@@ -188,10 +188,7 @@
 
           <section v-if="compatibilityRows.length" class="compatibility-summary" aria-labelledby="maturity-section-label">
             <div class="compatibility-summary-head">
-              <div>
-                <p id="maturity-section-label" class="modal-section-label">Compatible with: <strong>{{ selectedDetailProfileName }}</strong></p>
-                <p class="compatibility-subcopy">Movie score vs. this profile’s allowed level.</p>
-              </div>
+              <p id="maturity-section-label" class="modal-section-label">Suitability details</p>
               <div class="compatibility-actions">
                 <span
                   v-if="contentRatingLabel"
@@ -201,9 +198,6 @@
                   :aria-label="contentRatingAriaLabel"
                 >{{ contentRatingLabel }}</span>
                 <UiBadge v-if="movie.mpa" tone="gold">{{ movie.mpa }}</UiBadge>
-                <span class="compatibility-pill" :class="compatibilityOk ? 'compatibility-pill--ok' : 'compatibility-pill--warn'">
-                  {{ hasSelectedMaturityLimits ? (compatibilityOk ? 'Fits selected profile' : 'Review before watching') : 'No limit set' }}
-                </span>
                 <a
                   v-if="movie.id"
                   :href="`https://www.imdb.com/title/${movie.id}/parentalguide`"
@@ -269,7 +263,7 @@
           </section>
           <section v-else-if="profileCompatibilityGlance.length" class="compatibility-summary compatibility-summary--empty" aria-labelledby="maturity-section-label">
             <div class="compatibility-summary-head">
-              <p id="maturity-section-label" class="modal-section-label">Compatible with: <strong>{{ selectedDetailProfileName }}</strong></p>
+              <p id="maturity-section-label" class="modal-section-label">Suitability details</p>
               <div class="compatibility-actions">
                 <span
                   v-if="contentRatingLabel"
@@ -279,7 +273,6 @@
                   :aria-label="contentRatingAriaLabel"
                 >{{ contentRatingLabel }}</span>
                 <UiBadge v-if="movie.mpa" tone="gold">{{ movie.mpa }}</UiBadge>
-                <span class="compatibility-pill compatibility-pill--warn">Unknown</span>
                 <a
                   v-if="movie.id"
                   :href="`https://www.imdb.com/title/${movie.id}/parentalguide`"
@@ -519,7 +512,7 @@ import { GENRES, PROVIDERS, useMovieStore } from "@/stores/movies.js";
 import { MATURITY_CATEGORIES, SEVERITY_LABELS, getScore, scoreCssClass } from "@/maturity.js";
 import { useUserStore } from "@/stores/user.js";
 import { lockBodyScroll, unlockBodyScroll, trapTabKey } from "@/composables/modalGuards.js";
-import { profileById, profileLabel } from "@/lib/maturityProfiles.js";
+import { profileById } from "@/lib/maturityProfiles.js";
 import { AVAILABILITY_CONTEXT_COPY } from "@/lib/availabilityContext.js";
 import { resolveCustomProviders } from "@/lib/customProviders.js";
 import { fetchOhanaTitleDetail, getOhanaApiConfig } from "@/lib/ohanaApi.js";
@@ -549,9 +542,7 @@ let apiLoadToken = 0;
 const titleId = computed(() => props.movie?.id ? `movie-dialog-title-${props.movie.id}` : "movie-dialog-title");
 const overviewTextId = computed(() => props.movie?.id ? `movie-overview-${props.movie.id}` : "movie-overview");
 const selectedDetailProfile = computed(() => profileById(movieStore.maturityProfiles, selectedDetailProfileId.value));
-const selectedDetailProfileName = computed(() => profileLabel(movieStore.maturityProfiles, selectedDetailProfileId.value));
 const selectedMaturityValues = computed(() => selectedDetailProfile.value?.values ?? movieStore.maxMaturityCat);
-const hasSelectedMaturityLimits = computed(() => selectedMaturityValues.value.some(v => v >= 0));
 const compatibilityRows = computed(() => {
   if (props.movie?.mat === undefined) return [];
   return MATURITY_CATEGORIES.map((cat, i) => {
@@ -590,7 +581,6 @@ const compatibilityRows = computed(() => {
     };
   });
 });
-const compatibilityOk = computed(() => compatibilityRows.value.length > 0 && compatibilityRows.value.every(row => !row.exceeded && !row.unknown));
 function profileFitsMovie(profile) {
   if (!profile?.values?.some(v => v >= 0)) return true;
   if (props.movie?.mat === undefined) return false;
@@ -1859,11 +1849,6 @@ onUnmounted(() => {
   margin-bottom: 12px;
 }
 .compatibility-summary strong { color: var(--white); }
-.compatibility-subcopy {
-  margin: 3px 0 0;
-  color: var(--muted);
-  font-size: 12px;
-}
 .compatibility-actions {
   display: flex;
   align-items: center;
@@ -1889,19 +1874,10 @@ onUnmounted(() => {
   background: rgba(255,255,255,0.045);
   color: rgba(240,238,232,0.58);
 }
-.compatibility-pill {
-  flex-shrink: 0;
-  padding: 5px 9px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 800;
-}
-.compatibility-pill--ok { background: rgba(45,212,191,0.12); color: var(--teal); }
-.compatibility-pill--warn { background: rgba(245,200,66,0.13); color: #f5c842; }
-.compatibility-grid { display: grid; gap: 8px; }
+.compatibility-grid { display: grid; gap: 14px; }
 .compatibility-row {
   display: grid;
-  gap: 6px;
+  gap: 7px;
   color: rgba(240,238,232,0.82);
   font-size: 12px;
 }
@@ -1960,7 +1936,8 @@ onUnmounted(() => {
 }
 .compatibility-tags {
   display: flex;
-  gap: 5px;
+  gap: 6px;
+  padding-top: 1px;
   overflow-x: auto;
   overscroll-behavior-inline: contain;
   scrollbar-width: none;

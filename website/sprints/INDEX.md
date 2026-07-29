@@ -4,20 +4,23 @@ Focused active sprint plans live in dated sprint-set folders under this director
 
 ## Status
 
-- Current planning status: brand-new issue-driven cycle is active in [`2026-07-29-no-open-website-issues/`](2026-07-29-no-open-website-issues/); there are no open working-fork or upstream issues to map.
-- Current implementation phase: no executable website sprint is planned.
-- Next executable sprint: None — wait for a new `Website - ...` / website-scoped issue, PMT feedback item, or explicit Alex request.
-- Latest planning update: 2026-07-29 23:53 Europe/Madrid.
+- Current planning status: corrected brand-new issue-driven cycle is active in [`2026-07-30-open-issues-41-43/`](2026-07-30-open-issues-41-43/) after superseding the incorrect no-open-issues marker.
+- Current implementation phase: Sprint 038 complete; Sprint 039 is next, one sprint at a time.
+- Next executable sprint: [Sprint 039 — Movie detail share action](2026-07-30-open-issues-41-43/sprint-039-movie-detail-share-action.md).
+- Latest planning update: 2026-07-30 00:09 Europe/Madrid.
 
 ## Roadmap
 
 | Sprint | Outcome | Status | Depends on |
 | --- | --- | --- | --- |
-| _None_ | No open website-scoped issues exist in the working fork, so no sprint file was created. | `blocked` | New website issue, PMT feedback, or Alex request |
+| [Sprint 038](2026-07-30-open-issues-41-43/sprint-038-movie-detail-suitability-clutter.md) | Remove redundant movie-detail suitability copy and improve category spacing. | `complete` | Current `MovieModal.vue` maturity/detail layout |
+| [Sprint 039](2026-07-30-open-issues-41-43/sprint-039-movie-detail-share-action.md) | Add a direct share icon button for the current movie detail link. | `ready` | Sprint 038 complete |
+| [Sprint 040](2026-07-30-open-issues-41-43/sprint-040-title-country-api-and-detail.md) | Expose TMDB title country/origin data through the API and show it calmly in movie detail. | `ready` | Current Ohana API title-detail mapper; Sprint 038 preferred for reduced detail clutter |
 
 ## Active sprint set
 
-- Sprint-set index: [`2026-07-29-no-open-website-issues/INDEX.md`](2026-07-29-no-open-website-issues/INDEX.md)
+- Sprint-set index: [`2026-07-30-open-issues-41-43/INDEX.md`](2026-07-30-open-issues-41-43/INDEX.md)
+- Superseded no-open-issues marker: [`archive/2026-07-29-no-open-website-issues/`](archive/2026-07-29-no-open-website-issues/)
 - Archived completed sprint set: [`archive/2026-07-28-open-issues-37-39/`](archive/2026-07-28-open-issues-37-39/)
 - Earlier archived sprint set: [`archive/2026-07-28-open-issues-33-36/`](archive/2026-07-28-open-issues-33-36/)
 - Earlier archived no-open-issues marker: [`archive/2026-07-28-no-open-website-issues/`](archive/2026-07-28-no-open-website-issues/)
@@ -26,35 +29,39 @@ Focused active sprint plans live in dated sprint-set folders under this director
 
 ## Issue mapping
 
-Open issue query for `origin` / `greg-26/static` returned no open issues during this planning run. Open issue query for `upstream` / `ohanamovies/static` also returned no open issues.
+`origin` / `greg-26/static` is the active tracker for this planning cycle. `upstream` / `ohanamovies/static` was also checked and has no open issues.
 
 | Issue | Sprint coverage | Planning note |
 | --- | --- | --- |
-| _None_ | _None_ | No website issue remains unplanned; no issue comments are needed. |
+| [#41 Country of movie](https://github.com/greg-26/static/issues/41) | [Sprint 040](2026-07-30-open-issues-41-43/sprint-040-title-country-api-and-detail.md) | API-first country/origin metadata plus quiet movie-detail display. |
+| [#42 Share movie icon button](https://github.com/greg-26/static/issues/42) | [Sprint 039](2026-07-30-open-issues-41-43/sprint-039-movie-detail-share-action.md) | Direct share icon; no 3-dot menu for a single action. |
+| [#43 Movie detail page clutter](https://github.com/greg-26/static/issues/43) | [Sprint 038](2026-07-30-open-issues-41-43/sprint-038-movie-detail-suitability-clutter.md) | First executable sprint because it removes noise before adding new actions/metadata. |
 
 ## Decisions and assumptions
 
-- Working-fork issues (`origin`, currently `greg-26/static`) remain the active issue tracker for agent-driven website work.
-- Sprint numbers continue after completed Sprint 037; do not renumber completed sprints.
-- Completed #37–#39 history is archived unchanged in [`archive/2026-07-28-open-issues-37-39/`](archive/2026-07-28-open-issues-37-39/).
-- Do not invent implementation work without an open issue, PMT-approved feedback item, or explicit Alex request.
+- Working-fork issues (`origin`, currently `greg-26/static`) are the active issue tracker for agent-driven website work.
+- The previous active folder [`archive/2026-07-29-no-open-website-issues/`](archive/2026-07-29-no-open-website-issues/) is preserved as superseded history because it incorrectly planned against an empty issue set.
+- Sprint numbers continue after completed Sprint 037; do not renumber completed or archived sprint files.
+- #43 should land before #42/#41 so the detail page is quieter before adding a share action or country metadata.
+- Country/origin metadata should use the existing Ohana API detail flow, not a new client-side TMDB call.
 
 ## Open questions
 
-None. The current state is empty, not ambiguous.
+- For #41, recommended default is to expose a normalized `countries` array with ISO code and display name when available, preferring TMDB `production_countries` for movies and falling back to `origin_country`; TV uses `origin_country`.
+- For #42, recommended default is `navigator.share` with clipboard fallback and brief local feedback when Web Share is unavailable.
 
 ## Completion criteria
 
-The current no-open-issues marker remains valid until:
+This open-issue tranche is complete when:
 
-- a new website-scoped issue opens in the working fork;
-- PMT links new feedback that needs implementation planning; or
-- Alex explicitly asks for a new non-issue sprint.
+- #41, #42, and #43 each have implementation evidence comments and are closed by the implementation completion workflow.
+- Movie detail remains mobile-calm after clutter cleanup, share action, and country metadata additions.
+- Relevant API tests and website build pass for implemented slices.
 
 ## Maintenance rules
 
 - One active sprint-set folder at a time.
-- Keep no-open-issues markers intentionally small; no placeholder sprint files.
+- Keep sprint files scoped to their issue(s); no unrelated detail-page redesign.
 - Keep `VISION_EXECUTION.md` as a router; do not duplicate sprint status there.
 - Link reports from `docs/vision-execution/review-index.md` instead of copying report contents into sprint files.
 - Human feedback and new issues interrupt routine automation.

@@ -17,7 +17,8 @@ Historical human/PMT feedback is now PMT-owned and lives under `reports/pmt/huma
 
 Historical planning reports may live under the old `reports/principal-engineer/` path; new planning reports belong in `reports/sprint-planner/`.
 
-- [`reports/sprint-planner/2026-07-29-sprint-planner-no-open-website-issues.md`](../../reports/sprint-planner/2026-07-29-sprint-planner-no-open-website-issues.md) — brand-new active sprint folder created after archiving completed Sprint 036–037 set; no open website issues remain to plan.
+- [`reports/sprint-planner/2026-07-30-sprint-planner-open-issues-41-43.md`](../../reports/sprint-planner/2026-07-30-sprint-planner-open-issues-41-43.md) — corrective active sprint folder for working-fork issues #41–#43; supersedes the invalid no-open-issues marker.
+- [`reports/sprint-planner/2026-07-29-sprint-planner-no-open-website-issues.md`](../../reports/sprint-planner/2026-07-29-sprint-planner-no-open-website-issues.md) — superseded no-open-issues marker; origin working fork later showed open website issues #41–#43.
 - [`reports/sprint-planner/2026-07-28-sprint-planner-open-issues-33-36.md`](../../reports/sprint-planner/2026-07-28-sprint-planner-open-issues-33-36.md) — current open website issues #33–#36 mapped to Sprints 033–035; no-open-issues marker archived.
 - [`reports/sprint-planner/2026-07-28-sprint-planner-no-open-website-issues.md`](../../reports/sprint-planner/2026-07-28-sprint-planner-no-open-website-issues.md) — brand-new active sprint folder created after archiving completed Sprint 028–032 set; no open working-fork website issues remain to plan.
 - [`reports/sprint-planner/2026-07-28-sprint-planner-open-issues-25-32.md`](../../reports/sprint-planner/2026-07-28-sprint-planner-open-issues-25-32.md) — completed open issue tranche #25–#32 mapped to Sprint 028–032 folder and completed Sprint 023–027 set archived.
