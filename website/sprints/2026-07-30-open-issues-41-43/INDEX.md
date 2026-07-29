@@ -3,8 +3,8 @@
 ## Status
 
 - Planning status: corrected brand-new issue-driven cycle opened at 2026-07-30 00:09 Europe/Madrid after superseding the invalid no-open-issues marker.
-- Implementation phase: Sprint 038 complete; implementation should take one sprint at a time.
-- Next executable sprint: [Sprint 039 — Movie detail share action](sprint-039-movie-detail-share-action.md).
+- Implementation phase: Sprints 038–039 complete; implementation should take one sprint at a time.
+- Next executable sprint: [Sprint 040 — Title country API and detail metadata](sprint-040-title-country-api-and-detail.md).
 - Latest planning update: 2026-07-30 00:09 Europe/Madrid.
 
 ## Roadmap
@@ -12,7 +12,7 @@
 | Sprint | Outcome | Status | Depends on |
 | --- | --- | --- | --- |
 | [Sprint 038](sprint-038-movie-detail-suitability-clutter.md) | Remove redundant movie-detail suitability copy and improve category spacing. | `complete` | Current `MovieModal.vue` maturity/detail layout |
-| [Sprint 039](sprint-039-movie-detail-share-action.md) | Add a direct share icon button for the current movie detail link. | `ready` | Sprint 038 complete |
+| [Sprint 039](sprint-039-movie-detail-share-action.md) | Add a direct share icon button for the current movie detail link. | `complete` | Sprint 038 complete |
 | [Sprint 040](sprint-040-title-country-api-and-detail.md) | Expose TMDB title country/origin data through the API and show it calmly in movie detail. | `ready` | Current Ohana API title-detail mapper; Sprint 038 preferred for reduced detail clutter |
 
 ## Issue mapping

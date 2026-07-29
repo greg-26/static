@@ -67,43 +67,61 @@
         </div>
 
         <div class="modal-body">
-          <div class="modal-meta">
-            <span class="modal-year">{{ movie.y }}</span>
-            <span class="modal-rating">★ {{ movie.r?.toFixed(1) }}</span>
-            <a
+          <div class="modal-topline">
+            <div class="modal-meta">
+              <span class="modal-year">{{ movie.y }}</span>
+              <span class="modal-rating">★ {{ movie.r?.toFixed(1) }}</span>
+              <a
+                v-if="movie.id"
+                :href="`https://www.imdb.com/title/${movie.id}/`"
+                target="_blank"
+                rel="noopener"
+                class="imdb-link"
+                title="View on IMDb"
+              >
+                <img src="https://upload.wikimedia.org/wikipedia/commons/6/69/IMDB_Logo_2016.svg" alt="IMDb" class="imdb-logo" />
+              </a>
+
+              <a
+                v-if="tmdbExternalUrl"
+                :href="tmdbExternalUrl"
+                target="_blank"
+                rel="noopener"
+                class="ext-site-link ext-site-link--tmdb"
+                title="View on TMDB"
+                aria-label="View on TMDB"
+              >
+                <img src="https://upload.wikimedia.org/wikipedia/commons/8/89/Tmdb.new.logo.svg" alt="TMDB" class="imdb-logo imdb-logo--tmdb" />
+              </a>
+
+              <a v-if="movie.ts || movie.t"
+                :href="`https://www.filmaffinity.com/es/search.php?stype=title&stext=${encodeURIComponent(movie.ts || movie.t)}`"
+                target="_blank"
+                rel="noopener"
+                class="ext-site-link"
+                title="Ver en FilmAffinity"
+              >
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/59/FilmAffinity_logo.svg" alt="FilmAffinity" class="imdb-logo" />
+              </a>
+              <UiBadge v-if="movie.s" tone="success">TV Season</UiBadge>
+            </div>
+            <button
               v-if="movie.id"
-              :href="`https://www.imdb.com/title/${movie.id}/`"
-              target="_blank"
-              rel="noopener"
-              class="imdb-link"
-              title="View on IMDb"
+              type="button"
+              class="modal-share-button"
+              :aria-label="`Share ${movie.t}`"
+              :title="shareFeedback || 'Share movie'"
+              @click="shareMovie"
             >
-              <img src="https://upload.wikimedia.org/wikipedia/commons/6/69/IMDB_Logo_2016.svg" alt="IMDb" class="imdb-logo" />
-            </a>
-
-            <a
-              v-if="tmdbExternalUrl"
-              :href="tmdbExternalUrl"
-              target="_blank"
-              rel="noopener"
-              class="ext-site-link ext-site-link--tmdb"
-              title="View on TMDB"
-              aria-label="View on TMDB"
-            >
-              <img src="https://upload.wikimedia.org/wikipedia/commons/8/89/Tmdb.new.logo.svg" alt="TMDB" class="imdb-logo imdb-logo--tmdb" />
-            </a>
-
-            <a v-if="movie.ts || movie.t"
-              :href="`https://www.filmaffinity.com/es/search.php?stype=title&stext=${encodeURIComponent(movie.ts || movie.t)}`"
-              target="_blank"
-              rel="noopener"
-              class="ext-site-link"
-              title="Ver en FilmAffinity"
-            >
-              <img src="https://upload.wikimedia.org/wikipedia/commons/5/59/FilmAffinity_logo.svg" alt="FilmAffinity" class="imdb-logo" />
-            </a>
-            <UiBadge v-if="movie.s" tone="success">TV Season</UiBadge>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 6l-4-4-4 4" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v13" />
+              </svg>
+              <span class="sr-only">Share movie</span>
+            </button>
           </div>
+          <p v-if="shareFeedback" class="modal-share-feedback" role="status" aria-live="polite">{{ shareFeedback }}</p>
           <h2 :id="titleId" class="modal-title">{{ movie.t }}</h2>
 
           <!-- Primary user decision actions: save/watch state should be reachable before maturity detail. -->
@@ -532,12 +550,14 @@ const posterViewerCloseRef = ref(null);
 const previouslyFocused = ref(null);
 const posterViewerOpen = ref(false);
 const selectedDetailProfileId = ref(movieStore.activeMaturityProfileId);
+const shareFeedback = ref("");
 const availabilityContextCopy = AVAILABILITY_CONTEXT_COPY;
 // Parent-guide tags live in the optional static enrichment file. Local builds may
 // not ship it, so mirror the movies.json fallback pattern before omitting tags.
 const EXTRA_DETAIL_SOURCES = ["/extra.json", "https://ohana.tv/extra.json"];
 let bodyLocked = false;
 let apiLoadToken = 0;
+let shareFeedbackTimer = null;
 
 const titleId = computed(() => props.movie?.id ? `movie-dialog-title-${props.movie.id}` : "movie-dialog-title");
 const overviewTextId = computed(() => props.movie?.id ? `movie-overview-${props.movie.id}` : "movie-overview");
@@ -625,6 +645,58 @@ function openPosterViewer() {
 function closePosterViewer() {
   posterViewerOpen.value = false;
   nextTick(() => posterButtonRef.value?.focus({ preventScroll: true }));
+}
+
+function movieShareUrl() {
+  const imdbId = props.movie?.id;
+  if (!imdbId) return "";
+  if (typeof window === "undefined") return `?movie=${encodeURIComponent(imdbId)}`;
+
+  const url = new URL(window.location.href);
+  url.searchParams.set("movie", imdbId);
+  return url.toString();
+}
+
+function setShareFeedback(message) {
+  shareFeedback.value = message;
+  if (shareFeedbackTimer) window.clearTimeout(shareFeedbackTimer);
+  shareFeedbackTimer = window.setTimeout(() => {
+    shareFeedback.value = "";
+    shareFeedbackTimer = null;
+  }, 1600);
+}
+
+async function shareMovie() {
+  const url = movieShareUrl();
+  if (!url) return;
+
+  const title = props.movie?.t || "Ohana TV title";
+  const shareData = { title, text: title, url };
+  try {
+    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+      await navigator.share(shareData);
+      setShareFeedback("Shared");
+      return;
+    }
+    if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(url);
+      setShareFeedback("Link copied");
+      return;
+    }
+    setShareFeedback("Copy unavailable");
+  } catch (error) {
+    if (error?.name === "AbortError") return;
+    try {
+      if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+        setShareFeedback("Link copied");
+        return;
+      }
+    } catch {
+      // Fall through to visible fallback state.
+    }
+    setShareFeedback("Share unavailable");
+  }
 }
 
 function handlePosterViewerKeydown(event) {
@@ -949,6 +1021,11 @@ watch(() => props.movie, (movie) => {
     heroImageLoaded.value = false;
     overviewExpanded.value = false;
     posterViewerOpen.value = false;
+    shareFeedback.value = "";
+    if (shareFeedbackTimer) {
+      window.clearTimeout(shareFeedbackTimer);
+      shareFeedbackTimer = null;
+    }
     brokenCastProfileUrls.value = new Set();
     brokenCollectionPosterUrls.value = new Set();
     if (!bodyLocked) {
@@ -978,6 +1055,11 @@ watch(() => props.movie, (movie) => {
     heroImageLoaded.value = false;
     overviewExpanded.value = false;
     posterViewerOpen.value = false;
+    shareFeedback.value = "";
+    if (shareFeedbackTimer) {
+      window.clearTimeout(shareFeedbackTimer);
+      shareFeedbackTimer = null;
+    }
     if (bodyLocked) {
       unlockBodyScroll();
       bodyLocked = false;
@@ -988,6 +1070,7 @@ watch(() => props.movie, (movie) => {
 
 onUnmounted(() => {
   if (bodyLocked) unlockBodyScroll();
+  if (shareFeedbackTimer) window.clearTimeout(shareFeedbackTimer);
 });
 </script>
 
@@ -1184,9 +1267,48 @@ onUnmounted(() => {
 
 .modal-body { flex: 1; min-width: 0; }
 
+.modal-topline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
 .modal-meta {
   display: flex; gap: 12px; align-items: center;
-  margin-bottom: 8px; flex-wrap: wrap;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.modal-share-button {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: #ffffff;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.modal-share-button:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.22);
+}
+.modal-share-button:active { transform: scale(0.96); }
+.modal-share-button:focus-visible {
+  outline: 3px solid rgba(45,212,191,0.72);
+  outline-offset: 3px;
+}
+.modal-share-button svg { width: 20px; height: 20px; }
+.modal-share-feedback {
+  margin: -3px 0 8px;
+  color: var(--teal);
+  font-size: 12px;
+  font-weight: 800;
 }
 .modal-year { font-size: 13px; color: var(--muted); }
 .modal-rating { font-size: 14px; font-weight: 500; color: var(--gold); }
@@ -2083,6 +2205,17 @@ onUnmounted(() => {
     box-shadow: 0 8px 24px rgba(0,0,0,0.32);
   }
   .modal-close--mobile svg { width: 18px; height: 18px; }
+  .modal-share-button {
+    position: fixed;
+    top: calc(10px + env(safe-area-inset-top, 0px));
+    right: 12px;
+    z-index: 120;
+    width: 44px;
+    height: 44px;
+    background: rgba(8,8,16,0.82);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.32);
+  }
+  .modal-share-feedback { text-align: right; }
   .overview-text--clamped { -webkit-line-clamp: 3; }
   .api-collection-item { flex-basis: 108px; }
   .api-season-card { flex-basis: 172px; }
