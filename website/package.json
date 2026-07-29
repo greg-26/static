@@ -25,7 +25,8 @@
     "qa:sprint21": "node scripts/qa-sprint21-cast-collection-media.mjs",
     "qa:sprint23": "node scripts/qa-sprint23-detail-actions-poster.mjs",
     "qa:sprint36": "node scripts/qa-sprint36-poster-expand-affordance.mjs",
-    "qa:sprint37": "node scripts/qa-sprint37-content-ratings.mjs"
+    "qa:sprint37": "node scripts/qa-sprint37-content-ratings.mjs",
+    "qa:issue44": "node scripts/qa-issue44-share-cx.mjs"
   },
   "dependencies": {
     "fuse.js": "^7.0.0",

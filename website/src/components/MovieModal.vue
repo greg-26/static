@@ -667,37 +667,87 @@ function setShareFeedback(message) {
   }, 1600);
 }
 
+async function copyMovieShareLink(url) {
+  if (!url) return false;
+
+  try {
+    if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(url);
+      return true;
+    }
+  } catch {
+    // Try the gesture-driven fallback below. Clipboard API can be unavailable on HTTP dev URLs.
+  }
+
+  if (typeof document === "undefined") return false;
+
+  const textArea = document.createElement("textarea");
+  textArea.value = url;
+  textArea.setAttribute("readonly", "");
+  textArea.style.position = "fixed";
+  textArea.style.top = "0";
+  textArea.style.left = "0";
+  textArea.style.width = "1px";
+  textArea.style.height = "1px";
+  textArea.style.opacity = "0";
+
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  textArea.setSelectionRange(0, textArea.value.length);
+
+  try {
+    return document.execCommand?.("copy") === true;
+  } catch {
+    return false;
+  } finally {
+    document.body.removeChild(textArea);
+  }
+}
+
+function showManualShareLink(url) {
+  if (typeof window === "undefined" || typeof window.prompt !== "function") return false;
+  window.prompt("Copy movie link", url);
+  return true;
+}
+
+async function fallbackToMovieLink(url) {
+  if (await copyMovieShareLink(url)) {
+    setShareFeedback("Link copied");
+    return true;
+  }
+  if (showManualShareLink(url)) {
+    setShareFeedback("Copy link manually");
+    return true;
+  }
+  return false;
+}
+
 async function shareMovie() {
   const url = movieShareUrl();
-  if (!url) return;
+  if (!url) {
+    setShareFeedback("Share unavailable");
+    return;
+  }
 
   const title = props.movie?.t || "Ohana TV title";
   const shareData = { title, text: title, url };
-  try {
-    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
-      await navigator.share(shareData);
-      setShareFeedback("Shared");
-      return;
-    }
-    if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(url);
-      setShareFeedback("Link copied");
-      return;
-    }
-    setShareFeedback("Copy unavailable");
-  } catch (error) {
-    if (error?.name === "AbortError") return;
+
+  if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
     try {
-      if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(url);
-        setShareFeedback("Link copied");
+      if (typeof navigator.canShare !== "function" || navigator.canShare(shareData)) {
+        await navigator.share(shareData);
+        setShareFeedback("Shared");
         return;
       }
-    } catch {
-      // Fall through to visible fallback state.
+    } catch (error) {
+      if (error?.name === "AbortError") return;
+      // Fall back to copying the exact movie link when native sharing fails.
     }
-    setShareFeedback("Share unavailable");
   }
+
+  if (await fallbackToMovieLink(url)) return;
+  setShareFeedback("Share unavailable");
 }
 
 function handlePosterViewerKeydown(event) {
