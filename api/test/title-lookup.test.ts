@@ -24,6 +24,7 @@ const cachedTitle: TitleResponse = {
   release: { date: null, year: null },
   runtime: { minutes: null },
   genres: [],
+  countries: [],
   rating: { average: null, voteCount: 0 },
   cast: [],
   crew: { directors: [], creators: [] },

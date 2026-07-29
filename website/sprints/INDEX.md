@@ -4,9 +4,9 @@ Focused active sprint plans live in dated sprint-set folders under this director
 
 ## Status
 
-- Current planning status: corrected brand-new issue-driven cycle is active in [`2026-07-30-open-issues-41-43/`](2026-07-30-open-issues-41-43/) after superseding the incorrect no-open-issues marker.
-- Current implementation phase: Sprints 038–039 complete; Sprint 040 is next, one sprint at a time.
-- Next executable sprint: [Sprint 040 — Title country API and detail metadata](2026-07-30-open-issues-41-43/sprint-040-title-country-api-and-detail.md).
+- Current planning status: corrected brand-new issue-driven cycle in [`2026-07-30-open-issues-41-43/`](2026-07-30-open-issues-41-43/) is complete after superseding the incorrect no-open-issues marker.
+- Current implementation phase: Sprints 038–040 complete.
+- Next executable sprint: none — this corrected issue tranche is complete.
 - Latest planning update: 2026-07-30 00:09 Europe/Madrid.
 
 ## Roadmap
@@ -15,7 +15,7 @@ Focused active sprint plans live in dated sprint-set folders under this director
 | --- | --- | --- | --- |
 | [Sprint 038](2026-07-30-open-issues-41-43/sprint-038-movie-detail-suitability-clutter.md) | Remove redundant movie-detail suitability copy and improve category spacing. | `complete` | Current `MovieModal.vue` maturity/detail layout |
 | [Sprint 039](2026-07-30-open-issues-41-43/sprint-039-movie-detail-share-action.md) | Add a direct share icon button for the current movie detail link. | `complete` | Sprint 038 complete |
-| [Sprint 040](2026-07-30-open-issues-41-43/sprint-040-title-country-api-and-detail.md) | Expose TMDB title country/origin data through the API and show it calmly in movie detail. | `ready` | Current Ohana API title-detail mapper; Sprint 038 preferred for reduced detail clutter |
+| [Sprint 040](2026-07-30-open-issues-41-43/sprint-040-title-country-api-and-detail.md) | Expose TMDB title country/origin data through the API and show it calmly in movie detail. | `complete` | Current Ohana API title-detail mapper; Sprint 038 preferred for reduced detail clutter |
 
 ## Active sprint set
 
@@ -52,11 +52,11 @@ Focused active sprint plans live in dated sprint-set folders under this director
 
 ## Completion criteria
 
-This open-issue tranche is complete when:
+This open-issue tranche is complete.
 
 - #41, #42, and #43 each have implementation evidence comments and are closed by the implementation completion workflow.
 - Movie detail remains mobile-calm after clutter cleanup, share action, and country metadata additions.
-- Relevant API tests and website build pass for implemented slices.
+- Relevant API tests and website build passed for implemented slices.
 
 ## Maintenance rules
 

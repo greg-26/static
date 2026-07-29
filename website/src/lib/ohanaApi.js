@@ -202,6 +202,21 @@ function normalizeContentRating(contentRating) {
   };
 }
 
+function normalizeCountries(countries) {
+  if (!Array.isArray(countries)) return [];
+  const seen = new Set();
+  return countries
+    .map(country => {
+      if (!country || typeof country !== "object") return null;
+      const code = typeof country.code === "string" ? country.code.trim().toUpperCase() : "";
+      if (!code || seen.has(code)) return null;
+      seen.add(code);
+      const name = typeof country.name === "string" && country.name.trim() ? country.name.trim() : null;
+      return { code, name };
+    })
+    .filter(Boolean);
+}
+
 function normalizeTitleDetail(data) {
   if (!data || typeof data !== "object") return null;
   const cast = Array.isArray(data.cast) ? data.cast.map(normalizeCastMember).filter(Boolean).slice(0, 8) : [];
@@ -228,6 +243,7 @@ function normalizeTitleDetail(data) {
     providerRegion: data.streamingProviders?.region || null,
     providerGroups: normalizeProviderGroups(data.streamingProviders),
     contentRating: normalizeContentRating(data.contentRating),
+    countries: normalizeCountries(data.countries),
     collection: data.collection ? {
       id: data.collection.id || null,
       name: data.collection.name || "Collection",

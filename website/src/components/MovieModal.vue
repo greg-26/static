@@ -104,6 +104,7 @@
                 <img src="https://upload.wikimedia.org/wikipedia/commons/5/59/FilmAffinity_logo.svg" alt="FilmAffinity" class="imdb-logo" />
               </a>
               <UiBadge v-if="movie.s" tone="success">TV Season</UiBadge>
+              <span v-if="apiCountryLabel" class="modal-country" :title="apiCountryTitle">{{ apiCountryLabel }}</span>
             </div>
             <button
               v-if="movie.id"
@@ -811,6 +812,14 @@ const contentRatingAriaLabel = computed(() => {
   const fallbackCopy = apiContentRating.value.fallback ? "fallback region" : "current country";
   return `TMDB content rating ${apiContentRating.value.rating}, ${apiContentRating.value.region} ${fallbackCopy}`;
 });
+const apiCountries = computed(() => apiDetail.value?.countries || []);
+const apiCountryNames = computed(() => apiCountries.value.map(country => country.name || country.code).filter(Boolean));
+const apiCountryLabel = computed(() => {
+  if (!apiCountryNames.value.length) return null;
+  const label = apiCountryNames.value.slice(0, 2).join(", ");
+  return `${apiCountryNames.value.length > 1 ? "Countries" : "Country"} ${label}${apiCountryNames.value.length > 2 ? ` +${apiCountryNames.value.length - 2}` : ""}`;
+});
+const apiCountryTitle = computed(() => apiCountryNames.value.length ? `Country metadata from Ohana API: ${apiCountryNames.value.join(", ")}` : null);
 
 const apiCastPreview = computed(() => apiDetail.value?.cast?.slice(0, 6) || []);
 const apiCollectionItems = computed(() => apiDetail.value?.collection?.items || []);
@@ -1312,6 +1321,12 @@ onUnmounted(() => {
 }
 .modal-year { font-size: 13px; color: var(--muted); }
 .modal-rating { font-size: 14px; font-weight: 500; color: var(--gold); }
+.modal-country {
+  font-size: 12px;
+  color: rgba(255,255,255,0.68);
+  font-weight: 700;
+  white-space: nowrap;
+}
 .imdb-link,
 .ext-site-link {
   display: inline-flex;

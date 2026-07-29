@@ -5,6 +5,11 @@ export interface TmdbGenre {
   name: string;
 }
 
+export interface TmdbCountry {
+  iso_3166_1?: string | null;
+  name?: string | null;
+}
+
 export interface TmdbImage {
   file_path?: string | null;
   width?: number | null;
@@ -95,6 +100,8 @@ export interface TmdbMovieForMapping {
   overview?: string | null;
   release_date?: string | null;
   runtime?: number | null;
+  origin_country?: string[] | null;
+  production_countries?: TmdbCountry[] | null;
   genres?: TmdbGenre[] | null;
   vote_average?: number | null;
   vote_count?: number | null;
@@ -114,6 +121,7 @@ export interface TmdbSeriesForMapping {
   original_name?: string | null;
   overview?: string | null;
   first_air_date?: string | null;
+  origin_country?: string[] | null;
   number_of_seasons?: number | null;
   seasons?: TmdbSeason[] | null;
   episode_run_time?: number[] | null;

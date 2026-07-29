@@ -74,6 +74,11 @@ export interface ContentRating {
   fallback: boolean;
 }
 
+export interface TitleCountry {
+  code: string;
+  name: string | null;
+}
+
 export interface TitleResponse {
   imdbId: string;
   type: TitleType;
@@ -88,6 +93,7 @@ export interface TitleResponse {
     minutes: number | null;
   };
   genres: string[];
+  countries: TitleCountry[];
   rating: {
     average: number | null;
     voteCount: number;

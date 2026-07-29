@@ -8,6 +8,8 @@ const movieFixture: TmdbMovieForMapping = {
   overview: "A hacker discovers reality is a simulation.",
   release_date: "1999-03-31",
   runtime: 136,
+  origin_country: ["US"],
+  production_countries: [{ iso_3166_1: "US", name: "United States of America" }],
   genres: [
     { id: 28, name: "Action" },
     { id: 878, name: "Science Fiction" },
@@ -67,6 +69,7 @@ const seriesFixture: TmdbSeriesForMapping = {
   original_name: "Game of Thrones",
   overview: "Nine noble families fight for control of Westeros.",
   first_air_date: "2011-04-17",
+  origin_country: ["US", "GB"],
   number_of_seasons: 8,
   seasons: [
     { id: 3624, season_number: 0, name: "Specials", overview: "Behind the scenes.", episode_count: 272, air_date: "2010-12-05", poster_path: "/got-specials.jpg" },
@@ -117,6 +120,7 @@ describe("TMDB title mappers", () => {
       release: { date: "1999-03-31", year: 1999 },
       runtime: { minutes: 136 },
       genres: ["Action", "Science Fiction"],
+      countries: [{ code: "US", name: "United States of America" }],
       rating: { average: 8.2, voteCount: 25000 },
       cast: [
         { id: "6384", name: "Keanu Reeves", roles: ["Neo"], episodeCount: null },
@@ -200,6 +204,7 @@ describe("TMDB title mappers", () => {
       title: "Game of Thrones",
       release: { date: "2011-04-17", year: 2011 },
       runtime: { minutes: 60 },
+      countries: [{ code: "US", name: null }, { code: "GB", name: null }],
       cast: [
         {
           id: "22970",
@@ -265,6 +270,16 @@ describe("TMDB title mappers", () => {
     expect(series.contentRating).toEqual({ rating: "TV-14", region: "US", source: "tmdb:tv-content-ratings", fallback: true });
   });
 
+  it("uses movie origin_country when production countries are missing", () => {
+    const title = mapTmdbMovieToTitle({
+      external_ids: { imdb_id: "tt0000003" },
+      origin_country: ["jp", "US", "JP", ""],
+      production_countries: [],
+    });
+
+    expect(title.countries).toEqual([{ code: "JP", name: null }, { code: "US", name: null }]);
+  });
+
   it("does not crash when optional TMDB fields are missing or null", () => {
     const title = mapTmdbMovieToTitle({
       external_ids: { imdb_id: "tt0000001" },
@@ -289,6 +304,7 @@ describe("TMDB title mappers", () => {
       release: { date: null, year: null },
       runtime: { minutes: null },
       genres: [],
+      countries: [],
       rating: { average: null, voteCount: 0 },
       cast: [],
       crew: { directors: [], creators: [] },

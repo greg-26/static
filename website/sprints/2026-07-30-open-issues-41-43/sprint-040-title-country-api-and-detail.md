@@ -2,7 +2,7 @@
 
 ## Status
 
-ready
+complete
 
 ## Outcome
 
@@ -70,11 +70,11 @@ TMDB movie detail can provide `origin_country` and `production_countries`; TMDB 
 
 ## Acceptance criteria
 
-- [ ] API title response includes normalized country/origin metadata when TMDB provides it.
-- [ ] Movie mapping uses TMDB `production_countries` when available and falls back to `origin_country`.
-- [ ] TV mapping uses TMDB `origin_country`.
-- [ ] Website movie detail shows country metadata when available and hides it when unavailable.
-- [ ] The new metadata does not create another large detail container or push key actions below the fold unnecessarily on mobile.
+- [x] API title response includes normalized country/origin metadata when TMDB provides it.
+- [x] Movie mapping uses TMDB `production_countries` when available and falls back to `origin_country`.
+- [x] TV mapping uses TMDB `origin_country`.
+- [x] Website movie detail shows country metadata when available and hides it when unavailable.
+- [x] The new metadata does not create another large detail container or push key actions below the fold unnecessarily on mobile.
 
 ## Required tests
 
@@ -95,7 +95,13 @@ git diff --check
 
 ## Handoff
 
-Comment on #41 with API field shape, changed files, test/build evidence, and any deployment/cache caveat. Close #41 only after implementation evidence confirms the issue is fully satisfied.
+Completed 2026-07-30 01:40 Europe/Madrid.
+
+- Added API `countries: { code, name }[]` metadata to `TitleResponse`.
+- Movie mapper uses TMDB `production_countries` with names when available, falling back to `origin_country` ISO codes; TV mapper uses `origin_country` ISO codes.
+- Website API client normalizes `countries`, and `MovieModal.vue` renders a terse inline `Country/Countries` metadata label near existing title metadata without a new detail box.
+- Verification: `cd api && npm test` passed; `cd api && npm run build` passed; `cd website && npm run build` passed; `git diff --check` passed; Vite dev server responded `200 OK` at `http://100.85.92.106:5173/`.
+- Caveat: the production API must be deployed/its title cache refreshed before already-cached title detail responses expose `countries` live; the website hides the metadata when the field is absent.
 
 ## Dependencies unlocked
 

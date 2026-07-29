@@ -11,6 +11,7 @@ const title: TitleResponse = {
   release: { date: "1999-03-31", year: 1999 },
   runtime: { minutes: 136 },
   genres: [],
+  countries: [],
   rating: { average: null, voteCount: 0 },
   cast: [],
   crew: { directors: [], creators: [] },

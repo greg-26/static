@@ -1,7 +1,8 @@
-import type { CollectionItemSummary, CollectionSummary, ContentRating, ImageAsset, PersonCredit, SeasonSummary, StreamingProvider, StreamingProviders, TitleResponse } from "../models/title";
+import type { CollectionItemSummary, CollectionSummary, ContentRating, ImageAsset, PersonCredit, SeasonSummary, StreamingProvider, StreamingProviders, TitleCountry, TitleResponse } from "../models/title";
 import type {
   TmdbCreatedBy,
   TmdbCrewCredit,
+  TmdbCountry,
   TmdbGenre,
   TmdbImage,
   TmdbMovieCastCredit,
@@ -41,6 +42,7 @@ export function mapTmdbMovieToTitle(movie: TmdbMovieForMapping, options: MapperO
     release: mapRelease(movie.release_date),
     runtime: { minutes: movie.runtime ?? null },
     genres: mapGenres(movie.genres),
+    countries: mapMovieCountries(movie.production_countries, movie.origin_country),
     rating: mapRating(movie.vote_average, movie.vote_count),
     cast: mapMovieCast(movie.credits?.cast),
     crew: { directors: mapCrewByJob(movie.credits?.crew, "Director"), creators: [] },
@@ -62,6 +64,7 @@ export function mapTmdbSeriesToTitle(series: TmdbSeriesForMapping, options: Mapp
     release: mapRelease(series.first_air_date),
     runtime: { minutes: series.episode_run_time?.[0] ?? null },
     genres: mapGenres(series.genres),
+    countries: mapOriginCountryCodes(series.origin_country),
     rating: mapRating(series.vote_average, series.vote_count),
     cast: mapSeriesCast(series.aggregate_credits?.cast),
     crew: {
@@ -165,6 +168,45 @@ function mapRelease(date: string | null | undefined): TitleResponse["release"] {
 
 function mapGenres(genres: TmdbGenre[] | null | undefined): string[] {
   return (genres ?? []).map((genre) => genre.name).filter((name) => name.length > 0);
+}
+
+function mapMovieCountries(productionCountries: TmdbCountry[] | null | undefined, originCountryCodes: string[] | null | undefined): TitleCountry[] {
+  const countries = (productionCountries ?? [])
+    .map((country) => {
+      const code = normalizeCountryCode(country.iso_3166_1);
+      if (!code) return null;
+      const name = cleanCountryName(country.name);
+      return { code, name };
+    })
+    .filter((country): country is TitleCountry => country !== null);
+
+  return countries.length ? uniqueCountries(countries) : mapOriginCountryCodes(originCountryCodes);
+}
+
+function mapOriginCountryCodes(codes: string[] | null | undefined): TitleCountry[] {
+  return uniqueCountries((codes ?? [])
+    .map((code) => normalizeCountryCode(code))
+    .filter((code): code is string => code !== null)
+    .map((code) => ({ code, name: null })));
+}
+
+function normalizeCountryCode(value: string | null | undefined): string | null {
+  const code = value?.trim().toUpperCase();
+  return code ? code : null;
+}
+
+function cleanCountryName(value: string | null | undefined): string | null {
+  const name = value?.trim();
+  return name ? name : null;
+}
+
+function uniqueCountries(countries: TitleCountry[]): TitleCountry[] {
+  const seen = new Set<string>();
+  return countries.filter((country) => {
+    if (seen.has(country.code)) return false;
+    seen.add(country.code);
+    return true;
+  });
 }
 
 function mapRating(average: number | null | undefined, voteCount: number | null | undefined): TitleResponse["rating"] {
