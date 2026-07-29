@@ -4,63 +4,57 @@ Focused active sprint plans live in dated sprint-set folders under this director
 
 ## Status
 
-- Current planning status: issue-driven cycle is active in [`2026-07-28-open-issues-37-39/`](2026-07-28-open-issues-37-39/); all current working-fork issues in this tranche are mapped.
-- Current implementation phase: Sprint 036 complete; Sprint 037 complete now that API issue #38 shipped the content-ratings contract in `bc3e53c`.
-- Next executable sprint: None in the current sprint set.
-- Latest planning update: 2026-07-28 22:34 Europe/Madrid.
+- Current planning status: brand-new issue-driven cycle is active in [`2026-07-29-no-open-website-issues/`](2026-07-29-no-open-website-issues/); there are no open working-fork or upstream issues to map.
+- Current implementation phase: no executable website sprint is planned.
+- Next executable sprint: None — wait for a new `Website - ...` / website-scoped issue, PMT feedback item, or explicit Alex request.
+- Latest planning update: 2026-07-29 23:53 Europe/Madrid.
 
 ## Roadmap
 
 | Sprint | Outcome | Status | Depends on |
 | --- | --- | --- | --- |
-| [Sprint 036](2026-07-28-open-issues-37-39/sprint-036-remove-poster-expand-button.md) | Remove the visible `Expand` affordance from the movie-detail poster while keeping poster-click expansion intact and accessible. | `complete` | None |
-| [Sprint 037](2026-07-28-open-issues-37-39/sprint-037-tmdb-content-ratings-detail.md) | Surface API-selected TMDB content ratings in the movie-detail content details box. | `complete` | API issue #38 / commit `bc3e53c` |
+| _None_ | No open website-scoped issues exist in the working fork, so no sprint file was created. | `blocked` | New website issue, PMT feedback, or Alex request |
 
 ## Active sprint set
 
-- Sprint-set index: [`2026-07-28-open-issues-37-39/INDEX.md`](2026-07-28-open-issues-37-39/INDEX.md)
-- Archived completed sprint set: [`archive/2026-07-28-open-issues-33-36/`](archive/2026-07-28-open-issues-33-36/)
+- Sprint-set index: [`2026-07-29-no-open-website-issues/INDEX.md`](2026-07-29-no-open-website-issues/INDEX.md)
+- Archived completed sprint set: [`archive/2026-07-28-open-issues-37-39/`](archive/2026-07-28-open-issues-37-39/)
+- Earlier archived sprint set: [`archive/2026-07-28-open-issues-33-36/`](archive/2026-07-28-open-issues-33-36/)
+- Earlier archived no-open-issues marker: [`archive/2026-07-28-no-open-website-issues/`](archive/2026-07-28-no-open-website-issues/)
 - Earlier archived sprint set: [`archive/2026-07-28-open-issues-25-32/`](archive/2026-07-28-open-issues-25-32/)
-- Superseded no-open-issues intake marker: [`archive/2026-07-28-no-open-website-issues/`](archive/2026-07-28-no-open-website-issues/)
 - Earlier archived sprint set: [`archive/2026-07-28-issue-driven-polish/`](archive/2026-07-28-issue-driven-polish/)
 
 ## Issue mapping
 
-Open issue query for `origin` / `greg-26/static` found three open issues during this planning run. Open issue query for `upstream` / `ohanamovies/static` found none.
+Open issue query for `origin` / `greg-26/static` returned no open issues during this planning run. Open issue query for `upstream` / `ohanamovies/static` also returned no open issues.
 
 | Issue | Sprint coverage | Planning note |
 | --- | --- | --- |
-| [#37 Remove the expand button on poster](https://github.com/greg-26/static/issues/37) | [Sprint 036](2026-07-28-open-issues-37-39/sprint-036-remove-poster-expand-button.md) | Remove the visible `Expand` affordance from the movie-detail poster; keep poster click/tap expansion behavior. |
-| [#38 API - content ratings](https://github.com/greg-26/static/issues/38) | Not a website sprint | API/data-model prerequisite completed in `bc3e53c`; website Sprint 037 consumes the normalized field. |
-| [#39 Website - tmdb content ratings on movie detail page](https://github.com/greg-26/static/issues/39) | [Sprint 037](2026-07-28-open-issues-37-39/sprint-037-tmdb-content-ratings-detail.md) | Display the API-selected current-country/fallback content rating in the movie-detail content details box. |
-
-No remaining open website issue is intentionally unplanned: #37 and #39 are covered by completed website sprints; #38 was the completed API prerequisite.
+| _None_ | _None_ | No website issue remains unplanned; no issue comments are needed. |
 
 ## Decisions and assumptions
 
 - Working-fork issues (`origin`, currently `greg-26/static`) remain the active issue tracker for agent-driven website work.
-- The website trusts the API `contentRating` contract and does not duplicate TMDB fallback selection logic.
-- Missing TMDB content-ratings data is represented as a compact unavailable state after API detail enrichment returns.
-- Sprint numbers continue from the existing completed sequence; do not renumber completed sprints.
-- Keep the completed #33–#36 tranche archived and intact.
+- Sprint numbers continue after completed Sprint 037; do not renumber completed sprints.
+- Completed #37–#39 history is archived unchanged in [`archive/2026-07-28-open-issues-37-39/`](archive/2026-07-28-open-issues-37-39/).
+- Do not invent implementation work without an open issue, PMT-approved feedback item, or explicit Alex request.
 
 ## Open questions
 
-None for the current active sprint set.
+None. The current state is empty, not ambiguous.
 
 ## Completion criteria
 
-The current planned tranche is complete when:
+The current no-open-issues marker remains valid until:
 
-- Sprint 036 removes the visible poster `Expand` affordance while preserving click/tap and keyboard access to the larger poster viewer. ✅ Sprint 036 complete.
-- Sprint 037 surfaces API-selected TMDB content ratings in the movie-detail content details box. ✅ Sprint 037 complete.
-- `npm run qa:sprint36`, `npm run qa:sprint37`, `npm run build`, and `git diff --check` pass after implementation. ✅
-- Issue #37 has an implementation comment linking final changes and verification.
-- Issue #39 has an implementation comment linking final changes and verification, then is closed after push.
+- a new website-scoped issue opens in the working fork;
+- PMT links new feedback that needs implementation planning; or
+- Alex explicitly asks for a new non-issue sprint.
 
 ## Maintenance rules
 
-- One sprint = one file inside the active dated folder.
+- One active sprint-set folder at a time.
+- Keep no-open-issues markers intentionally small; no placeholder sprint files.
 - Keep `VISION_EXECUTION.md` as a router; do not duplicate sprint status there.
 - Link reports from `docs/vision-execution/review-index.md` instead of copying report contents into sprint files.
 - Human feedback and new issues interrupt routine automation.
