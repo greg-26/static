@@ -7,10 +7,31 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const modal = readFileSync(resolve(root, 'src/components/MovieModal.vue'), 'utf8');
 const packageJson = readFileSync(resolve(root, 'package.json'), 'utf8');
 
+function extractFunction(name) {
+  const marker = `function ${name}`;
+  const start = modal.indexOf(marker);
+  if (start === -1) return '';
+  const open = modal.indexOf('{', start);
+  let depth = 0;
+  for (let i = open; i < modal.length; i += 1) {
+    if (modal[i] === '{') depth += 1;
+    if (modal[i] === '}') depth -= 1;
+    if (depth === 0) return modal.slice(start, i + 1);
+  }
+  return '';
+}
+
+const shareMovie = extractFunction('shareMovie');
+const canUseNativeShare = extractFunction('canUseNativeShare');
+
 const checks = [
   {
     name: 'share button keeps native Web Share API as the first share path',
-    pass: /typeof navigator\.share === "function"[\s\S]*navigator\.share\(shareData\)[\s\S]*setShareFeedback\("Shared"\)/.test(modal),
+    pass: /typeof navigator\.share !== "function"/.test(canUseNativeShare)
+      && /navigator\.canShare\(shareData\) === true/.test(canUseNativeShare)
+      && shareMovie.indexOf('await navigator.share(shareData)') !== -1
+      && shareMovie.indexOf('await navigator.share(shareData)') < shareMovie.indexOf('fallbackToMovieLink(url)')
+      && /setShareFeedback\("Shared"\)/.test(shareMovie),
   },
   {
     name: 'native share failures fall back to the exact movie link instead of stopping at unavailable',

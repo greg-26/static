@@ -723,6 +723,23 @@ async function fallbackToMovieLink(url) {
   return false;
 }
 
+function canUseNativeShare(shareData) {
+  if (typeof navigator === "undefined" || typeof navigator.share !== "function") return false;
+  if (typeof navigator.canShare !== "function") return true;
+
+  try {
+    return navigator.canShare(shareData) === true;
+  } catch {
+    return false;
+  }
+}
+
+function isUserCancelledNativeShare(error) {
+  if (error?.name === "AbortError") return true;
+  // Some Web Share implementations report a dismissed share sheet as NotAllowedError.
+  return error?.name === "NotAllowedError" && /abort|cancel|dismiss/i.test(error?.message || "");
+}
+
 async function shareMovie() {
   const url = movieShareUrl();
   if (!url) {
@@ -733,15 +750,13 @@ async function shareMovie() {
   const title = props.movie?.t || "Ohana TV title";
   const shareData = { title, text: title, url };
 
-  if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+  if (canUseNativeShare(shareData)) {
     try {
-      if (typeof navigator.canShare !== "function" || navigator.canShare(shareData)) {
-        await navigator.share(shareData);
-        setShareFeedback("Shared");
-        return;
-      }
+      await navigator.share(shareData);
+      setShareFeedback("Shared");
+      return;
     } catch (error) {
-      if (error?.name === "AbortError") return;
+      if (isUserCancelledNativeShare(error)) return;
       // Fall back to copying the exact movie link when native sharing fails.
     }
   }
