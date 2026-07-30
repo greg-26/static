@@ -41,17 +41,16 @@ const checks = [
   },
   {
     name: 'native Web Share capability gates on navigator.share first, not clipboard availability',
-    pass: /typeof navigator\.share !== "function"/.test(canUseNativeShare)
+    pass: /typeof navigator\.share === "function"/.test(canUseNativeShare)
       && !/clipboard|copyMovieShareLink|execCommand/.test(canUseNativeShare),
   },
   {
-    name: 'navigator.canShare is optional and only used to validate the Web Share payload',
-    pass: /typeof navigator\.canShare !== "function"\) return true/.test(canUseNativeShare)
-      && /navigator\.canShare\(shareData\) === true/.test(canUseNativeShare),
+    name: 'navigator.canShare does not gate URL shares when navigator.share exists',
+    pass: !/canShare/.test(canUseNativeShare),
   },
   {
     name: 'copy fallback runs only when native share is unavailable, unshareable, or non-cancel failure',
-    pass: /if \(canUseNativeShare\(shareData\)\)/.test(shareMovie)
+    pass: /if \(canUseNativeShare\(\)\)/.test(shareMovie)
       && /catch \(error\)[\s\S]*isUserCancelledNativeShare\(error\)[\s\S]*return;[\s\S]*Fall back to copying the exact movie link/.test(shareMovie)
       && /if \(await fallbackToMovieLink\(url\)\) return;/.test(shareMovie),
   },

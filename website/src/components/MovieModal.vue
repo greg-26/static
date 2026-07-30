@@ -106,23 +106,24 @@
               <UiBadge v-if="movie.s" tone="success">TV Season</UiBadge>
               <span v-if="apiCountryLabel" class="modal-country" :title="apiCountryTitle">{{ apiCountryLabel }}</span>
             </div>
-            <button
-              v-if="movie.id"
-              type="button"
-              class="modal-share-button"
-              :aria-label="`Share ${movie.t}`"
-              :title="shareFeedback || 'Share movie'"
-              @click="shareMovie"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 6l-4-4-4 4" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v13" />
-              </svg>
-              <span class="sr-only">Share movie</span>
-            </button>
+            <div v-if="movie.id" class="modal-share-action">
+              <p v-if="shareFeedback" class="modal-share-feedback" role="status" aria-live="polite">{{ shareFeedback }}</p>
+              <button
+                type="button"
+                class="modal-share-button"
+                :aria-label="`Share ${movie.t}`"
+                :title="shareFeedback || 'Share movie'"
+                @click="shareMovie"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 6l-4-4-4 4" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v13" />
+                </svg>
+                <span class="sr-only">Share movie</span>
+              </button>
+            </div>
           </div>
-          <p v-if="shareFeedback" class="modal-share-feedback" role="status" aria-live="polite">{{ shareFeedback }}</p>
           <h2 :id="titleId" class="modal-title">{{ movie.t }}</h2>
 
           <!-- Primary user decision actions: save/watch state should be reachable before maturity detail. -->
@@ -723,15 +724,8 @@ async function fallbackToMovieLink(url) {
   return false;
 }
 
-function canUseNativeShare(shareData) {
-  if (typeof navigator === "undefined" || typeof navigator.share !== "function") return false;
-  if (typeof navigator.canShare !== "function") return true;
-
-  try {
-    return navigator.canShare(shareData) === true;
-  } catch {
-    return false;
-  }
+function canUseNativeShare() {
+  return typeof navigator !== "undefined" && typeof navigator.share === "function";
 }
 
 function isUserCancelledNativeShare(error) {
@@ -748,12 +742,11 @@ async function shareMovie() {
   }
 
   const title = props.movie?.t || "Ohana TV title";
-  const shareData = { title, text: title, url };
+  const shareData = { title, url };
 
-  if (canUseNativeShare(shareData)) {
+  if (canUseNativeShare()) {
     try {
       await navigator.share(shareData);
-      setShareFeedback("Shared");
       return;
     } catch (error) {
       if (isUserCancelledNativeShare(error)) return;
@@ -1354,6 +1347,12 @@ onUnmounted(() => {
   flex-wrap: wrap;
   min-width: 0;
 }
+.modal-share-action {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
 .modal-share-button {
   flex: 0 0 auto;
   width: 42px;
@@ -1379,10 +1378,11 @@ onUnmounted(() => {
 }
 .modal-share-button svg { width: 20px; height: 20px; }
 .modal-share-feedback {
-  margin: -3px 0 8px;
+  margin: 0;
   color: var(--teal);
   font-size: 12px;
   font-weight: 800;
+  white-space: nowrap;
 }
 .modal-year { font-size: 13px; color: var(--muted); }
 .modal-rating { font-size: 14px; font-weight: 500; color: var(--gold); }
@@ -2285,17 +2285,30 @@ onUnmounted(() => {
     box-shadow: 0 8px 24px rgba(0,0,0,0.32);
   }
   .modal-close--mobile svg { width: 18px; height: 18px; }
-  .modal-share-button {
+  .modal-share-action {
     position: fixed;
     top: calc(10px + env(safe-area-inset-top, 0px));
     right: 12px;
     z-index: 120;
+    flex-direction: row;
+    align-items: center;
+  }
+  .modal-share-button {
     width: 44px;
     height: 44px;
     background: rgba(8,8,16,0.82);
     box-shadow: 0 8px 24px rgba(0,0,0,0.32);
   }
-  .modal-share-feedback { text-align: right; }
+  .modal-share-feedback {
+    max-width: min(46vw, 190px);
+    padding: 7px 10px;
+    border-radius: 999px;
+    background: rgba(8,8,16,0.82);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.24);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: right;
+  }
   .overview-text--clamped { -webkit-line-clamp: 3; }
   .api-collection-item { flex-basis: 108px; }
   .api-season-card { flex-basis: 172px; }

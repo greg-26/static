@@ -27,11 +27,11 @@ const canUseNativeShare = extractFunction('canUseNativeShare');
 const checks = [
   {
     name: 'share button keeps native Web Share API as the first share path',
-    pass: /typeof navigator\.share !== "function"/.test(canUseNativeShare)
-      && /navigator\.canShare\(shareData\) === true/.test(canUseNativeShare)
+    pass: /typeof navigator\.share === "function"/.test(canUseNativeShare)
+      && !/canShare/.test(canUseNativeShare)
       && shareMovie.indexOf('await navigator.share(shareData)') !== -1
       && shareMovie.indexOf('await navigator.share(shareData)') < shareMovie.indexOf('fallbackToMovieLink(url)')
-      && /setShareFeedback\("Shared"\)/.test(shareMovie),
+      && !/setShareFeedback\("Shared"\)/.test(shareMovie),
   },
   {
     name: 'native share failures fall back to the exact movie link instead of stopping at unavailable',
