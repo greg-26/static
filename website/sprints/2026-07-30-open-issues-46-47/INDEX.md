@@ -3,8 +3,8 @@
 ## Status
 
 - Planning status: brand-new issue-driven cycle opened at 2026-07-30 09:21 Europe/Madrid after fast-forwarding `main` and archiving the completed #41–#43 sprint set.
-- Implementation phase: Sprint 041 complete; ready for Sprint 042.
-- Next executable sprint: [Sprint 042 — Movie Detail Other Metadata](sprint-042-movie-detail-other-metadata.md).
+- Implementation phase: Sprint 041 complete; Sprint 042 complete.
+- Next executable sprint: none — current open-issue tranche is implemented pending any new planner cycle.
 - Latest planning update: 2026-07-30 09:21 Europe/Madrid.
 
 ## Roadmap
@@ -12,7 +12,7 @@
 | Sprint | Outcome | Status | Depends on |
 | --- | --- | --- | --- |
 | [Sprint 041](sprint-041-movie-share-native-sheet.md) | Ensure the movie share button opens the native Web Share sheet on supported mobile browsers, with fallback feedback located next to the action. | `complete` | Current `MovieModal.vue` share button/link generation |
-| [Sprint 042](sprint-042-movie-detail-other-metadata.md) | Move country/origin data out of the top metadata row and add a quiet bottom “Other details” section after cast for low-priority metadata. | `ready` | Sprint 041 complete; current Ohana API title detail mapper |
+| [Sprint 042](sprint-042-movie-detail-other-metadata.md) | Move country/origin data out of the top metadata row and add a quiet bottom “Other details” section after cast for low-priority metadata. | `complete` | Sprint 041 complete; current Ohana API title detail mapper |
 
 ## Issue mapping
 
@@ -40,9 +40,9 @@
 This open-issue tranche is complete when:
 
 - #47 has implementation evidence from an explicit mocked Web Share verification note, and fallback behavior is documented. ✅ Sprint 041 complete.
-- #46 has country moved after Cast and any extra metadata fields are API-backed, quiet, and absent when unavailable.
-- Website build passes for each implemented sprint, plus any API/title-detail mapper tests touched by Sprint 042.
-- Issues #46 and #47 receive implementation evidence comments and are closed only by the implementation completion workflow.
+- #46 has country moved after Cast and any extra metadata fields are API-backed, quiet, and absent when unavailable. ✅ Sprint 042 complete.
+- Website build passes for each implemented sprint, plus any API/title-detail mapper tests touched by Sprint 042. ✅
+- Issues #46 and #47 receive implementation evidence comments and are closed only by the implementation completion workflow. ✅
 
 ## Maintenance rules
 

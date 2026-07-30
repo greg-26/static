@@ -5,8 +5,8 @@ Focused active sprint plans live in dated sprint-set folders under this director
 ## Status
 
 - Current planning status: brand-new issue-driven cycle in [`2026-07-30-open-issues-46-47/`](2026-07-30-open-issues-46-47/) is ready after archiving the completed #41–#43 sprint set.
-- Current implementation phase: Sprint 041 complete; Sprint 042 ready.
-- Next executable sprint: [Sprint 042 — Movie Detail Other Metadata](2026-07-30-open-issues-46-47/sprint-042-movie-detail-other-metadata.md).
+- Current implementation phase: Sprint 041 complete; Sprint 042 complete.
+- Next executable sprint: none — current open-issue tranche is implemented pending any new planner cycle.
 - Latest planning update: 2026-07-30 09:21 Europe/Madrid.
 
 ## Roadmap
@@ -14,7 +14,7 @@ Focused active sprint plans live in dated sprint-set folders under this director
 | Sprint | Outcome | Status | Depends on |
 | --- | --- | --- | --- |
 | [Sprint 041](2026-07-30-open-issues-46-47/sprint-041-movie-share-native-sheet.md) | Ensure the movie share button opens the native Web Share sheet on supported mobile browsers, with fallback feedback located next to the action. | `complete` | Current `MovieModal.vue` share button/link generation |
-| [Sprint 042](2026-07-30-open-issues-46-47/sprint-042-movie-detail-other-metadata.md) | Move country/origin data out of the top metadata row and add a quiet bottom “Other details” section after cast for low-priority metadata. | `ready` | Sprint 041 complete; current Ohana API title detail mapper |
+| [Sprint 042](2026-07-30-open-issues-46-47/sprint-042-movie-detail-other-metadata.md) | Move country/origin data out of the top metadata row and add a quiet bottom “Other details” section after cast for low-priority metadata. | `complete` | Sprint 041 complete; current Ohana API title detail mapper |
 
 ## Active sprint set
 
@@ -55,9 +55,9 @@ Focused active sprint plans live in dated sprint-set folders under this director
 This open-issue tranche is complete when:
 
 - #47 has explicit mocked Web Share evidence that supported browsers attempt the native share sheet before fallback, with fallback behavior verified separately. ✅ Sprint 041 complete.
-- #46 has implementation evidence that country moved after Cast and optional metadata is API-backed/quiet.
-- Website build passes for implemented slices, plus API/title-detail mapper tests if Sprint 042 changes API code.
-- Issues #46 and #47 each have implementation evidence comments and are closed by the implementation completion workflow.
+- #46 has implementation evidence that country moved after Cast and optional metadata is API-backed/quiet. ✅ Sprint 042 complete.
+- Website build passes for implemented slices, plus API/title-detail mapper tests if Sprint 042 changes API code. ✅
+- Issues #46 and #47 each have implementation evidence comments and are closed by the implementation completion workflow. ✅
 
 ## Maintenance rules
 

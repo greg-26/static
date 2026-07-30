@@ -35,6 +35,22 @@ function numericOrNull(value) {
   return Number.isFinite(number) ? number : null;
 }
 
+function textOrNull(value) {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function normalizeLanguage(value) {
+  if (!value) return null;
+  if (typeof value === "string") return textOrNull(value);
+  if (typeof value !== "object") return null;
+  return textOrNull(value.name) || textOrNull(value.englishName) || textOrNull(value.code)?.toUpperCase() || null;
+}
+
+function normalizeReleaseDate(release) {
+  const date = textOrNull(release?.date) || textOrNull(release);
+  return /^\d{4}-\d{2}-\d{2}$/.test(date || "") ? date : null;
+}
+
 function compareText(a, b) {
   return String(a || "").localeCompare(String(b || ""), undefined, { sensitivity: "base" });
 }
@@ -231,6 +247,9 @@ function normalizeTitleDetail(data) {
     imdbId: data.imdbId || null,
     type: data.type || null,
     title: data.title || null,
+    originalTitle: textOrNull(data.originalTitle),
+    originalLanguage: normalizeLanguage(data.originalLanguage || data.originalLanguageCode || data.original_language),
+    releaseDate: normalizeReleaseDate(data.release) || normalizeReleaseDate(data.releaseDate),
     overview: data.overview || null,
     runtimeMinutes: data.runtime?.minutes || null,
     ratingAverage: data.rating?.average || null,

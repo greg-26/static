@@ -2,7 +2,7 @@
 
 ## Status
 
-ready
+complete
 
 ## Outcome
 
@@ -67,11 +67,11 @@ Sprint 040 added API-backed country/origin data and currently displays it in the
 
 ## Acceptance criteria
 
-- [ ] Country/countries no longer appears in the top metadata row.
-- [ ] Country/countries appears after Cast in a quiet low-priority metadata section when API data exists.
-- [ ] Original title, original language, and exact release date appear only when API-backed values are available.
-- [ ] The section is hidden when all metadata values are unavailable.
-- [ ] The detail page remains mobile-calm: no new boxed card, no long wrapping chip, no visual competition with suitability or Where to watch.
+- [x] Country/countries no longer appears in the top metadata row.
+- [x] Country/countries appears after Cast in a quiet low-priority metadata section when API data exists.
+- [x] Original title, original language, and exact release date appear only when API-backed values are available.
+- [x] The section is hidden when all metadata values are unavailable.
+- [x] The detail page remains mobile-calm: no new boxed card, no long wrapping chip, no visual competition with suitability or Where to watch.
 
 ## Required tests
 
@@ -92,6 +92,14 @@ If API/title-detail code is touched, also run the smallest relevant API test com
 
 Implementation agent: keep this to metadata placement and API normalization. If original language/title/date are not available from the existing API source, document that clearly in #46 rather than inventing display data.
 
+## Implementation note — 2026-07-30
+
+- Removed the API country badge from the top movie-detail metadata row.
+- Added a quiet unboxed `Other details` section immediately after Cast, rendered only when API-backed values exist.
+- Normalized `originalTitle` and exact `release.date` through the existing Ohana title-detail mapper; `originalLanguage` remains nullable and hidden because the current representative API responses do not expose it.
+- Verified representative API shape for `tt0111161` and `tt0944947`; both expose `originalTitle`, `release.date`, and `countries`, but not original language.
+- Verification: `npm run build` passed; title-detail normalization smoke check passed; Vite dev server reachable at `http://100.85.92.106:5173/`.
+
 ## Dependencies unlocked
 
-- Completion should close the current country-metadata feedback loop and leave movie detail ready for QA/CX review.
+- Completion closes the current country-metadata feedback loop and leaves movie detail ready for QA/CX review.

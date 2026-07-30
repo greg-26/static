@@ -104,7 +104,6 @@
                 <img src="https://upload.wikimedia.org/wikipedia/commons/5/59/FilmAffinity_logo.svg" alt="FilmAffinity" class="imdb-logo" />
               </a>
               <UiBadge v-if="movie.s" tone="success">TV Season</UiBadge>
-              <span v-if="apiCountryLabel" class="modal-country" :title="apiCountryTitle">{{ apiCountryLabel }}</span>
             </div>
             <div v-if="movie.id" class="modal-share-action">
               <p v-if="shareFeedback" class="modal-share-feedback" role="status" aria-live="polite">{{ shareFeedback }}</p>
@@ -498,6 +497,16 @@
             </div>
           </section>
 
+          <section v-if="apiOtherDetails.length" class="api-detail-section api-other-details" aria-labelledby="api-other-details-label">
+            <p id="api-other-details-label" class="modal-section-label">Other details</p>
+            <dl class="api-other-detail-list">
+              <div v-for="detail in apiOtherDetails" :key="detail.label" class="api-other-detail-row">
+                <dt>{{ detail.label }}</dt>
+                <dd>{{ detail.value }}</dd>
+              </div>
+            </dl>
+          </section>
+
         </div>
         </div>
 
@@ -872,12 +881,22 @@ const contentRatingAriaLabel = computed(() => {
 });
 const apiCountries = computed(() => apiDetail.value?.countries || []);
 const apiCountryNames = computed(() => apiCountries.value.map(country => country.name || country.code).filter(Boolean));
-const apiCountryLabel = computed(() => {
-  if (!apiCountryNames.value.length) return null;
-  const label = apiCountryNames.value.slice(0, 2).join(", ");
-  return `${apiCountryNames.value.length > 1 ? "Countries" : "Country"} ${label}${apiCountryNames.value.length > 2 ? ` +${apiCountryNames.value.length - 2}` : ""}`;
+const apiOtherDetails = computed(() => {
+  const details = [];
+  if (apiCountryNames.value.length) {
+    details.push({ label: apiCountryNames.value.length > 1 ? "Countries" : "Country", value: apiCountryNames.value.join(", ") });
+  }
+  if (apiDetail.value?.originalTitle) {
+    details.push({ label: "Original title", value: apiDetail.value.originalTitle });
+  }
+  if (apiDetail.value?.originalLanguage) {
+    details.push({ label: "Original language", value: apiDetail.value.originalLanguage });
+  }
+  if (apiDetail.value?.releaseDate) {
+    details.push({ label: "Release date", value: formatExactReleaseDate(apiDetail.value.releaseDate) });
+  }
+  return details;
 });
-const apiCountryTitle = computed(() => apiCountryNames.value.length ? `Country metadata from Ohana API: ${apiCountryNames.value.join(", ")}` : null);
 
 const apiCastPreview = computed(() => apiDetail.value?.cast?.slice(0, 6) || []);
 const apiCollectionItems = computed(() => apiDetail.value?.collection?.items || []);
@@ -1030,6 +1049,13 @@ const TAG_KEYS = {
 function formatScore(raw) {
   if (raw === null || raw === undefined || Number.isNaN(raw)) return '?';
   return raw.toFixed(1);
+}
+
+function formatExactReleaseDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value || "")) return value;
+  const [year, month, day] = value.split("-").map(Number);
+  return new Intl.DateTimeFormat(undefined, { year: "numeric", month: "short", day: "numeric" })
+    .format(new Date(Date.UTC(year, month - 1, day)));
 }
 
 async function loadReviews(imdbId) {
@@ -1386,12 +1412,6 @@ onUnmounted(() => {
 }
 .modal-year { font-size: 13px; color: var(--muted); }
 .modal-rating { font-size: 14px; font-weight: 500; color: var(--gold); }
-.modal-country {
-  font-size: 12px;
-  color: rgba(255,255,255,0.68);
-  font-weight: 700;
-  white-space: nowrap;
-}
 .imdb-link,
 .ext-site-link {
   display: inline-flex;
@@ -1470,6 +1490,32 @@ onUnmounted(() => {
 }
 .api-detail-status--error { color: rgba(248,113,113,0.72); }
 .api-detail-section { margin-bottom: 18px; }
+.api-other-details { margin-top: -2px; }
+.api-other-detail-list {
+  display: grid;
+  gap: 8px;
+  margin: 8px 0 0;
+}
+.api-other-detail-row {
+  display: grid;
+  grid-template-columns: minmax(94px, max-content) minmax(0, 1fr);
+  gap: 12px;
+  align-items: baseline;
+}
+.api-other-detail-row dt {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.api-other-detail-row dd {
+  min-width: 0;
+  margin: 0;
+  color: rgba(255,255,255,0.76);
+  font-size: 13px;
+  line-height: 1.35;
+}
 .api-cast-list {
   display: flex;
   gap: 10px;
